@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Smarttool Hub — All Free Online Tools</title>
+<meta content="Access 30+ free online tools including PDF converters, image editors, QR utilities, and text tools — all running in your browser." name="description"/>
+<link href="https://img.icons8.com/fluency/48/toolbox.png" rel="icon" type="image/png"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+body{font-family:Arial, sans-serif;background:#121826;color:#fff;margin:0;padding:0}
+header{background:linear-gradient(90deg,#6366f1,#0ea5e9);padding:15px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;box-shadow:0 4px 12px rgba(0,0,0,0.4);position:sticky;top:0;z-index:1000}
+header .logo{display:flex;align-items:center;gap:10px}
+header .logo img{width:40px;height:40px;border-radius:8px}
+header h1{margin:0;font-size:1.6rem;color:#fff}
+header .tagline{color:#e0f2fe;font-size:0.95rem;margin-top:2px;font-style:italic}
+.search-box{flex:1;max-width:350px;position:relative;margin-top:8px;display:flex;align-items:center;gap:5px}
+.search-box input{width:100%;padding:8px 12px;border-radius:20px;border:none;outline:none;font-size:14px}
+.search-box button{background:#ef4444;border:none;color:#fff;border-radius:50%;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.suggestions{position:absolute;top:38px;left:0;right:0;background:#1e293b;border-radius:8px;max-height:200px;overflow-y:auto;display:none;z-index:1001}
+.suggestions div{padding:8px 12px;cursor:pointer;color:#d1d5db}
+.suggestions div:hover{background:#0ea5a5;color:#fff}
+.container{max-width:1200px;margin:0 auto;padding:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:20px}
+.tool{background:#1e293b;padding:15px;border-radius:10px;text-align:center;transition:0.3s;cursor:pointer}
+.tool:hover{background:#334155;transform:translateY(-4px);box-shadow:0 4px 10px rgba(0,0,0,0.5)}
+.tool i{font-size:28px;color:#0ea5e9;margin-bottom:8px}
+.tool span{display:block;margin-top:6px;color:#f1f5f9;font-size:14px;font-weight:500}
+footer{background:linear-gradient(90deg,#0f172a,#0ea5e9);color:#94a3b8;text-align:center;padding:20px;margin-top:30px;font-size:13px;box-shadow:0 -2px 8px rgba(0,0,0,0.3)}
+footer a{color:#fff;text-decoration:none;font-weight:bold}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">
+<img alt="Smarttool Hub Logo" src="https://img.icons8.com/fluency/48/toolbox.png"/>
+<div>
+<h1>Smarttool Hub</h1>
+<div class="tagline">Powerful, Free, and Instant Tools for Everyone</div>
+</div>
+</div>
+<div class="search-box">
+<input id="searchInput" onkeyup="showSuggestions()" placeholder="Search tools..." type="text"/>
+<button onclick="clearSearch()"><i class="fa fa-times"></i></button>
+<div class="suggestions" id="suggestions"></div>
+</div>
+</header>
+<div class="container">
+<div class="grid" id="toolGrid"><a class="tool" href="tools/image-to-pdf/index.html"><i class="fa-solid fa-file-arrow-down"></i><span>Image to PDF Converter</span></a><a class="tool" href="tools/pdf-merge/index.html"><i class="fa-solid fa-object-group"></i><span>Merge Multiple PDFs</span></a><a class="tool" href="tools/pdf-split/index.html"><i class="fa-solid fa-scissors"></i><span>Split PDF Pages</span></a><a class="tool" href="tools/pdf-compress/index.html"><i class="fa-solid fa-file-zipper"></i><span>Compress PDF Size</span></a><a class="tool" href="tools/pdf-rotate/index.html"><i class="fa-solid fa-rotate"></i><span>Rotate PDF Pages</span></a><a class="tool" href="tools/pdf-unlock/index.html"><i class="fa-solid fa-lock-open"></i><span>Unlock Protected PDF</span></a><a class="tool" href="tools/pdf-password/index.html"><i class="fa-solid fa-lock"></i><span>Password Protect PDF</span></a><a class="tool" href="tools/pdf-edit/index.html"><i class="fa-solid fa-pen-to-square"></i><span>Edit PDF Online</span></a><a class="tool" href="tools/pdf-to-image/index.html"><i class="fa-solid fa-image"></i><span>Convert PDF to Image</span></a><a class="tool" href="tools/image-to-png-jpg/index.html"><i class="fa-solid fa-images"></i><span>Image to PNG/JPG</span></a><a class="tool" href="tools/jpg-to-png/index.html"><i class="fa-solid fa-image"></i><span>JPG to PNG Converter</span></a><a class="tool" href="tools/png-to-jpg/index.html"><i class="fa-solid fa-image"></i><span>PNG to JPG Converter</span></a><a class="tool" href="tools/image-resize/index.html"><i class="fa-solid fa-up-right-and-down-left-from-center"></i><span>Resize Image Dimensions</span></a><a class="tool" href="tools/image-crop/index.html"><i class="fa-solid fa-crop"></i><span>Crop Image Tool</span></a><a class="tool" href="tools/image-flip-rotate/index.html"><i class="fa-solid fa-repeat"></i><span>Flip or Rotate Image</span></a><a class="tool" href="tools/image-watermark/index.html"><i class="fa-solid fa-droplet"></i><span>Add Watermark to Image</span></a><a class="tool" href="tools/pdf-watermark/index.html"><i class="fa-solid fa-droplet"></i><span>Add Watermark to PDF</span></a><a class="tool" href="tools/pdf-reorder/index.html"><i class="fa-solid fa-sort"></i><span>Reorder PDF Pages</span></a><a class="tool" href="tools/pdf-delete/index.html"><i class="fa-solid fa-trash-can"></i><span>Delete PDF Pages</span></a><a class="tool" href="tools/html-to-pdf/index.html"><i class="fa-solid fa-code"></i><span>Convert HTML to PDF</span></a><a class="tool" href="tools/text-to-pdf/index.html"><i class="fa-solid fa-file-lines"></i><span>Text to PDF Converter</span></a><a class="tool" href="tools/color-picker/index.html"><i class="fa-solid fa-eye-dropper"></i><span>Color Picker Tool</span></a><a class="tool" href="tools/qr-generator/index.html"><i class="fa-solid fa-qrcode"></i><span>QR Code Generator</span></a><a class="tool" href="tools/qr-scanner/index.html"><i class="fa-solid fa-camera"></i><span>QR Code Scanner</span></a><a class="tool" href="tools/base64/index.html"><i class="fa-solid fa-code"></i><span>Base64 Encode/Decode</span></a><a class="tool" href="tools/url-encode-decode/index.html"><i class="fa-solid fa-code"></i><span>URL Encode/Decode</span></a><a class="tool" href="tools/case-converter/index.html"><i class="fa-solid fa-font"></i><span>Case Converter</span></a><a class="tool" href="tools/word-char-counter/index.html"><i class="fa-solid fa-file-alt"></i><span>Word and Character Counter</span></a><a class="tool" href="tools/online-notepad/index.html"><i class="fa-solid fa-note-sticky"></i><span>Online Notepad</span></a><a class="tool" href="tools/json-formatter/index.html"><i class="fa-solid fa-code"></i><span>JSON Formatter and Validator</span></a><a class="tool" href="tools/csv-to-json/index.html"><i class="fa-solid fa-table"></i><span>CSV to JSON Converter</span></a><a class="tool" href="tools/json-to-csv/index.html"><i class="fa-solid fa-table"></i><span>JSON to CSV Converter</span></a><a class="tool" href="tools/image-effects/index.html"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Image Filter Effects</span></a></div>
+</div>
+<footer>
+© 2025 Smarttool Hub — Your one-stop for all free online tools. <a href="#">Privacy Policy</a> | <a href="#">Contact Us</a>
+</footer>
+<script>
+const allTools = Array.from(document.querySelectorAll('#toolGrid .tool span')).map(t=>t.innerText);
+function showSuggestions(){
+  const input = document.getElementById('searchInput').value.toLowerCase();
+  const suggestionBox = document.getElementById('suggestions');
+  suggestionBox.innerHTML = '';
+  if(input){
+    const filtered = allTools.filter(tool=>tool.toLowerCase().includes(input));
+    filtered.forEach(tool=>{
+      const div = document.createElement('div');
+      div.innerText = tool;
+      div.onclick = ()=>{
+        document.getElementById('searchInput').value = tool;
+        searchTools();
+        suggestionBox.style.display = 'none';
+      };
+      suggestionBox.appendChild(div);
+    });
+    suggestionBox.style.display = filtered.length ? 'block' : 'none';
+  } else {
+    suggestionBox.style.display = 'none';
+  }
+}
+function searchTools(){
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  const tools = document.querySelectorAll('#toolGrid .tool');
+  tools.forEach(tool => {
+    const name = tool.innerText.toLowerCase();
+    tool.style.display = name.includes(query) ? 'block' : 'none';
+  });
+}
+function clearSearch(){
+  document.getElementById('searchInput').value = '';
+  document.getElementById('suggestions').style.display = 'none';
+  searchTools();
+}
+</script>
+</body>
+</html>
