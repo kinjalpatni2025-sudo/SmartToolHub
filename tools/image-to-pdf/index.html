@@ -1,37 +1,143 @@
-<!doctype html>
-<html lang='en'><head><meta charset='utf-8'/><meta name='viewport' content='width=device-width,initial-scale=1'/><title>Image to PDF</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
-<style>
-:root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8;--radius:12px;}
-body.light{--bg:#f6f8fb;--text:#0b1220;--card:#fff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677;}
-*{box-sizing:border-box}
-body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);transition:.25s}
-.container{max-width:1000px;margin:0 auto;padding:18px}
-.header-actions{display:flex;gap:10px;align-items:center}
-.btn-header{border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;font-weight:600}
-.preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:12px}
-.preview-card{background:rgba(255,255,255,0.02);padding:8px;border-radius:8px;text-align:center;border:1px solid rgba(255,255,255,0.03)}
-.progress{width:100%;background:var(--border);border-radius:8px;height:10px;overflow:hidden;margin-top:12px}
-.progress-bar{height:100%;width:0;background:var(--primary);transition:width .25s}
-.small{font-size:.9rem;color:var(--muted)}
-</style>
-<script>
-function initTheme(){if(localStorage.getItem('sth_theme')==='light'){document.body.classList.add('light');}}
-function attachTheme(){var btn=document.getElementById('themeToggle'); if(!btn) return; if(localStorage.getItem('sth_theme')==='light'){btn.innerHTML='<i class="fa-solid fa-sun"></i>'} btn.addEventListener('click',function(){document.body.classList.toggle('light'); if(document.body.classList.contains('light')){btn.innerHTML='<i class=\'fa-solid fa-sun\'></i>'; localStorage.setItem('sth_theme','light')} else {btn.innerHTML='<i class=\'fa-solid fa-moon\'></i>'; localStorage.removeItem('sth_theme')}});}
-document.addEventListener('DOMContentLoaded', function(){ initTheme(); attachTheme(); var y = document.getElementById('year'); if(y) y.textContent=new Date().getFullYear(); });
-</script>
-<script src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'></script></head><body><header class="container" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border-bottom:1px solid var(--border);padding:12px 16px;border-radius:8px">
-  <div style="display:flex;align-items:center;gap:12px">
-    <a href="../../index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit">
-      <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="logo" style="width:44px;height:44px;border-radius:8px">
-      <div><div style="font-weight:700;color:var(--primary)">Smarttool Hub</div><div style="font-size:.85rem;color:var(--muted)">PDF Tools</div></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Image to PDF Converter — Smarttool Hub</title>
+  <meta name="description" content="Convert multiple images to a single PDF online. Upload JPG/PNG, reorder, preview and download PDF instantly. 100% client-side.">
+  <meta name="keywords" content="image to pdf, jpg to pdf, png to pdf, convert images to pdf online, merge images pdf">
+  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <style>
+    body{margin:0;font-family:Inter,Arial;background:#0b1220;color:#eaf2ff}
+    body.light{background:#f6f8fb;color:#0b1220}
+    .container{max-width:1000px;margin:auto;padding:20px}
+    header,footer{background:#182335;padding:14px 20px}
+    header a,footer a{color:#22d3ee;text-decoration:none}
+    .uploader{border:2px dashed #2a3b55;padding:30px;text-align:center;border-radius:12px;background:#182335;cursor:pointer}
+    .preview{margin-top:20px;display:flex;flex-wrap:wrap;gap:14px}
+    .file-card{background:#182335;padding:8px;border:1px solid #2a3b55;border-radius:10px;position:relative;width:150px;text-align:center}
+    .file-card img{max-width:100%;border-radius:6px}
+    .remove-btn{position:absolute;top:6px;right:6px;background:red;color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer}
+    .actions{margin-top:20px}
+    .btn{padding:10px 14px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
+    .btn-primary{background:#22d3ee;color:#00131f}
+    .progress{width:100%;background:#2a3b55;border-radius:8px;margin-top:12px;height:10px}
+    .progress-bar{height:100%;width:0;background:#22d3ee;transition:width .3s}
+  </style>
+</head>
+<body>
+<!-- 🔹 Header -->
+<header class="container">
+  <div class="brand">
+    <a href="../../index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+      <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub Logo">
+      <div>
+        <div class="title">Smarttool Hub</div>
+        <div class="tag">Fast • Private • Client-side</div>
+      </div>
     </a>
   </div>
-  <div class="header-actions">
+  <div class="header-actions" style="float:right">
     <a href="../../index.html" class="btn-header"><i class="fa-solid fa-house"></i> Home</a>
-    <button class="btn-header" id="themeToggle"><i class="fa-solid fa-moon"></i></button>
+    <button id="themeToggle" class="btn-header"><i class="fa-solid fa-moon"></i></button>
   </div>
 </header>
-<main class='container'><h1>Image to PDF</h1><div style='padding:14px;border-radius:12px;background:var(--card);border:1px solid var(--border)'><label class='small'>Upload images:</label><input id='imgFiles' type='file' accept='image/*' multiple style='display:block;margin-top:8px'><div id='imgPreview' class='preview-grid'></div><div style='margin-top:12px'><button id='makePdf' class='btn-header'>Create PDF</button></div><div class='progress'><div id='imgToPdfProgress' class='progress-bar'></div></div></div></main><div style="margin-top:22px;padding:14px 18px;background:var(--card);border-top:1px solid var(--border);border-radius:8px">
-  <div style="display:flex;align-items:center;justify-content:space-between"><div class="small">© <span id="year"></span> Smarttool Hub</div><div><a href="../../privacy.html" style="color:var(--primary);text-decoration:none;margin-right:12px">Privacy</a><a href="../../terms.html' style='color:var(--primary);text-decoration:none'>Terms</a></div></div>
-</div>
-<script>const imgFiles=document.getElementById('imgFiles'),imgPreview=document.getElementById('imgPreview'),makePdf=document.getElementById('makePdf'),imgToPdfProgress=document.getElementById('imgToPdfProgress');let imgs=[];imgFiles.addEventListener('change',e=>{imgs=Array.from(e.target.files);imgPreview.innerHTML='';imgs.forEach(f=>{const d=document.createElement('div');d.className='preview-card';d.textContent=f.name;imgPreview.appendChild(d);});});makePdf.addEventListener('click',async()=>{if(imgs.length===0) return alert('Select images');const jsPDF = window.jspdf.jsPDF || window.jspdf; const doc = new jsPDF(); imgToPdfProgress.style.width='0%'; for(let i=0;i<imgs.length;i++){ const data = await fileToDataURL(imgs[i]); const img = new Image(); img.src=data; await new Promise(r=>img.onload=r); const w = doc.internal.pageSize.getWidth(); const h = doc.internal.pageSize.getHeight(); doc.addImage(data,'JPEG',0,0,w,h); if(i<imgs.length-1) doc.addPage(); imgToPdfProgress.style.width=Math.round(((i+1)/imgs.length)*100)+'%'; } const blob = doc.output('blob'); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='images.pdf'; a.click(); imgToPdfProgress.style.width='0%';});function fileToDataURL(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(file);});}</script></body></html>
+
+<main class="container">
+  <h1>Image to PDF Converter</h1>
+  <p>Upload JPG/PNG images, reorder them, preview, and export as a single PDF.</p>
+
+  <label class="uploader">
+    <i class="fa-solid fa-upload"></i> Click or drag & drop images here
+    <input type="file" id="fileInput" accept="image/*" multiple hidden>
+  </label>
+
+  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+  <div class="preview" id="preview"></div>
+
+  <div class="actions">
+    <button id="downloadPDF" class="btn btn-primary" disabled>Download PDF</button>
+  </div>
+
+  <section style="margin-top:30px">
+    <h2>How to use</h2>
+    <ol>
+      <li>Upload one or more images (JPG/PNG).</li>
+      <li>Reorder images by drag & drop.</li>
+      <li>Click <b>Download PDF</b> to save.</li>
+    </ol>
+  </section>
+
+  <!-- FAQ Schema -->
+  <script type="application/ld+json">
+  {
+   "@context":"https://schema.org",
+   "@type":"FAQPage",
+   "mainEntity":[
+     {"@type":"Question","name":"Is this Image to PDF Converter free?","acceptedAnswer":{"@type":"Answer","text":"Yes, Smarttool Hub is 100% free to use."}},
+     {"@type":"Question","name":"Are my images uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No, everything runs in your browser. Your files stay private."}},
+     {"@type":"Question","name":"Can I merge multiple images into one PDF?","acceptedAnswer":{"@type":"Answer","text":"Yes, you can upload multiple images, reorder them, and download one merged PDF."}}
+   ]
+  }
+  </script>
+</main>
+
+<!-- 🔹 Footer -->
+<footer class="container">
+  <div>© <span id="year"></span> Smarttool Hub — <a href="../../privacy.html">Privacy</a> | <a href="../../terms.html">Terms</a> | <a href="../../faq.html">FAQ</a></div>
+</footer>
+
+<script>
+// Dark/light mode
+const themeToggle=document.getElementById("themeToggle");
+if(localStorage.getItem("sth_theme")==="light"){document.body.classList.add("light");themeToggle.innerHTML='<i class="fa-solid fa-sun"></i>'}
+themeToggle.onclick=()=>{document.body.classList.toggle("light");if(document.body.classList.contains("light")){themeToggle.innerHTML='<i class="fa-solid fa-sun"></i>';localStorage.setItem("sth_theme","light")}else{themeToggle.innerHTML='<i class="fa-solid fa-moon"></i>';localStorage.removeItem("sth_theme")}}
+
+// Image to PDF logic
+const input=document.getElementById("fileInput"),preview=document.getElementById("preview"),progressBar=document.getElementById("progressBar"),downloadBtn=document.getElementById("downloadPDF");
+let files=[];
+input.addEventListener("change",e=>{handleFiles(e.target.files)});
+document.querySelector(".uploader").addEventListener("drop",e=>{e.preventDefault();handleFiles(e.dataTransfer.files)});
+document.querySelector(".uploader").addEventListener("dragover",e=>e.preventDefault());
+
+function handleFiles(fileList){
+  files=[...fileList];renderPreview();downloadBtn.disabled=files.length===0;progressBar.style.width="0%";
+}
+function renderPreview(){
+  preview.innerHTML="";
+  files.forEach((f,idx)=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const div=document.createElement("div");div.className="file-card";div.draggable=true;
+      div.innerHTML=`<button class='remove-btn' onclick='removeFile(${idx})'>&times;</button><img src='${e.target.result}' alt='${f.name}'><div>${f.name}</div>`;
+      div.addEventListener("dragstart",ev=>{ev.dataTransfer.setData("idx",idx)});
+      div.addEventListener("drop",ev=>{ev.preventDefault();let from=ev.dataTransfer.getData("idx");let to=idx;swapFiles(from,to)});
+      div.addEventListener("dragover",ev=>ev.preventDefault());
+      preview.appendChild(div);
+    };
+    reader.readAsDataURL(f);
+  });
+}
+function removeFile(i){files.splice(i,1);renderPreview();downloadBtn.disabled=files.length===0;input.value=""}
+function swapFiles(from,to){const tmp=files[from];files[from]=files[to];files[to]=tmp;renderPreview()}
+
+downloadBtn.onclick=async()=>{
+  const pdfDoc=await PDFLib.PDFDocument.create();
+  let done=0;
+  for(const f of files){
+    const imgBytes=await f.arrayBuffer();
+    let img;
+    if(f.type==="image/png"){img=await pdfDoc.embedPng(imgBytes)}else{img=await pdfDoc.embedJpg(imgBytes)}
+    const page=pdfDoc.addPage([img.width,img.height]);page.drawImage(img,{x:0,y:0,width:img.width,height:img.height});
+    done++;progressBar.style.width=Math.round((done/files.length)*100)+"%";
+  }
+  const pdfBytes=await pdfDoc.save();
+  triggerDownload(new Blob([pdfBytes],{type:"application/pdf"}),"images.pdf");
+  progressBar.style.width="0%";
+}
+function triggerDownload(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove()}
+document.getElementById("year").textContent=new Date().getFullYear();
+</script>
+</body>
+</html>
