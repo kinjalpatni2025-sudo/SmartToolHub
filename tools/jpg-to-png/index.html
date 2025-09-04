@@ -1,184 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>JPG to PNG Converter — Free Online Image Converter</title>
-  <meta name="description" content="Free online JPG to PNG Converter. Convert JPG to PNG instantly in your browser. Secure, fast, and easy to use. No upload required."/>
-  <meta name="keywords" content="jpg to png, convert jpg to png, free jpg to png converter, online image converter, image format converter"/>
-
-  <!-- Favicon & Icons -->
-  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JPG to PNG Converter — Free Online Image Converter | Smarttool Hub</title>
+  <meta name="description" content="Convert JPG to PNG online with Smarttool Hub. Free, fast, and secure JPG to PNG converter. Upload multiple JPG files, preview, and download PNG images or a bulk ZIP." />
+  <meta name="keywords" content="jpg to png, convert jpg to png, free jpg to png converter, online image converter, bulk jpg to png, convert images online" />
+  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
-
   <style>
     :root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8}
-    body.light{--bg:#f6f8fb;--text:#0b1220;--card:#fff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
-    body{background:var(--bg);color:var(--text);font-family:Inter,Arial;margin:0;transition:.25s}
-    header{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;background:var(--card);border-bottom:1px solid var(--border)}
-    .brand{display:flex;align-items:center;gap:10px}
-    .brand img{width:42px}
-    .brand-title{font-weight:700;color:var(--primary)}
-    .theme-btn{border:1px solid var(--border);background:transparent;padding:8px;border-radius:10px;color:var(--text);cursor:pointer}
-    .container{max-width:900px;margin:0 auto;padding:20px}
+    body.light{--bg:#f6f8fb;--text:#0b1220;--card:#ffffff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
+    body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text);transition:.25s}
+    header,footer{background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;gap:10px;align-items:center}
+    .brand img{width:40px;height:40px}
+    .brand .title{font-weight:700;color:var(--primary)}
+    .brand .tag{font-size:.85rem;color:var(--muted)}
+    .theme-btn{border:1px solid var(--border);background:transparent;padding:8px;border-radius:8px;color:var(--text);cursor:pointer}
+    main{max-width:900px;margin:0 auto;padding:20px}
     h1{color:var(--primary)}
-    .uploader{border:2px dashed var(--border);padding:30px;text-align:center;border-radius:12px;background:var(--card);cursor:pointer}
-    .uploader.dragover{border-color:var(--primary);background:rgba(34,211,238,0.08)}
-    .progress{width:100%;height:18px;background:var(--border);border-radius:10px;margin-top:12px;overflow:hidden;display:none}
-    .progress-bar{height:100%;width:0;background:var(--primary)}
-    .preview{margin-top:18px;display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
-    .preview img{max-width:100%;border-radius:8px;border:1px solid var(--border)}
-    .download-btn{margin-top:8px;display:inline-block;padding:8px 14px;background:var(--primary);color:#00131f;font-weight:600;border-radius:8px;text-decoration:none}
-    footer{margin-top:30px;padding:16px;border-top:1px solid var(--border);text-align:center;color:var(--muted)}
-    .seo-text{margin-top:30px;line-height:1.6;color:var(--muted)}
-    .faq{margin-top:40px}
-    .faq h2{color:var(--primary)}
-    .faq-item{margin-bottom:14px}
-    .faq-item h3{margin:0;font-size:1rem;color:var(--text)}
-    .faq-item p{margin:4px 0 0;color:var(--muted)}
+    .uploader{border:2px dashed var(--border);padding:30px;text-align:center;border-radius:12px;cursor:pointer;background:var(--card)}
+    .uploader:hover{border-color:var(--primary)}
+    .preview{margin-top:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+    .file-card{background:var(--card);padding:10px;border:1px solid var(--border);border-radius:10px;text-align:center;position:relative}
+    .file-card img{max-width:100%;max-height:100px;border-radius:6px}
+    .remove-btn{position:absolute;top:6px;right:6px;background:rgba(255,0,0,.7);color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer}
+    .progress{width:100%;background:var(--border);border-radius:8px;margin:12px 0;height:10px;overflow:hidden}
+    .progress-bar{height:100%;width:0;background:var(--primary);transition:width .3s}
+    .actions{margin-top:20px;display:flex;gap:10px;flex-wrap:wrap}
+    .btn{padding:10px 16px;border:none;border-radius:8px;font-weight:600;cursor:pointer}
+    .btn-primary{background:var(--primary);color:#00131f}
+    .btn-secondary{background:var(--border);color:var(--text)}
+    footer{margin-top:40px;flex-wrap:wrap;gap:10px}
+    footer a{color:var(--primary);text-decoration:none;margin-left:12px}
   </style>
 </head>
 <body>
-  <header>
-    <div class="brand">
-      <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub logo"/>
-      <div><div class="brand-title">Smarttool Hub</div><small style="color:var(--muted)">JPG to PNG Converter</small></div>
-    </div>
-    <button id="themeBtn" class="theme-btn"><i class="fa-solid fa-moon"></i></button>
-  </header>
+<header>
+  <div class="brand">
+    <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub Logo">
+    <div><div class="title">Smarttool Hub</div><div class="tag">Free Online Tools</div></div>
+  </div>
+  <button class="theme-btn" id="themeToggle"><i class="fa-solid fa-moon"></i></button>
+</header>
 
-  <main class="container">
-    <h1>JPG to PNG Converter</h1>
-    <p>Convert JPG images to PNG instantly — secure, fast, and completely free. Works entirely in your browser (no upload required).</p>
+<main>
+  <h1>JPG to PNG Converter</h1>
+  <p>Use our free <strong>JPG to PNG Converter</strong> to quickly convert JPG images into PNG format. Upload multiple files, preview them, and download as single PNGs or a ZIP package.</p>
 
-    <!-- Upload area -->
-    <div id="dropArea" class="uploader">
-      <p><i class="fa-solid fa-upload"></i> Drag & Drop JPG files here or Click to Upload</p>
-      <input type="file" id="fileInput" accept="image/jpeg" multiple hidden/>
-    </div>
+  <label class="uploader" for="fileInput">
+    <i class="fa-solid fa-upload"></i> Click or drag & drop JPG files here
+    <input type="file" id="fileInput" accept="image/jpeg" multiple hidden>
+  </label>
 
-    <!-- Progress bar -->
-    <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+  <div class="preview" id="preview"></div>
 
-    <!-- Preview -->
-    <div class="preview" id="preview"></div>
+  <div class="actions">
+    <button class="btn btn-primary" id="downloadAll" disabled>Download All as ZIP</button>
+    <a href="index.html" class="btn btn-secondary">← Back to Home</a>
+  </div>
 
-    <!-- SEO extra text -->
-    <div class="seo-text">
-      <h2>Why use our JPG to PNG Converter?</h2>
-      <ul>
-        <li>✔ 100% Free — convert jpg to png online at no cost.</li>
-        <li>✔ Secure — all processing happens in your browser.</li>
-        <li>✔ Fast — convert multiple images with instant previews.</li>
-      </ul>
-      <h2>How to convert JPG to PNG?</h2>
-      <ol>
-        <li>Click or drag & drop JPG files into the upload area.</li>
-        <li>Wait for the progress bar to complete.</li>
-        <li>Preview and download your converted PNG images.</li>
-      </ol>
-    </div>
+  <section style="margin-top:30px">
+    <h2>Why use our JPG to PNG Converter?</h2>
+    <ul>
+      <li>✔ 100% Client-side — files never leave your device.</li>
+      <li>✔ Upload single or bulk JPGs.</li>
+      <li>✔ Preview and remove before converting.</li>
+      <li>✔ Download individually or as a ZIP archive.</li>
+      <li>✔ Works on mobile and desktop.</li>
+    </ul>
 
-    <!-- FAQ Section -->
-    <section class="faq">
-      <h2>Frequently Asked Questions</h2>
-      <div class="faq-item">
-        <h3>Is this JPG to PNG converter free?</h3>
-        <p>Yes, it’s completely free and always will be.</p>
-      </div>
-      <div class="faq-item">
-        <h3>Are my images uploaded?</h3>
-        <p>No. All conversions happen in your browser. We never upload your files.</p>
-      </div>
-      <div class="faq-item">
-        <h3>Can I convert multiple JPGs at once?</h3>
-        <p>Yes, you can upload and convert multiple JPG files simultaneously.</p>
-      </div>
-    </section>
-  </main>
+    <h2>How to Convert JPG to PNG Online</h2>
+    <ol>
+      <li>Click upload or drag & drop JPG images.</li>
+      <li>Preview and remove unwanted files.</li>
+      <li>Click “Download” for single PNG or “Download All as ZIP”.</li>
+    </ol>
+  </section>
 
-  <footer>
-    © <span id="year"></span> Smarttool Hub — Free Online Tools
-  </footer>
+  <section>
+    <h2>FAQ</h2>
+    <div><strong>Is this JPG to PNG converter free?</strong><br>Yes, it is 100% free with no limits.</div>
+    <div><strong>Do you upload my files?</strong><br>No, everything happens inside your browser.</div>
+    <div><strong>Can I convert multiple JPGs at once?</strong><br>Yes, bulk upload and ZIP download are supported.</div>
+  </section>
+</main>
 
-  <!-- FAQ Schema JSON-LD -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [{
-      "@type": "Question",
-      "name": "Is this JPG to PNG converter free?",
-      "acceptedAnswer": {"@type": "Answer","text": "Yes, it’s completely free and always will be."}
-    },{
-      "@type": "Question",
-      "name": "Are my images uploaded?",
-      "acceptedAnswer": {"@type": "Answer","text": "No. All conversions happen in your browser. We never upload your files."}
-    },{
-      "@type": "Question",
-      "name": "Can I convert multiple JPGs at once?",
-      "acceptedAnswer": {"@type": "Answer","text": "Yes, you can upload and convert multiple JPG files simultaneously."}
-    }]
+<footer>
+  <div>© <span id="year"></span> Smarttool Hub</div>
+  <div><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="faq.html">FAQ</a></div>
+</footer>
+
+<!-- FAQ Schema -->
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {"@type": "Question","name": "Is this JPG to PNG converter free?","acceptedAnswer":{"@type":"Answer","text":"Yes, our JPG to PNG tool is completely free."}},
+  {"@type": "Question","name": "Are my images uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No, all conversions happen in your browser using JavaScript."}},
+  {"@type": "Question","name": "Can I convert multiple JPGs to PNG at once?","acceptedAnswer":{"@type":"Answer","text":"Yes, you can upload multiple JPG files and download them as PNGs or a ZIP."}}
+ ]
+}
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const themeToggle=document.getElementById("themeToggle");
+if(localStorage.getItem("theme")==="light"){document.body.classList.add("light");themeToggle.innerHTML='<i class="fa-solid fa-sun"></i>'}
+themeToggle.onclick=()=>{document.body.classList.toggle("light");if(document.body.classList.contains("light")){themeToggle.innerHTML='<i class="fa-solid fa-sun"></i>';localStorage.setItem("theme","light")}else{themeToggle.innerHTML='<i class="fa-solid fa-moon"></i>';localStorage.removeItem("theme")}}
+
+const input=document.getElementById("fileInput"),preview=document.getElementById("preview"),progress=document.getElementById("progressBar"),downloadAll=document.getElementById("downloadAll");
+let files=[];
+
+input.addEventListener("change",handleFiles);
+
+function handleFiles(e){
+  files=[...e.target.files];
+  preview.innerHTML="";
+  files.forEach((file,idx)=>{
+    const reader=new FileReader();
+    reader.onload=(ev)=>{
+      const div=document.createElement("div");div.className="file-card";
+      div.innerHTML=`<button class="remove-btn" onclick="removeFile(${idx})">&times;</button>
+        <img src="${ev.target.result}" alt="${file.name}"><div>${file.name}</div>
+        <button class="btn btn-primary" onclick="downloadSingle(${idx})">Download PNG</button>`;
+      preview.appendChild(div);
+    };
+    reader.readAsDataURL(file);
+  });
+  downloadAll.disabled=files.length===0;
+}
+
+function removeFile(idx){
+  files.splice(idx,1);
+  input.value="";
+  handleFiles({target:{files:files}});
+}
+
+function downloadSingle(idx){
+  const file=files[idx];
+  if(!file)return;
+  convertToPNG(file).then(blob=>{
+    triggerDownload(blob,file.name.replace(/\\.jpg$/i,".png"));
+  });
+}
+
+async function convertToPNG(file){
+  return new Promise(resolve=>{
+    const img=new Image();
+    const reader=new FileReader();
+    reader.onload=(e)=>{
+      img.onload=()=>{
+        const canvas=document.createElement("canvas");
+        canvas.width=img.width;canvas.height=img.height;
+        const ctx=canvas.getContext("2d");
+        ctx.drawImage(img,0,0);
+        canvas.toBlob(resolve,"image/png");
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+downloadAll.onclick=async()=>{
+  const zip=new JSZip();
+  let done=0;
+  progress.style.width="0%";
+  for(const f of files){
+    const blob=await convertToPNG(f);
+    zip.file(f.name.replace(/\\.jpg$/i,".png"),blob);
+    done++;progress.style.width=Math.round((done/files.length)*100)+"%";
   }
-  </script>
+  zip.generateAsync({type:"blob"}).then(content=>{triggerDownload(content,"converted_pngs.zip");});
+};
 
-  <script>
-    // Theme persistence
-    if(localStorage.getItem('sth_theme')==='light'){
-      document.body.classList.add('light');
-      document.querySelector('#themeBtn i').classList.replace('fa-moon','fa-sun');
-    }
-    document.getElementById('themeBtn').addEventListener('click',()=>{
-      document.body.classList.toggle('light');
-      const icon=document.querySelector('#themeBtn i');
-      if(document.body.classList.contains('light')){
-        icon.classList.replace('fa-moon','fa-sun');localStorage.setItem('sth_theme','light');
-      }else{icon.classList.replace('fa-sun','fa-moon');localStorage.removeItem('sth_theme');}
-    });
-
-    // File handling
-    const dropArea=document.getElementById('dropArea');
-    const fileInput=document.getElementById('fileInput');
-    const progress=document.querySelector('.progress');
-    const progressBar=document.getElementById('progressBar');
-    const preview=document.getElementById('preview');
-
-    dropArea.addEventListener('click',()=>fileInput.click());
-    dropArea.addEventListener('dragover',(e)=>{e.preventDefault();dropArea.classList.add('dragover');});
-    dropArea.addEventListener('dragleave',()=>dropArea.classList.remove('dragover'));
-    dropArea.addEventListener('drop',(e)=>{e.preventDefault();dropArea.classList.remove('dragover');handleFiles(e.dataTransfer.files);});
-    fileInput.addEventListener('change',()=>handleFiles(fileInput.files));
-
-    function handleFiles(files){
-      const arr=[...files].filter(f=>f.type==='image/jpeg');
-      if(!arr.length)return;
-      progress.style.display='block';
-      preview.innerHTML='';
-      let done=0;
-      arr.forEach(file=>{
-        const reader=new FileReader();
-        reader.onload=e=>{
-          const img=new Image();
-          img.onload=()=>{
-            const canvas=document.createElement('canvas');
-            canvas.width=img.width;canvas.height=img.height;
-            canvas.getContext('2d').drawImage(img,0,0);
-            canvas.toBlob(blob=>{
-              const url=URL.createObjectURL(blob);
-              const div=document.createElement('div');
-              div.innerHTML=`<img src="${url}" alt="Converted PNG preview"><a href="${url}" download="${file.name.replace(/\\.jpe?g$/i,'.png')}" class="download-btn">Download PNG</a>`;
-              preview.appendChild(div);
-              done++;progressBar.style.width=(done/arr.length*100)+'%';
-              if(done===arr.length)setTimeout(()=>progress.style.display='none',500);
-            },"image/png");
-          };
-          img.src=e.target.result;
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-
-    document.getElementById('year').textContent=new Date().getFullYear();
-  </script>
+function triggerDownload(blob,name){
+  const link=document.createElement("a");
+  link.href=URL.createObjectURL(blob);
+  link.download=name;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+document.getElementById("year").textContent=new Date().getFullYear();
+</script>
 </body>
 </html>
