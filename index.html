@@ -6,6 +6,8 @@
   <title>Smarttool Hub — Free Online PDF, Image & Utility Tools</title>
   <meta name="description" content="Smarttool Hub offers 30+ free online tools — PDF converters, image editors, QR utilities, text tools and more. 100% browser-based, private and fast."/>
   <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/48/toolbox.png"/>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
   <style>
     body{font-family:sans-serif;line-height:1.6;background:#0b1220;color:#eaf2ff;margin:0}
     .container{max-width:1200px;margin:auto;padding:20px}
@@ -16,10 +18,11 @@
     .searchbar input{flex:1;padding:10px;border-radius:8px;border:1px solid #444;background:#182335;color:#fff}
     .searchbar button{padding:10px 16px;border:none;background:#22d3ee;color:#00131f;font-weight:700;border-radius:8px;cursor:pointer}
     h2{margin-top:30px;color:#60a5fa}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:20px}
-    .tool{background:#182335;padding:14px;border-radius:12px;border:1px solid #2a3b55;transition:.2s}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:20px}
+    .tool{background:#182335;padding:14px;border-radius:12px;border:1px solid #2a3b55;transition:.2s;display:flex;gap:12px;align-items:flex-start}
     .tool:hover{transform:translateY(-3px);border-color:#60a5fa}
-    .tool h3{margin:0 0 6px;font-size:1rem;color:#eaf2ff}
+    .tool i{font-size:22px;color:#22d3ee;margin-top:3px}
+    .tool h3{margin:0 0 4px;font-size:1rem;color:#eaf2ff}
     .tool p{margin:0;font-size:.9rem;color:#c1d3e8}
     footer{margin-top:40px;border-top:1px solid rgba(255,255,255,.1);background:#111a2b}
     .foot{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:16px 20px}
@@ -44,43 +47,43 @@
     <h2>All Tools</h2>
     <div class="grid" id="toolGrid">
       <!-- PDF Tools -->
-      <a class="tool" href="tools/image-to-pdf/index.html"><h3>Image to PDF Converter</h3><p>Upload multiple images, reorder & export as PDF.</p></a>
-      <a class="tool" href="tools/pdf-merge/index.html"><h3>Merge Multiple PDFs</h3><p>Combine multiple PDF files into one.</p></a>
-      <a class="tool" href="tools/pdf-split/index.html"><h3>Split PDF Pages</h3><p>Extract pages or ranges from a PDF.</p></a>
-      <a class="tool" href="tools/pdf-compress/index.html"><h3>Compress PDF Size</h3><p>Reduce file size while keeping quality.</p></a>
-      <a class="tool" href="tools/pdf-rotate/index.html"><h3>Rotate PDF Pages</h3><p>Rotate specific or all pages in a PDF.</p></a>
-      <a class="tool" href="tools/pdf-unlock/index.html"><h3>Unlock Protected PDF</h3><p>Open password-protected PDFs.</p></a>
-      <a class="tool" href="tools/pdf-password/index.html"><h3>Password Protect PDF</h3><p>Encrypt your PDF with a password.</p></a>
-      <a class="tool" href="tools/pdf-edit/index.html"><h3>Edit PDF Online</h3><p>Add text, shapes & highlights.</p></a>
-      <a class="tool" href="tools/pdf-to-image/index.html"><h3>Convert PDF to Image</h3><p>Export each page as JPG/PNG.</p></a>
-      <a class="tool" href="tools/pdf-watermark/index.html"><h3>PDF Watermark Tool</h3><p>Add text watermark with opacity & position.</p></a>
-      <a class="tool" href="tools/pdf-reorder/index.html"><h3>Reorder PDF Pages</h3><p>Drag & drop pages to reorder.</p></a>
-      <a class="tool" href="tools/pdf-delete/index.html"><h3>Delete PDF Pages</h3><p>Remove unwanted pages from PDF.</p></a>
-      <a class="tool" href="tools/html-to-pdf/index.html"><h3>Convert HTML to PDF</h3><p>Paste HTML code or upload .html file.</p></a>
-      <a class="tool" href="tools/text-to-pdf/index.html"><h3>Text to PDF Converter</h3><p>Paste text, choose fonts & export as PDF.</p></a>
+      <a class="tool" href="tools/image-to-pdf/index.html"><i class="fa-solid fa-file-arrow-down"></i><div><h3>Image to PDF Converter</h3><p>Upload multiple images, reorder & export as PDF.</p></div></a>
+      <a class="tool" href="tools/pdf-merge/index.html"><i class="fa-solid fa-object-group"></i><div><h3>Merge Multiple PDFs</h3><p>Combine multiple PDF files into one.</p></div></a>
+      <a class="tool" href="tools/pdf-split/index.html"><i class="fa-solid fa-scissors"></i><div><h3>Split PDF Pages</h3><p>Extract pages or ranges from a PDF.</p></div></a>
+      <a class="tool" href="tools/pdf-compress/index.html"><i class="fa-solid fa-file-zipper"></i><div><h3>Compress PDF Size</h3><p>Reduce file size while keeping quality.</p></div></a>
+      <a class="tool" href="tools/pdf-rotate/index.html"><i class="fa-solid fa-rotate"></i><div><h3>Rotate PDF Pages</h3><p>Rotate specific or all pages in a PDF.</p></div></a>
+      <a class="tool" href="tools/pdf-unlock/index.html"><i class="fa-solid fa-lock-open"></i><div><h3>Unlock Protected PDF</h3><p>Open password-protected PDFs.</p></div></a>
+      <a class="tool" href="tools/pdf-password/index.html"><i class="fa-solid fa-lock"></i><div><h3>Password Protect PDF</h3><p>Encrypt your PDF with a password.</p></div></a>
+      <a class="tool" href="tools/pdf-edit/index.html"><i class="fa-solid fa-pen-to-square"></i><div><h3>Edit PDF Online</h3><p>Add text, shapes & highlights.</p></div></a>
+      <a class="tool" href="tools/pdf-to-image/index.html"><i class="fa-solid fa-image"></i><div><h3>Convert PDF to Image</h3><p>Export each page as JPG/PNG.</p></div></a>
+      <a class="tool" href="tools/pdf-watermark/index.html"><i class="fa-solid fa-droplet"></i><div><h3>PDF Watermark Tool</h3><p>Add text watermark with opacity & position.</p></div></a>
+      <a class="tool" href="tools/pdf-reorder/index.html"><i class="fa-solid fa-sort"></i><div><h3>Reorder PDF Pages</h3><p>Drag & drop pages to reorder.</p></div></a>
+      <a class="tool" href="tools/pdf-delete/index.html"><i class="fa-solid fa-trash-can"></i><div><h3>Delete PDF Pages</h3><p>Remove unwanted pages from PDF.</p></div></a>
+      <a class="tool" href="tools/html-to-pdf/index.html"><i class="fa-solid fa-code"></i><div><h3>Convert HTML to PDF</h3><p>Paste HTML code or upload .html file.</p></div></a>
+      <a class="tool" href="tools/text-to-pdf/index.html"><i class="fa-solid fa-file-lines"></i><div><h3>Text to PDF Converter</h3><p>Paste text, choose fonts & export as PDF.</p></div></a>
       
       <!-- Image Tools -->
-      <a class="tool" href="tools/image-to-png-jpg/index.html"><h3>Image to PNG/JPG</h3><p>Convert between PNG and JPG.</p></a>
-      <a class="tool" href="tools/jpg-to-png/index.html"><h3>JPG to PNG Converter</h3><p>Upload JPG and get PNG instantly.</p></a>
-      <a class="tool" href="tools/png-to-jpg/index.html"><h3>PNG to JPG Converter</h3><p>Upload PNG and convert to JPG.</p></a>
-      <a class="tool" href="tools/image-resize/index.html"><h3>Resize Image Dimensions</h3><p>Set custom width/height for image.</p></a>
-      <a class="tool" href="tools/image-crop/index.html"><h3>Crop Image Tool</h3><p>Select crop area and download result.</p></a>
-      <a class="tool" href="tools/image-flip-rotate/index.html"><h3>Image Flip & Rotate</h3><p>Flip or rotate images instantly.</p></a>
-      <a class="tool" href="tools/image-watermark/index.html"><h3>Image Watermark</h3><p>Add text/logo watermark.</p></a>
-      <a class="tool" href="tools/image-effects/index.html"><h3>Image Effects</h3><p>Apply grayscale, sepia & more filters.</p></a>
+      <a class="tool" href="tools/image-to-png-jpg/index.html"><i class="fa-solid fa-images"></i><div><h3>Image to PNG/JPG</h3><p>Convert between PNG and JPG.</p></div></a>
+      <a class="tool" href="tools/jpg-to-png/index.html"><i class="fa-solid fa-image"></i><div><h3>JPG to PNG Converter</h3><p>Upload JPG and get PNG instantly.</p></div></a>
+      <a class="tool" href="tools/png-to-jpg/index.html"><i class="fa-solid fa-image"></i><div><h3>PNG to JPG Converter</h3><p>Upload PNG and convert to JPG.</p></div></a>
+      <a class="tool" href="tools/image-resize/index.html"><i class="fa-solid fa-up-right-and-down-left-from-center"></i><div><h3>Resize Image Dimensions</h3><p>Set custom width/height for image.</p></div></a>
+      <a class="tool" href="tools/image-crop/index.html"><i class="fa-solid fa-crop"></i><div><h3>Crop Image Tool</h3><p>Select crop area and download result.</p></div></a>
+      <a class="tool" href="tools/image-flip-rotate/index.html"><i class="fa-solid fa-repeat"></i><div><h3>Image Flip & Rotate</h3><p>Flip or rotate images instantly.</p></div></a>
+      <a class="tool" href="tools/image-watermark/index.html"><i class="fa-solid fa-droplet"></i><div><h3>Image Watermark</h3><p>Add text/logo watermark.</p></div></a>
+      <a class="tool" href="tools/image-effects/index.html"><i class="fa-solid fa-wand-magic-sparkles"></i><div><h3>Image Effects</h3><p>Apply grayscale, sepia & more filters.</p></div></a>
       
       <!-- Utility Tools -->
-      <a class="tool" href="tools/color-picker/index.html"><h3>Color Picker Tool</h3><p>Pick and copy HEX/RGB colors.</p></a>
-      <a class="tool" href="tools/qr-generator/index.html"><h3>QR Code Generator</h3><p>Enter text/URL, generate QR code.</p></a>
-      <a class="tool" href="tools/qr-scanner/index.html"><h3>QR Code Scanner</h3><p>Scan QR code from webcam or file.</p></a>
-      <a class="tool" href="tools/base64/index.html"><h3>Base64 Tool</h3><p>Encode/decode Base64 text/images.</p></a>
-      <a class="tool" href="tools/url-encode-decode/index.html"><h3>URL Encode/Decode Tool</h3><p>Encode or decode URL/text instantly.</p></a>
-      <a class="tool" href="tools/case-converter/index.html"><h3>Case Converter</h3><p>UPPERCASE, lowercase, Title Case.</p></a>
-      <a class="tool" href="tools/word-char-counter/index.html"><h3>Word & Character Counter</h3><p>Count words, chars & reading time.</p></a>
-      <a class="tool" href="tools/online-notepad/index.html"><h3>Online Notepad</h3><p>Simple text editor with autosave.</p></a>
-      <a class="tool" href="tools/json-formatter/index.html"><h3>JSON Formatter & Validator</h3><p>Format and validate JSON code.</p></a>
-      <a class="tool" href="tools/csv-to-json/index.html"><h3>CSV to JSON Converter</h3><p>Upload CSV and convert to JSON.</p></a>
-      <a class="tool" href="tools/json-to-csv/index.html"><h3>JSON to CSV Converter</h3><p>Paste/upload JSON and convert to CSV.</p></a>
+      <a class="tool" href="tools/color-picker/index.html"><i class="fa-solid fa-eye-dropper"></i><div><h3>Color Picker Tool</h3><p>Pick and copy HEX/RGB colors.</p></div></a>
+      <a class="tool" href="tools/qr-generator/index.html"><i class="fa-solid fa-qrcode"></i><div><h3>QR Code Generator</h3><p>Enter text/URL, generate QR code.</p></div></a>
+      <a class="tool" href="tools/qr-scanner/index.html"><i class="fa-solid fa-camera"></i><div><h3>QR Code Scanner</h3><p>Scan QR code from webcam or file.</p></div></a>
+      <a class="tool" href="tools/base64/index.html"><i class="fa-solid fa-code"></i><div><h3>Base64 Tool</h3><p>Encode/decode Base64 text/images.</p></div></a>
+      <a class="tool" href="tools/url-encode-decode/index.html"><i class="fa-solid fa-code"></i><div><h3>URL Encode/Decode Tool</h3><p>Encode or decode URL/text instantly.</p></div></a>
+      <a class="tool" href="tools/case-converter/index.html"><i class="fa-solid fa-font"></i><div><h3>Case Converter</h3><p>UPPERCASE, lowercase, Title Case.</p></div></a>
+      <a class="tool" href="tools/word-char-counter/index.html"><i class="fa-solid fa-file-alt"></i><div><h3>Word & Character Counter</h3><p>Count words, chars & reading time.</p></div></a>
+      <a class="tool" href="tools/online-notepad/index.html"><i class="fa-solid fa-note-sticky"></i><div><h3>Online Notepad</h3><p>Simple text editor with autosave.</p></div></a>
+      <a class="tool" href="tools/json-formatter/index.html"><i class="fa-solid fa-code"></i><div><h3>JSON Formatter & Validator</h3><p>Format and validate JSON code.</p></div></a>
+      <a class="tool" href="tools/csv-to-json/index.html"><i class="fa-solid fa-table"></i><div><h3>CSV to JSON Converter</h3><p>Upload CSV and convert to JSON.</p></div></a>
+      <a class="tool" href="tools/json-to-csv/index.html"><i class="fa-solid fa-table"></i><div><h3>JSON to CSV Converter</h3><p>Paste/upload JSON and convert to CSV.</p></div></a>
     </div>
   </main>
 
@@ -101,10 +104,9 @@
     function applySearch(){
       const q=document.getElementById('searchInput').value.toLowerCase();
       document.querySelectorAll('#toolGrid .tool').forEach(el=>{
-        el.style.display=el.textContent.toLowerCase().includes(q)?'block':'none';
+        el.style.display=el.textContent.toLowerCase().includes(q)?'flex':'none';
       });
     }
   </script>
 </body>
 </html>
-
