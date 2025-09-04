@@ -9,41 +9,57 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
   <style>
-    body{font-family:sans-serif;line-height:1.6;background:#0b1220;color:#eaf2ff;margin:0}
+    :root {
+      --bg:#0b1220; --text:#eaf2ff; --card:#182335; --border:#2a3b55;
+      --primary:#22d3ee; --muted:#9fb3c8;
+    }
+    body.light {
+      --bg:#f9f9f9; --text:#111; --card:#fff; --border:#ddd;
+      --primary:#0077ff; --muted:#444;
+    }
+    body{font-family:sans-serif;line-height:1.6;background:var(--bg);color:var(--text);margin:0;transition:background .3s,color .3s}
     .container{max-width:1200px;margin:auto;padding:20px}
-    header{background:#111a2b;padding:20px 0;text-align:center}
-    header h1{margin:0;color:#60a5fa}
-    header p{color:#9fb3c8;margin:5px 0 0}
+    header{background:var(--card);border-bottom:1px solid var(--border);padding:15px 20px;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand img{width:40px;height:40px}
+    .brand h1{margin:0;font-size:1.4rem;color:var(--primary)}
+    .tagline{font-size:.9rem;color:var(--muted)}
+    .theme-toggle{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text)}
     .searchbar{margin:20px auto;max-width:600px;display:flex;gap:8px}
-    .searchbar input{flex:1;padding:10px;border-radius:8px;border:1px solid #444;background:#182335;color:#fff}
-    .searchbar button{padding:10px 16px;border:none;background:#22d3ee;color:#00131f;font-weight:700;border-radius:8px;cursor:pointer}
-    h2{margin-top:30px;color:#60a5fa}
+    .searchbar input{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text)}
+    .searchbar button{padding:10px 16px;border:none;background:var(--primary);color:#00131f;font-weight:700;border-radius:8px;cursor:pointer}
+    h2{margin-top:30px;color:var(--primary)}
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:20px}
-    .tool{background:#182335;padding:14px;border-radius:12px;border:1px solid #2a3b55;transition:.2s;display:flex;gap:12px;align-items:flex-start}
-    .tool:hover{transform:translateY(-3px);border-color:#60a5fa}
-    .tool i{font-size:22px;color:#22d3ee;margin-top:3px}
-    .tool h3{margin:0 0 4px;font-size:1rem;color:#eaf2ff}
-    .tool p{margin:0;font-size:.9rem;color:#c1d3e8}
-    footer{margin-top:40px;border-top:1px solid rgba(255,255,255,.1);background:#111a2b}
+    .tool{background:var(--card);padding:14px;border-radius:12px;border:1px solid var(--border);transition:.2s;display:flex;gap:12px;align-items:flex-start}
+    .tool:hover{transform:translateY(-3px);border-color:var(--primary)}
+    .tool i{font-size:22px;color:var(--primary);margin-top:3px}
+    .tool h3{margin:0 0 4px;font-size:1rem;color:var(--text)}
+    .tool p{margin:0;font-size:.9rem;color:var(--muted)}
+    footer{margin-top:40px;border-top:1px solid var(--border);background:var(--card)}
     .foot{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:16px 20px}
     .links{display:flex;gap:16px;flex-wrap:wrap}
-    .links a{color:#22d3ee;text-decoration:none}
+    .links a{color:var(--primary);text-decoration:none}
     .links a:hover{text-decoration:underline}
   </style>
 </head>
 <body>
   <header>
-    <div class="container">
-      <h1>Smarttool Hub</h1>
-      <p>All-in-One PDF, Image & Utility Tools</p>
-      <form class="searchbar" onsubmit="event.preventDefault(); applySearch();">
-        <input id="searchInput" type="text" placeholder="Search tools..."/>
-        <button type="submit">Search</button>
-      </form>
+    <div class="brand">
+      <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub Logo"/>
+      <div>
+        <h1>Smarttool Hub</h1>
+        <div class="tagline">Fast. Private. All-in-One Tools.</div>
+      </div>
     </div>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode"><i class="fa-solid fa-moon"></i></button>
   </header>
 
   <main class="container">
+    <form class="searchbar" onsubmit="event.preventDefault(); applySearch();">
+      <input id="searchInput" type="text" placeholder="Search tools..."/>
+      <button type="submit">Search</button>
+    </form>
+
     <h2>All Tools</h2>
     <div class="grid" id="toolGrid">
       <!-- PDF Tools -->
@@ -101,11 +117,24 @@
 
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
+
     function applySearch(){
       const q=document.getElementById('searchInput').value.toLowerCase();
       document.querySelectorAll('#toolGrid .tool').forEach(el=>{
         el.style.display=el.textContent.toLowerCase().includes(q)?'flex':'none';
       });
+    }
+
+    function toggleTheme(){
+      document.body.classList.toggle('light');
+      const icon=document.querySelector('.theme-toggle i');
+      if(document.body.classList.contains('light')){
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+      } else {
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+      }
     }
   </script>
 </body>
