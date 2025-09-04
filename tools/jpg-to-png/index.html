@@ -17,7 +17,9 @@
     .brand img{width:40px;height:40px}
     .brand .title{font-weight:700;color:var(--primary)}
     .brand .tag{font-size:.85rem;color:var(--muted)}
-    .theme-btn{border:1px solid var(--border);background:transparent;padding:8px;border-radius:8px;color:var(--text);cursor:pointer}
+    .header-actions{display:flex;gap:10px;align-items:center}
+    .btn-header{border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;font-weight:600}
+    .btn-header:hover{border-color:var(--primary);color:var(--primary)}
     main{max-width:900px;margin:0 auto;padding:20px}
     h1{color:var(--primary)}
     .uploader{border:2px dashed var(--border);padding:30px;text-align:center;border-radius:12px;cursor:pointer;background:var(--card)}
@@ -42,7 +44,10 @@
     <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub Logo">
     <div><div class="title">Smarttool Hub</div><div class="tag">Free Online Tools</div></div>
   </div>
-  <button class="theme-btn" id="themeToggle"><i class="fa-solid fa-moon"></i></button>
+  <div class="header-actions">
+    <a href="index.html" class="btn-header"><i class="fa-solid fa-house"></i> Home</a>
+    <button class="btn-header" id="themeToggle"><i class="fa-solid fa-moon"></i></button>
+  </div>
 </header>
 
 <main>
@@ -59,7 +64,6 @@
 
   <div class="actions">
     <button class="btn btn-primary" id="downloadAll" disabled>Download All as ZIP</button>
-    <a href="index.html" class="btn btn-secondary">← Back to Home</a>
   </div>
 
   <section style="margin-top:30px">
@@ -144,7 +148,7 @@ function downloadSingle(idx){
   const file=files[idx];
   if(!file)return;
   convertToPNG(file).then(blob=>{
-    triggerDownload(blob,file.name.replace(/\\.jpg$/i,".png"));
+    triggerDownload(blob,file.name.replace(/\.jpg$/i,".png"));
   });
 }
 
@@ -172,7 +176,7 @@ downloadAll.onclick=async()=>{
   progress.style.width="0%";
   for(const f of files){
     const blob=await convertToPNG(f);
-    zip.file(f.name.replace(/\\.jpg$/i,".png"),blob);
+    zip.file(f.name.replace(/\.jpg$/i,".png"),blob);
     done++;progress.style.width=Math.round((done/files.length)*100)+"%";
   }
   zip.generateAsync({type:"blob"}).then(content=>{triggerDownload(content,"converted_pngs.zip");});
