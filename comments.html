@@ -1,18 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
-<head> ... <title>Comments — Smarttool Hub</title></head>
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Comments & Feedback — Smarttool Hub</title>
+  <meta name="description" content="Leave feedback for Smarttool Hub. Comments are stored locally (demo)." />
+  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+  <style>
+    :root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8}
+    body.light{--bg:#f6f8fb;--text:#0b1220;--card:#fff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
+    body{background:var(--bg);color:var(--text);font-family:Inter,Arial;margin:0;transition:.2s}
+    .container{max-width:800px;margin:0 auto;padding:20px}
+    header{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+    .theme-btn{border:1px solid var(--border);background:transparent;padding:8px;border-radius:10px;color:var(--text);cursor:pointer}
+    form{display:grid;gap:10px;background:var(--card);padding:14px;border-radius:12px;border:1px solid var(--border)}
+    input,textarea{padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text)}
+    button{padding:10px;border-radius:8px;border:none;background:var(--primary);color:#00131f;font-weight:700;cursor:pointer}
+    .comment{background:var(--card);padding:12px;border-radius:10px;border:1px solid var(--border);margin-top:10px}
+    .meta{color:var(--muted);font-size:.85rem}
+  </style>
+</head>
 <body>
-<header> ... </header>
-<main class="container">
-  <h2>Comments</h2>
-  <p>Leave your feedback below:</p>
-  <form style="display:grid;gap:12px;max-width:600px">
-    <input type="text" placeholder="Your Name" required style="padding:10px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text)">
-    <textarea placeholder="Your Comment" required style="padding:10px;height:120px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text)"></textarea>
-    <button type="submit" style="padding:12px;border:none;background:var(--primary);color:#000;border-radius:6px;font-weight:700;cursor:pointer">Post Comment</button>
-  </form>
-</main>
-<footer> ... </footer>
-<script>/* toggle theme JS */</script>
+  <div class="container">
+    <header>
+      <div style="display:flex;gap:12px;align-items:center"><img src="https://img.icons8.com/fluency/48/toolbox.png" alt="logo" style="width:40px"><div style="font-weight:700;color:var(--primary)">Smarttool Hub</div></div>
+      <button id="themeBtn" class="theme-btn"><i class="fa-solid fa-moon"></i></button>
+    </header>
+
+    <main>
+      <h1 style="color:var(--primary)">Comments & Feedback</h1>
+      <p style="color:var(--muted)">Share your thoughts. Comments are stored locally in your browser.</p>
+
+      <form id="commentForm">
+        <input id="name" placeholder="Your name" required />
+        <textarea id="message" rows="4" placeholder="Write your comment..." required></textarea>
+        <button type="submit">Post Comment</button>
+      </form>
+
+      <section id="commentsList" aria-live="polite" style="margin-top:18px"></section>
+    </main>
+
+    <footer style="margin-top:18px;color:var(--muted)">© <span id="yr"></span> Smarttool Hub — Local demo comments</footer>
+  </div>
+
+  <script>
+    // theme
+    if(localStorage.getItem('sth_theme') === 'light'){ document.body.classList.add('light'); document.querySelector('#themeBtn i').classList.replace('fa-moon','fa-sun'); }
+    document.getElementById('themeBtn').addEventListener('click', ()=>{
+      document.body.classList.toggle('light');
+      const icon = document.querySelector('#themeBtn i');
+      if(document.body.classList.contains('light')){ icon.classList.replace('fa-moon','fa-sun'); localStorage.setItem('sth_theme','light'); }
+      else{ icon.classList.replace('fa-sun','fa-moon'); localStorage.removeItem('sth_theme'); }
+    });
+
+    // comments (localStorage)
+    const form = document.getElementById('commentForm');
+    const list = document.getElementById('commentsList');
+    const STORAGE_KEY = 'sth_comments_v1';
+
+    function loadComments(){
+      list.innerHTML = '';
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const comments = raw ? JSON.parse(raw) : [];
+      if(comments.length === 0){ list.innerHTML = '<div style="color:var(--muted)">No comments yet — be the first!</div>'; return; }
+      comments.slice().reverse().forEach(c=>{
+        const d = document.createElement('div'); d.className='comment';
+        d.innerHTML = `<div style="font-weight:700">${escapeHtml(c.name)}</div><div class="meta">${new Date(c.ts).toLocaleString()}</div><p style="margin-top:8px">${escapeHtml(c.msg)}</p>`;
+        list.appendChild(d);
+      });
+    }
+
+    function escapeHtml(s){ return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+    form.addEventListener('submit', e=>{
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const msg = document.getElementById('message').value.trim();
+      if(!name || !msg) return;
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      arr.push({name, msg, ts: Date.now()});
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+      form.reset();
+      loadComments();
+    });
+
+    document.getElementById('yr').textContent = new Date().getFullYear();
+    loadComments();
+  </script>
 </body>
 </html>
