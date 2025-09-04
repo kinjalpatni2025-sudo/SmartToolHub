@@ -120,14 +120,22 @@ downloadBtn.onclick=async()=>{
     done++;progressBar.style.width=Math.round((done/files.length)*100)+"%";
   }
   const pdfBytes=await pdfDoc.save();
-  triggerDownload(new Blob([pdfBytes],{type:"application/pdf"}),"images.pdf");
+  downloadBlob(pdfBytes,"images.pdf");
   spinner.style.display="none";progressBar.style.width="0%";
 }
-function triggerDownload(blob,name){
+
+// ✅ Reliable download
+function downloadBlob(data,filename){
+  const blob=new Blob([data],{type:"application/pdf"});
+  const url=URL.createObjectURL(blob);
   const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);a.download=name;
-  document.body.appendChild(a);a.click();a.remove();
+  a.style.display="none";
+  a.href=url;a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},100);
 }
+
 document.getElementById("year").textContent=new Date().getFullYear();
 </script>
 </body>
