@@ -1,19 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
-<head> ... (meta + css same as privacy) ... <title>Contact Us — Smarttool Hub</title></head>
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Contact Us — Smarttool Hub</title>
+  <meta name="description" content="Contact Smarttool Hub for feature requests, feedback or support."/>
+  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+  <style>
+    :root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8}
+    body.light{--bg:#f6f8fb;--text:#0b1220;--card:#fff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
+    body{background:var(--bg);color:var(--text);font-family:Inter,Arial;margin:0;transition:.2s}
+    .container{max-width:720px;margin:0 auto;padding:22px}
+    header{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+    .brand{display:flex;gap:12px;align-items:center}
+    .theme-btn{border:1px solid var(--border);background:transparent;padding:8px;border-radius:10px;color:var(--text);cursor:pointer}
+    form{background:var(--card);padding:18px;border-radius:12px;border:1px solid var(--border);display:grid;gap:12px}
+    input,textarea{padding:12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text)}
+    button.submit{padding:12px;border-radius:8px;border:none;background:var(--primary);color:#00131f;font-weight:700;cursor:pointer}
+    footer{margin-top:18px}
+    .footer-links a{color:var(--primary);text-decoration:none;margin-right:12px}
+  </style>
+</head>
 <body>
-<header> ... </header>
-<main class="container">
-  <h2>Contact Us</h2>
-  <p>If you have any questions, feedback or suggestions, feel free to reach out:</p>
-  <form style="display:grid;gap:12px;max-width:500px">
-    <input type="text" placeholder="Your Name" required style="padding:10px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text)">
-    <input type="email" placeholder="Your Email" required style="padding:10px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text)">
-    <textarea placeholder="Your Message" required style="padding:10px;height:120px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text)"></textarea>
-    <button type="submit" style="padding:12px;border:none;background:var(--primary);color:#000;border-radius:6px;font-weight:700;cursor:pointer">Send</button>
-  </form>
-</main>
-<footer> ... </footer>
-<script>/* toggle theme JS */</script>
+  <div class="container">
+    <header>
+      <div class="brand"><img src="https://img.icons8.com/fluency/48/toolbox.png" alt="logo"><div style="font-weight:700;color:var(--primary)">Smarttool Hub</div></div>
+      <button id="themeBtn" class="theme-btn"><i class="fa-solid fa-moon"></i></button>
+    </header>
+
+    <main>
+      <h1 style="color:var(--primary)">Contact Us</h1>
+      <p style="color:var(--muted)">Send feedback, feature requests or report issues. This form is demo-only and will show success message locally.</p>
+
+      <form id="contactForm">
+        <input id="cname" type="text" placeholder="Your name" required />
+        <input id="cemail" type="email" placeholder="Your email" required />
+        <textarea id="cmessage" rows="6" placeholder="Your message" required></textarea>
+        <button class="submit" type="submit">Send Message</button>
+      </form>
+
+      <div id="thanks" style="display:none;margin-top:12px;padding:12px;border-radius:8px;background:rgba(34,211,238,.08);color:var(--primary)"></div>
+    </main>
+
+    <footer style="margin-top:14px">
+      <div class="footer-links"><a href="index.html">Home</a><a href="faq.html">FAQ</a><a href="privacy.html">Privacy</a></div>
+      <div style="margin-top:8px;color:var(--muted)">© <span id="y"></span> Smarttool Hub</div>
+    </footer>
+  </div>
+
+  <script>
+    // theme
+    if(localStorage.getItem('sth_theme') === 'light'){ document.body.classList.add('light'); document.querySelector('#themeBtn i').classList.replace('fa-moon','fa-sun'); }
+    document.getElementById('themeBtn').addEventListener('click', ()=>{
+      document.body.classList.toggle('light');
+      const icon=document.querySelector('#themeBtn i');
+      if(document.body.classList.contains('light')){ icon.classList.replace('fa-moon','fa-sun'); localStorage.setItem('sth_theme','light'); } else { icon.classList.replace('fa-sun','fa-moon'); localStorage.removeItem('sth_theme'); }
+    });
+
+    // demo contact - client side only
+    const form = document.getElementById('contactForm'), thanks = document.getElementById('thanks');
+    form.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const name = document.getElementById('cname').value;
+      thanks.style.display = 'block';
+      thanks.textContent = `Thank you ${name}! Your message has been recorded (demo).`;
+      form.reset();
+    });
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
