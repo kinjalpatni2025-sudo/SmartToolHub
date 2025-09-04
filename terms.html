@@ -1,27 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Terms & Conditions — Smarttool Hub</title>
-  <meta name="description" content="Smarttool Hub Terms & Conditions"/>
-  <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/48/toolbox.png"/>
+  <meta name="description" content="Terms and conditions for using Smarttool Hub tools."/>
+  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
-  <style>/* same CSS as privacy */</style>
+  <style>
+    :root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8}
+    body.light{--bg:#f6f8fb;--text:#0b1220;--card:#fff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
+    body{background:var(--bg);color:var(--text);font-family:Inter,Arial;margin:0;transition:.2s}
+    .container{max-width:900px;margin:0 auto;padding:22px}
+    header{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand img{width:44px}
+    .title{font-weight:700;color:var(--primary)}
+    .theme-btn{border:1px solid var(--border);background:transparent;padding:8px;border-radius:10px;color:var(--text);cursor:pointer}
+    article{background:var(--card);padding:18px;border-radius:12px;border:1px solid var(--border)}
+    h1{margin-top:0;color:var(--primary)}
+    footer{margin-top:22px;padding:12px 0}
+    .footer-links a{color:var(--primary);text-decoration:none;margin-right:12px;font-weight:600}
+  </style>
 </head>
 <body>
-<header> ... (same as privacy) ... </header>
-<main class="container">
-  <h2>Terms & Conditions</h2>
-  <p>By accessing and using Smarttool Hub, you agree to comply with these terms:</p>
-  <ul>
-    <li>All tools are provided "as is", without warranties.</li>
-    <li>We are not responsible for data loss or misuse of generated files.</li>
-    <li>You are responsible for ensuring you have rights to process your files.</li>
-  </ul>
-  <p>We may update these terms from time to time.</p>
-</main>
-<footer> ... same as privacy ... </footer>
-<script>/* same JS toggle code */</script>
+  <div class="container">
+    <header>
+      <div class="brand"><img src="https://img.icons8.com/fluency/48/toolbox.png" alt="logo"><div class="title">Smarttool Hub</div></div>
+      <button id="themeBtn" class="theme-btn"><i class="fa-solid fa-moon"></i></button>
+    </header>
+
+    <article>
+      <h1>Terms & Conditions</h1>
+      <p>Welcome to Smarttool Hub. By using our site you agree to these terms:</p>
+      <ol>
+        <li>All tools are provided "as-is" with no warranties.</li>
+        <li>You are responsible for the content you process using our tools.</li>
+        <li>Do not use tools for illegal or harmful content.</li>
+        <li>We are not liable for data loss; always keep backups.</li>
+      </ol>
+      <p>We may change these terms — updates will be posted on this page.</p>
+    </article>
+
+    <footer>
+      <div class="footer-links">
+        <a href="index.html">Home</a><a href="privacy.html">Privacy</a><a href="contact.html">Contact</a><a href="faq.html">FAQ</a>
+      </div>
+      <div style="margin-top:12px;color:var(--muted)">© <span id="year"></span> Smarttool Hub</div>
+    </footer>
+  </div>
+
+  <script>
+    if(localStorage.getItem('sth_theme') === 'light'){ document.body.classList.add('light'); document.querySelector('#themeBtn i').classList.replace('fa-moon','fa-sun'); }
+    document.getElementById('themeBtn').addEventListener('click', ()=>{
+      document.body.classList.toggle('light');
+      const icon=document.querySelector('#themeBtn i');
+      if(document.body.classList.contains('light')){ icon.classList.replace('fa-moon','fa-sun'); localStorage.setItem('sth_theme','light'); } else { icon.classList.replace('fa-sun','fa-moon'); localStorage.removeItem('sth_theme'); }
+    });
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
