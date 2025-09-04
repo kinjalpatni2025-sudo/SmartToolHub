@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>FAQ — Smarttool Hub</title>
+  <meta name="description" content="Frequently Asked Questions about Smarttool Hub."/>
+  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+  <style>
+    :root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8}
+    body.light{--bg:#f6f8fb;--text:#0b1220;--card:#fff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
+    body{background:var(--bg);color:var(--text);font-family:Inter,Arial;margin:0;transition:.2s}
+    .container{max-width:900px;margin:0 auto;padding:20px}
+    header{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+    .theme-btn{border:1px solid var(--border);background:transparent;padding:8px;border-radius:10px;color:var(--text);cursor:pointer}
+    .faq{background:var(--card);padding:16px;border-radius:12px;border:1px solid var(--border)}
+    .q{font-weight:700;color:var(--primary);margin:12px 0 6px}
+    .a{color:var(--muted);margin:0 0 10px}
+    footer{margin-top:20px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div style="display:flex;align-items:center;gap:12px"><img src="https://img.icons8.com/fluency/48/toolbox.png" alt="logo" style="width:40px"><div style="font-weight:700;color:var(--primary)">Smarttool Hub</div></div>
+      <button id="themeBtn" class="theme-btn"><i class="fa-solid fa-moon"></i></button>
+    </header>
+
+    <main>
+      <h1 style="color:var(--primary)">FAQ</h1>
+      <div class="faq">
+        <div class="q">Are my files uploaded to your servers?</div>
+        <div class="a">No. All processing happens client-side in your browser; files are not uploaded.</div>
+
+        <div class="q">Is Smarttool Hub free?</div>
+        <div class="a">Yes — all tools are free to use. If you embed or reuse code, please check license requirements.</div>
+
+        <div class="q">Does it work offline?</div>
+        <div class="a">After initial load, many tools will continue to work offline in modern browsers (depending on browser caching).</div>
+
+        <div class="q">Where can I request new tools?</div>
+        <div class="a">Use the Contact page to request new features or tools.</div>
+      </div>
+    </main>
+
+    <footer style="margin-top:14px;color:var(--muted)"><a href="index.html" style="color:var(--primary);text-decoration:none">← Back to Home</a> • © <span id="yr"></span> Smarttool Hub</footer>
+  </div>
+
+  <script>
+    if(localStorage.getItem('sth_theme') === 'light'){ document.body.classList.add('light'); document.querySelector('#themeBtn i').classList.replace('fa-moon','fa-sun'); }
+    document.getElementById('themeBtn').addEventListener('click', ()=>{
+      document.body.classList.toggle('light'); const icon=document.querySelector('#themeBtn i');
+      if(document.body.classList.contains('light')){ icon.classList.replace('fa-moon','fa-sun'); localStorage.setItem('sth_theme','light'); } else { icon.classList.replace('fa-sun','fa-moon'); localStorage.removeItem('sth_theme'); }
+    });
+    document.getElementById('yr').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
