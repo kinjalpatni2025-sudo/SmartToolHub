@@ -14,7 +14,7 @@
   <style>
     :root {
       --bg:#0b1220; --text:#eaf2ff; --card:#182335; --border:#2a3b55;
-      --primary:#22d3ee; --muted:#9fb3c8; --radius:12px;
+      --primary:#22d3ee; --muted:#9fb3c8;
     }
     body.light {
       --bg:#f6f8fb; --text:#0b1220; --card:#ffffff; --border:#e6eefc;
@@ -23,84 +23,59 @@
     * { box-sizing:border-box; }
     body { margin:0; font-family:Inter,system-ui,sans-serif; background:var(--bg); color:var(--text); transition:.22s; }
 
-    header { display:flex; gap:12px; align-items:center; justify-content:space-between; background:var(--card); padding:14px 20px; border-bottom:1px solid var(--border); border-radius:0 0 10px 10px; }
+    header { display:flex; justify-content:space-between; align-items:center; background:var(--card); padding:14px 20px; border-bottom:1px solid var(--border); border-radius:0 0 10px 10px; }
     .brand { display:flex; gap:12px; align-items:center; }
     .brand img { width:46px; height:46px; border-radius:10px; }
     .brand .title { font-weight:700; color:var(--primary); font-size:1.05rem; }
     .brand .tag { color:var(--muted); font-size:.88rem; }
-    .header-actions { display:flex; gap:8px; align-items:center; }
-    .btn-header { background:transparent; border:1px solid var(--border); color:var(--text); padding:8px 12px; border-radius:10px; font-weight:600; text-decoration:none; display:flex; gap:8px; align-items:center; }
+    .header-actions { display:flex; gap:8px; }
+    .btn-header { background:transparent; border:1px solid var(--border); color:var(--text); padding:8px 12px; border-radius:10px; text-decoration:none; display:flex; align-items:center; gap:6px; font-weight:600; }
     .btn-header:hover { border-color:var(--primary); color:var(--primary); }
 
     main { padding:22px 20px; }
-    h1 { margin:0 0 8px 0; color:var(--primary); }
-    p.lead { color:var(--muted); margin-top:6px; margin-bottom:18px; }
+    h1 { margin:0 0 8px; color:var(--primary); }
+    p.lead { color:var(--muted); margin-bottom:18px; }
 
     /* ✅ Improved uploader */
     .uploader {
-      border-radius: 16px;
-      border: 2px dashed var(--border);
-      padding: 60px 20px;
-      text-align: center;
-      background: var(--card);
-      cursor: pointer;
-      word-wrap: break-word;
-      white-space: normal;
-      overflow-wrap: break-word;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 200px;
-      transition: border-color .25s, background .25s;
+      border-radius:16px; border:2px dashed var(--border);
+      padding:60px 20px; text-align:center; background:var(--card);
+      cursor:pointer; display:flex; flex-direction:column;
+      justify-content:center; align-items:center;
+      min-height:200px; transition: border-color .25s, background .25s;
+      word-wrap: break-word; white-space: normal; overflow-wrap: break-word;
     }
-    .uploader:hover {
-      border-color: var(--primary);
-      background: rgba(255,255,255,0.02);
-    }
+    .uploader:hover { border-color:var(--primary); background:rgba(255,255,255,0.02); }
     .uploader input { display:none; }
-    .uploader .small {
-      display:block;
-      color:var(--muted);
-      margin-top:12px;
-      font-size:.95rem;
-      line-height:1.5;
-      max-width:420px;
-    }
+    .uploader .small { margin-top:12px; color:var(--muted); font-size:.95rem; line-height:1.5; max-width:420px; }
 
-    .controls { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; align-items:center; }
-    .select,.radio-group { background:var(--card); border:1px solid var(--border); padding:8px; border-radius:10px; color:var(--text); }
+    .controls { display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; align-items:center; }
+    .select,.radio-group { background:var(--card); border:1px solid var(--border); padding:8px; border-radius:10px; }
     label.inline { margin-right:8px; color:var(--muted); font-size:.92rem; }
 
     .preview { margin-top:18px; display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
-    .file-card { background:var(--card); border:1px solid var(--border); padding:10px; border-radius:10px; position:relative; text-align:center; display:flex; flex-direction:column; gap:8px; }
+    .file-card { background:var(--card); border:1px solid var(--border); padding:10px; border-radius:10px; text-align:center; position:relative; display:flex; flex-direction:column; gap:8px; }
     .file-thumb { max-width:100%; max-height:120px; object-fit:contain; border-radius:6px; }
     .file-name { font-size:.88rem; color:var(--muted); word-break:break-word; }
     .file-actions { display:flex; justify-content:center; gap:8px; }
     .small-btn { padding:6px 8px; border-radius:8px; background:var(--border); border:none; color:var(--text); cursor:pointer; font-weight:600; }
-    .small-btn:hover{ background:rgba(255,255,255,0.02); border-color:var(--primary); color:var(--primary); }
-    .drag-handle { position:absolute; left:8px; top:8px; color:var(--muted); font-size:14px; cursor:grab; }
+    .small-btn:hover { background:rgba(255,255,255,0.02); border-color:var(--primary); color:var(--primary); }
 
     .progress { margin-top:12px; width:100%; height:10px; background:var(--border); border-radius:8px; overflow:hidden; }
     .progress-bar { width:0%; height:100%; background:var(--primary); transition:width .25s; }
-    .spinner { display:inline-block; width:20px; height:20px; border:3px solid rgba(255,255,255,0.08); border-top-color:var(--primary); border-radius:50%; animation:spin 1s linear infinite; vertical-align:middle; margin-left:8px; }
-    @keyframes spin{ to { transform: rotate(360deg); } }
+    .spinner { width:20px; height:20px; border:3px solid rgba(255,255,255,0.08); border-top-color:var(--primary); border-radius:50%; animation:spin 1s linear infinite; margin-left:8px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
 
-    .actions { margin-top:16px; display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    .actions { margin-top:16px; display:flex; flex-wrap:wrap; gap:12px; }
     .btn { padding:10px 16px; border-radius:10px; border:none; cursor:pointer; font-weight:700; }
     .btn-primary { background:var(--primary); color:#00131f; }
     .btn-secondary { background:var(--border); color:var(--text); }
 
-    section.seo { margin-top:22px; }
-    section.seo h2 { color:var(--primary); margin-top:8px; }
-    section.seo p, section.seo ul { color:var(--muted); }
-
-    footer { margin-top:30px; background:var(--card); padding:16px 20px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+    footer { margin-top:30px; background:var(--card); padding:16px 20px; border-top:1px solid var(--border); display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; }
     footer .links a { color:var(--primary); margin-left:10px; text-decoration:none; font-weight:600; }
   </style>
 </head>
 <body>
-  <!-- ✅ Header -->
   <header class="container">
     <div class="brand">
       <a href="../index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
@@ -113,23 +88,58 @@
     </div>
     <div class="header-actions">
       <a class="btn-header" href="../index.html"><i class="fa-solid fa-house"></i> Home</a>
-      <button class="btn-header" id="themeToggle" title="Toggle theme"><i class="fa-solid fa-moon"></i></button>
+      <button class="btn-header" id="themeToggle"><i class="fa-solid fa-moon"></i></button>
     </div>
   </header>
 
-  <!-- ✅ Main Tool UI -->
   <main class="container">
-    <h1 id="toolTitle">Image to PDF Converter</h1>
+    <h1>Image to PDF Converter</h1>
     <p class="lead">Convert JPG, PNG or other images into a single PDF. Reorder images, choose page size and fit mode, and download your new PDF — all in your browser.</p>
 
-    <!-- ✅ Upload area -->
     <label class="uploader" id="uploaderLabel" for="fileInput">
       <div style="font-size:20px;"><i class="fa-solid fa-image"></i> Upload images</div>
       <div class="small">Click to select or drag & drop images (JPG, PNG). You can upload single or multiple files.</div>
       <input id="fileInput" type="file" accept="image/*" multiple />
     </label>
 
-    <!-- (rest of tool UI: controls, preview, progress, actions, SEO, FAQ, footer, JS logic — remain same as in previous version) -->
+    <div class="controls">
+      <div class="select">
+        <label class="inline">Page size:</label>
+        <select id="pageSize">
+          <option value="A4">A4</option>
+          <option value="Letter">Letter</option>
+          <option value="Image">Image native</option>
+        </select>
+      </div>
+      <div class="radio-group">
+        <label><input type="radio" name="fit" value="contain" checked> Contain</label>
+        <label><input type="radio" name="fit" value="cover"> Cover</label>
+      </div>
+      <div style="margin-left:auto;color:var(--muted)"><span id="countBadge">0 images</span></div>
+    </div>
+
+    <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="preview" id="preview"></div>
+
+    <div class="actions">
+      <button id="generateBtn" class="btn btn-primary"><i class="fa-solid fa-file-pdf"></i> Generate PDF</button>
+      <a id="downloadPdfBtn" class="btn btn-secondary" href="#" download="images.pdf" style="pointer-events:none;opacity:.5"><i class="fa-solid fa-download"></i> Download PDF</a>
+      <button id="downloadZipBtn" class="btn btn-secondary" disabled><i class="fa-solid fa-file-zipper"></i> Download All as ZIP</button>
+      <div id="spinnerWrap" style="color:var(--muted);font-weight:700;"></div>
+    </div>
   </main>
+
+  <footer>
+    <div>© <span id="year"></span> Smarttool Hub</div>
+    <div class="links">
+      <a href="../privacy.html">Privacy</a>
+      <a href="../terms.html">Terms</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script>
+  // JS for dark mode, uploads, preview, PDF generation
+  </script>
 </body>
 </html>
