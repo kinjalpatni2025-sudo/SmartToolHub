@@ -1,142 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Image to PDF Converter — Smarttool Hub</title>
-  <meta name="description" content="Free online Image to PDF Converter. Upload JPG or PNG images, reorder, preview and download a single PDF instantly. 100% browser-based.">
-  <meta name="keywords" content="image to pdf, jpg to pdf, png to pdf, convert images to pdf online, merge images pdf">
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>JPG to PNG Converter — Smarttool Hub</title>
+  <meta name="description" content="Convert JPG to PNG online. Upload multiple JPGs, preview, convert and download PNGs or a ZIP.">
+  <meta name="keywords" content="jpg to png, convert jpg to png, online image converter, bulk jpg to png">
   <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
-    body{margin:0;font-family:Inter,Arial;background:#0b1220;color:#eaf2ff;transition:.3s}
+    :root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee}
+    body{margin:0;font-family:Inter,Arial;background:var(--bg);color:var(--text)}
     body.light{background:#f6f8fb;color:#0b1220}
-    .container{max-width:1000px;margin:auto;padding:20px}
-    header,footer{background:#182335;padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
-    header a,footer a{color:#22d3ee;text-decoration:none;font-weight:600}
-    .uploader{border:2px dashed #2a3b55;padding:40px;text-align:center;border-radius:12px;background:#182335;cursor:pointer;transition:.3s}
-    .uploader:hover{border-color:#22d3ee;color:#22d3ee}
-    .uploader input{display:none}
-    .preview{margin-top:20px;display:flex;flex-wrap:wrap;gap:14px}
-    .file-card{background:#182335;padding:8px;border:1px solid #2a3b55;border-radius:10px;position:relative;width:150px;text-align:center}
-    .file-card img{max-width:100%;border-radius:6px;height:100px;object-fit:cover}
-    .remove-btn{position:absolute;top:6px;right:6px;background:red;color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer}
-    .actions{margin-top:20px;text-align:center}
-    .btn{padding:12px 20px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
-    .btn-primary{background:linear-gradient(90deg,#22d3ee,#60c9ff);color:#00131f}
-    .progress{width:100%;background:#2a3b55;border-radius:8px;margin-top:12px;height:10px;overflow:hidden}
-    .progress-bar{height:100%;width:0;background:#22d3ee;transition:width .3s}
-    .spinner{display:none;margin-top:12px;text-align:center;font-size:1.4rem;color:#22d3ee}
+    .container{max-width:900px;margin:0 auto;padding:20px}
+    header,footer{background:var(--card);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+    .uploader{border:2px dashed var(--border);padding:26px;text-align:center;border-radius:10px;background:var(--card);cursor:pointer}
+    .preview{margin-top:18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+    .file-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px;position:relative;text-align:center}
+    .file-card img{max-width:100%;height:100px;object-fit:cover;border-radius:6px}
+    .remove-btn{position:absolute;top:6px;right:6px;background:#ff5f6d;color:#fff;border:none;border-radius:50%;width:26px;height:26px;cursor:pointer}
+    .actions{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
+    .btn{padding:10px 14px;border-radius:8px;border:none;cursor:pointer;font-weight:700}
+    .btn-primary{background:linear-gradient(90deg,var(--primary),#60c9ff);color:#00131f}
   </style>
 </head>
 <body>
 <header class="container">
-  <a href="../../index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
-    <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub Logo">
+  <a href="../../index.html" style="display:flex;gap:12px;align-items:center;text-decoration:none;color:inherit">
+    <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Logo" style="width:44px;height:44px">
     <strong>Smarttool Hub</strong>
   </a>
   <div>
-    <a href="../../index.html"><i class="fa-solid fa-house"></i> Home</a>
-    <button id="themeToggle" style="margin-left:12px;background:none;border:none;cursor:pointer;color:inherit;font-size:1.2rem"><i class="fa-solid fa-moon"></i></button>
+    <a href="../../index.html" style="margin-right:10px">Home</a>
+    <button id="themeToggle" style="background:none;border:1px solid var(--border);padding:8px;border-radius:8px;cursor:pointer"><i class="fa-solid fa-moon"></i></button>
   </div>
 </header>
 
 <main class="container">
-  <h1>Image to PDF Converter</h1>
-  <p>Upload JPG/PNG images, reorder them, preview, and download as a single PDF — free & secure.</p>
+  <h1>JPG to PNG Converter</h1>
+  <p>Upload JPG files, preview them, convert to PNG and download single files or bulk ZIP.</p>
 
   <label class="uploader">
-    <i class="fa-solid fa-upload"></i> Click or drag & drop images here
-    <input type="file" id="fileInput" accept="image/*" multiple>
+    <i class="fa-solid fa-upload"></i> Click or drag & drop JPG files here
+    <input id="fileInput" type="file" accept="image/jpeg" multiple>
   </label>
 
-  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
-  <div id="spinner" class="spinner"><i class="fa-solid fa-spinner fa-spin"></i> Converting...</div>
+  <div id="progress" class="progress" style="margin-top:12px;display:none"><div id="progressBar" class="progress-bar" style="width:0;height:10px;background:var(--primary);border-radius:8px"></div></div>
+
   <div class="preview" id="preview"></div>
 
   <div class="actions">
-    <button id="downloadPDF" class="btn btn-primary" disabled><i class="fa-solid fa-file-pdf"></i> Convert to PDF</button>
+    <button id="downloadAll" class="btn btn-primary" disabled>Download All as ZIP</button>
   </div>
 </main>
 
 <footer class="container">
-  <div>© <span id="year"></span> Smarttool Hub — <a href="../../privacy.html">Privacy</a> | <a href="../../terms.html">Terms</a> | <a href="../../faq.html">FAQ</a></div>
+  <div>© <span id="year"></span> Smarttool Hub</div>
+  <div><a href="../../privacy.html">Privacy</a> · <a href="../../terms.html">Terms</a></div>
 </footer>
 
 <script>
-// Dark/light mode
-const themeToggle=document.getElementById("themeToggle");
-if(localStorage.getItem("sth_theme")==="light"){document.body.classList.add("light");themeToggle.innerHTML='<i class="fa-solid fa-sun"></i>'}
-themeToggle.onclick=()=>{document.body.classList.toggle("light");if(document.body.classList.contains("light")){themeToggle.innerHTML='<i class="fa-solid fa-sun"></i>';localStorage.setItem("sth_theme","light")}else{themeToggle.innerHTML='<i class="fa-solid fa-moon"></i>';localStorage.removeItem("sth_theme")}}
+  // theme
+  const themeToggle = document.getElementById('themeToggle');
+  if (localStorage.getItem('sth_theme') === 'light') { document.body.classList.add('light'); themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; }
+  themeToggle.addEventListener('click', ()=>{ document.body.classList.toggle('light'); if(document.body.classList.contains('light')){ themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; localStorage.setItem('sth_theme','light'); } else { themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); } });
 
-// Elements
-const input=document.getElementById("fileInput"),
-      preview=document.getElementById("preview"),
-      progressBar=document.getElementById("progressBar"),
-      spinner=document.getElementById("spinner"),
-      downloadBtn=document.getElementById("downloadPDF");
-let files=[];
+  const input = document.getElementById('fileInput');
+  const preview = document.getElementById('preview');
+  const downloadAll = document.getElementById('downloadAll');
+  const progressBar = document.getElementById('progressBar');
+  const progressWrap = document.getElementById('progress');
 
-// File handling
-input.addEventListener("change",e=>{handleFiles(e.target.files)});
-document.querySelector(".uploader").addEventListener("drop",e=>{e.preventDefault();handleFiles(e.dataTransfer.files)});
-document.querySelector(".uploader").addEventListener("dragover",e=>e.preventDefault());
+  let files = [];
 
-function handleFiles(fileList){
-  files=[...fileList];renderPreview();
-  downloadBtn.disabled=files.length===0;progressBar.style.width="0%";
-}
-function renderPreview(){
-  preview.innerHTML="";
-  files.forEach((f,idx)=>{
-    const reader=new FileReader();
-    reader.onload=e=>{
-      const div=document.createElement("div");div.className="file-card";div.draggable=true;
-      div.innerHTML=`<button class='remove-btn' onclick='removeFile(${idx})'>&times;</button>
-                     <img src='${e.target.result}' alt='${f.name}'><div>${f.name}</div>`;
-      div.addEventListener("dragstart",ev=>{ev.dataTransfer.setData("idx",idx)});
-      div.addEventListener("drop",ev=>{ev.preventDefault();let from=ev.dataTransfer.getData("idx");swapFiles(from,idx)});
-      div.addEventListener("dragover",ev=>ev.preventDefault());
-      preview.appendChild(div);
-    };
-    reader.readAsDataURL(f);
-  });
-}
-function removeFile(i){files.splice(i,1);renderPreview();downloadBtn.disabled=files.length===0;input.value=""}
-function swapFiles(from,to){const tmp=files[from];files[from]=files[to];renderPreview()}
+  input.addEventListener('change', e => handleFiles(e.target.files));
+  // drag-drop
+  document.querySelector('.uploader').addEventListener('drop', e => { e.preventDefault(); handleFiles(e.dataTransfer.files); });
+  document.querySelector('.uploader').addEventListener('dragover', e => e.preventDefault());
 
-// PDF generation
-downloadBtn.onclick=async()=>{
-  if(files.length===0)return;
-  spinner.style.display="block";progressBar.style.width="0%";
-  const pdfDoc=await PDFLib.PDFDocument.create();
-  let done=0;
-  for(const f of files){
-    const imgBytes=await f.arrayBuffer();
-    let img=f.type==="image/png"?await pdfDoc.embedPng(imgBytes):await pdfDoc.embedJpg(imgBytes);
-    const page=pdfDoc.addPage([img.width,img.height]);
-    page.drawImage(img,{x:0,y:0,width:img.width,height:img.height});
-    done++;progressBar.style.width=Math.round((done/files.length)*100)+"%";
+  function handleFiles(list) {
+    files = Array.from(list).filter(f => f.type === 'image/jpeg' || f.type === 'image/jpg');
+    renderPreview();
+    downloadAll.disabled = files.length === 0;
   }
-  const pdfBytes=await pdfDoc.save();
-  downloadBlob(pdfBytes,"images.pdf");
-  spinner.style.display="none";progressBar.style.width="0%";
-}
 
-// ✅ Reliable download
-function downloadBlob(data,filename){
-  const blob=new Blob([data],{type:"application/pdf"});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  a.style.display="none";
-  a.href=url;a.download=filename;
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},100);
-}
+  function renderPreview() {
+    preview.innerHTML = '';
+    files.forEach((f, i) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const div = document.createElement('div');
+        div.className = 'file-card';
+        div.innerHTML = `<button class="remove-btn" onclick="removeFile(${i})">&times;</button>
+                         <img src="${e.target.result}" alt="${f.name}"><div style="margin-top:8px;font-size:13px;color:#bcd8ea">${f.name}</div>
+                         <button style="margin-top:8px" class="btn" onclick="downloadSingle(${i})">Download PNG</button>`;
+        preview.appendChild(div);
+      };
+      reader.readAsDataURL(f);
+    });
+  }
+  window.removeFile = function(i) { files.splice(i,1); renderPreview(); downloadAll.disabled = files.length === 0; input.value = ''; }
 
-document.getElementById("year").textContent=new Date().getFullYear();
+  async function convertToPNGBlob(file) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const c = document.createElement('canvas');
+          c.width = img.naturalWidth; c.height = img.naturalHeight;
+          const ctx = c.getContext('2d'); ctx.drawImage(img,0,0);
+          c.toBlob(blob => res(blob), 'image/png');
+        };
+        img.onerror = rej;
+        img.src = r.result;
+      };
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+  }
+
+  window.downloadSingle = async function(idx) {
+    const blob = await convertToPNGBlob(files[idx]);
+    triggerDownload(blob, files[idx].name.replace(/\\.jpe?g$/i, '.png'));
+  }
+
+  downloadAll.addEventListener('click', async () => {
+    if (!files.length) return;
+    progressWrap.style.display = 'block';
+    progressBar.style.width = '0%';
+    const zip = new JSZip();
+    let done = 0;
+    for (const f of files) {
+      const blob = await convertToPNGBlob(f);
+      zip.file(f.name.replace(/\\.jpe?g$/i, '.png'), blob);
+      done++;
+      progressBar.style.width = Math.round((done/files.length)*100) + '%';
+      await new Promise(r=>setTimeout(r,80));
+    }
+    const content = await zip.generateAsync({type:'blob'});
+    triggerDownload(content, 'converted_images.zip');
+    progressBar.style.width = '0%';
+    progressWrap.style.display = 'none';
+  });
+
+  function triggerDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.style.display='none';
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{URL.revokeObjectURL(url); a.remove();}, 200);
+  }
+
+  document.getElementById('year').textContent = new Date().getFullYear();
 </script>
 </body>
 </html>
