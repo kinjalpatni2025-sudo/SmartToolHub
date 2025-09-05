@@ -7,77 +7,105 @@
   <meta name="description" content="Image to PDF converter — Upload JPG, PNG or multiple images, reorder images, choose page size and convert to a single PDF in your browser. 100% client-side, fast and private." />
   <meta name="keywords" content="image to pdf, jpg to pdf, png to pdf, convert images to pdf, online image to pdf, merge images to pdf, bulk image to pdf" />
   <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png" />
+  <!-- Analytics placeholder: replace with your GA/Plausible snippet -->
+  <!-- <script> ... your analytics ... </script> -->
+
+  <!-- Fonts / icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <!-- pdf-lib & jszip -->
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
   <style>
+    /* Theme tokens */
     :root {
       --bg:#0b1220; --text:#eaf2ff; --card:#182335; --border:#2a3b55;
-      --primary:#22d3ee; --muted:#9fb3c8;
+      --primary:#22d3ee; --muted:#9fb3c8; --radius:12px;
     }
     body.light {
       --bg:#f6f8fb; --text:#0b1220; --card:#ffffff; --border:#e6eefc;
       --primary:#0b74ff; --muted:#556677;
     }
-    * { box-sizing:border-box; }
-    body { margin:0; font-family:Inter,system-ui,sans-serif; background:var(--bg); color:var(--text); transition:.22s; }
 
-    header { display:flex; justify-content:space-between; align-items:center; background:var(--card); padding:14px 20px; border-bottom:1px solid var(--border); border-radius:0 0 10px 10px; }
+    /* Basic layout */
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg); color:var(--text); transition: .22s; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+    .container { max-width:1100px; margin:0 auto; padding:20px; }
+
+    /* Header (clickable logo + Home + Theme) */
+    header { display:flex; gap:12px; align-items:center; justify-content:space-between; background:var(--card); padding:14px 20px; border-bottom:1px solid var(--border); border-radius: 0 0 10px 10px; }
     .brand { display:flex; gap:12px; align-items:center; }
     .brand img { width:46px; height:46px; border-radius:10px; }
     .brand .title { font-weight:700; color:var(--primary); font-size:1.05rem; }
     .brand .tag { color:var(--muted); font-size:.88rem; }
-    .header-actions { display:flex; gap:8px; }
-    .btn-header { background:transparent; border:1px solid var(--border); color:var(--text); padding:8px 12px; border-radius:10px; text-decoration:none; display:flex; align-items:center; gap:6px; font-weight:600; }
+    .header-actions { display:flex; gap:8px; align-items:center; }
+    .btn-header { background:transparent; border:1px solid var(--border); color:var(--text); padding:8px 12px; border-radius:10px; font-weight:600; text-decoration:none; display:flex; gap:8px; align-items:center; }
     .btn-header:hover { border-color:var(--primary); color:var(--primary); }
 
-    main { padding:22px 20px; }
-    h1 { margin:0 0 8px; color:var(--primary); }
-    p.lead { color:var(--muted); margin-bottom:18px; }
+    /* Page content */
+    main { padding:22px 20px; background:transparent; }
+    h1 { margin:0 0 8px 0; color:var(--primary); }
+    p.lead { color:var(--muted); margin-top:6px; margin-bottom:18px; }
 
-    /* ✅ Improved uploader */
+    /* Uploader area */
     .uploader {
-      border-radius:16px; border:2px dashed var(--border);
-      padding:60px 20px; text-align:center; background:var(--card);
-      cursor:pointer; display:flex; flex-direction:column;
-      justify-content:center; align-items:center;
-      min-height:200px; transition: border-color .25s, background .25s;
-      word-wrap: break-word; white-space: normal; overflow-wrap: break-word;
+      border-radius:12px; border:2px dashed var(--border); padding:28px; text-align:center; background:var(--card); cursor:pointer;
     }
-    .uploader:hover { border-color:var(--primary); background:rgba(255,255,255,0.02); }
+    .uploader:hover { border-color:var(--primary); }
     .uploader input { display:none; }
-    .uploader .small { margin-top:12px; color:var(--muted); font-size:.95rem; line-height:1.5; max-width:420px; }
+    .uploader .small { display:block; color:var(--muted); margin-top:6px; font-size:.9rem; }
 
-    .controls { display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; align-items:center; }
-    .select,.radio-group { background:var(--card); border:1px solid var(--border); padding:8px; border-radius:10px; }
+    /* Controls (page size, fit) */
+    .controls { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; align-items:center; }
+    .select, .radio-group { background:var(--card); border:1px solid var(--border); padding:8px; border-radius:10px; color:var(--text); }
     label.inline { margin-right:8px; color:var(--muted); font-size:.92rem; }
 
-    .preview { margin-top:18px; display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
-    .file-card { background:var(--card); border:1px solid var(--border); padding:10px; border-radius:10px; text-align:center; position:relative; display:flex; flex-direction:column; gap:8px; }
+    /* Preview grid */
+    .preview { margin-top:18px; display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:12px; }
+    .file-card { background:var(--card); border:1px solid var(--border); padding:10px; border-radius:10px; position:relative; text-align:center; display:flex; flex-direction:column; gap:8px; }
     .file-thumb { max-width:100%; max-height:120px; object-fit:contain; border-radius:6px; }
     .file-name { font-size:.88rem; color:var(--muted); word-break:break-word; }
     .file-actions { display:flex; justify-content:center; gap:8px; }
     .small-btn { padding:6px 8px; border-radius:8px; background:var(--border); border:none; color:var(--text); cursor:pointer; font-weight:600; }
-    .small-btn:hover { background:rgba(255,255,255,0.02); border-color:var(--primary); color:var(--primary); }
+    .small-btn:hover{ background: rgba(255,255,255,0.02); border-color:var(--primary); color:var(--primary); }
 
+    /* Drag handle */
+    .drag-handle { position:absolute; left:8px; top:8px; color:var(--muted); font-size:14px; cursor:grab; }
+
+    /* Progress & spinner */
     .progress { margin-top:12px; width:100%; height:10px; background:var(--border); border-radius:8px; overflow:hidden; }
     .progress-bar { width:0%; height:100%; background:var(--primary); transition:width .25s; }
-    .spinner { width:20px; height:20px; border:3px solid rgba(255,255,255,0.08); border-top-color:var(--primary); border-radius:50%; animation:spin 1s linear infinite; margin-left:8px; }
-    @keyframes spin { to { transform:rotate(360deg); } }
+    .spinner { display:inline-block; width:20px; height:20px; border:3px solid rgba(255,255,255,0.08); border-top-color:var(--primary); border-radius:50%; animation:spin 1s linear infinite; vertical-align:middle; margin-left:8px; }
+    @keyframes spin{ to { transform: rotate(360deg); } }
 
-    .actions { margin-top:16px; display:flex; flex-wrap:wrap; gap:12px; }
+    /* Actions row */
+    .actions { margin-top:16px; display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
     .btn { padding:10px 16px; border-radius:10px; border:none; cursor:pointer; font-weight:700; }
     .btn-primary { background:var(--primary); color:#00131f; }
     .btn-secondary { background:var(--border); color:var(--text); }
 
-    footer { margin-top:30px; background:var(--card); padding:16px 20px; border-top:1px solid var(--border); display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+    /* SEO text sections */
+    section.seo { margin-top:22px; background:transparent; padding-bottom:12px; }
+    section.seo h2 { color:var(--primary); margin-top:8px; }
+    section.seo p, section.seo ul { color:var(--muted); }
+
+    footer { margin-top:30px; background:var(--card); padding:16px 20px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
     footer .links a { color:var(--primary); margin-left:10px; text-decoration:none; font-weight:600; }
+
+    /* Responsive tweaks */
+    @media (max-width:720px) {
+      .controls { flex-direction:column; align-items:stretch; }
+      .header-actions { gap:6px; }
+      .file-actions { flex-direction:column; gap:6px; }
+    }
   </style>
 </head>
 <body>
+  <!-- Header: clickable logo & home + theme toggle -->
   <header class="container">
     <div class="brand">
+      <!-- Clickable logo -> index.html -->
       <a href="../index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
         <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub Logo" />
         <div>
@@ -86,60 +114,472 @@
         </div>
       </a>
     </div>
+
     <div class="header-actions">
       <a class="btn-header" href="../index.html"><i class="fa-solid fa-house"></i> Home</a>
-      <button class="btn-header" id="themeToggle"><i class="fa-solid fa-moon"></i></button>
+      <button class="btn-header" id="themeToggle" title="Toggle theme"><i class="fa-solid fa-moon"></i></button>
     </div>
   </header>
 
-  <main class="container">
-    <h1>Image to PDF Converter</h1>
+  <!-- Main tool UI -->
+  <main class="container" role="main" aria-labelledby="toolTitle">
+    <h1 id="toolTitle">Image to PDF Converter</h1>
     <p class="lead">Convert JPG, PNG or other images into a single PDF. Reorder images, choose page size and fit mode, and download your new PDF — all in your browser.</p>
 
-    <label class="uploader" id="uploaderLabel" for="fileInput">
+    <!-- Uploader (click or drag-drop) -->
+    <label class="uploader" id="uploaderLabel" for="fileInput" aria-hidden="false">
       <div style="font-size:20px;"><i class="fa-solid fa-image"></i> Upload images</div>
       <div class="small">Click to select or drag & drop images (JPG, PNG). You can upload single or multiple files.</div>
-      <input id="fileInput" type="file" accept="image/*" multiple />
+      <input id="fileInput" type="file" accept="image/*" multiple aria-label="Upload images" />
     </label>
 
-    <div class="controls">
-      <div class="select">
-        <label class="inline">Page size:</label>
-        <select id="pageSize">
-          <option value="A4">A4</option>
-          <option value="Letter">Letter</option>
-          <option value="Image">Image native</option>
+    <!-- Controls: page size & fit mode -->
+    <div class="controls" aria-hidden="false">
+      <div class="select" style="display:flex;align-items:center;gap:8px;">
+        <label class="inline" for="pageSize">Page size:</label>
+        <select id="pageSize" aria-label="Select page size">
+          <option value="A4" selected>A4 (595 × 842 pt)</option>
+          <option value="Letter">Letter (612 × 792 pt)</option>
+          <option value="Image">Image native size</option>
         </select>
       </div>
-      <div class="radio-group">
-        <label><input type="radio" name="fit" value="contain" checked> Contain</label>
-        <label><input type="radio" name="fit" value="cover"> Cover</label>
+
+      <div class="radio-group" style="display:flex;align-items:center;gap:8px;">
+        <label class="inline">Image fit:</label>
+        <label style="color:var(--muted)"><input type="radio" name="fit" value="contain" checked> Contain</label>
+        <label style="color:var(--muted)"><input type="radio" name="fit" value="cover"> Cover</label>
       </div>
-      <div style="margin-left:auto;color:var(--muted)"><span id="countBadge">0 images</span></div>
+
+      <div style="margin-left:auto;color:var(--muted);font-size:.92rem;">
+        <span id="countBadge">0 images</span>
+      </div>
     </div>
 
-    <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
-    <div class="preview" id="preview"></div>
+    <!-- Progress bar & spinner -->
+    <div class="progress" aria-hidden="false" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-bar" id="progressBar" style="width:0%"></div>
+    </div>
 
+    <!-- Previews (draggable) -->
+    <div class="preview" id="preview" aria-live="polite" aria-label="Image preview area"></div>
+
+    <!-- Actions: Generate PDF, Download, Zip -->
     <div class="actions">
       <button id="generateBtn" class="btn btn-primary"><i class="fa-solid fa-file-pdf"></i> Generate PDF</button>
-      <a id="downloadPdfBtn" class="btn btn-secondary" href="#" download="images.pdf" style="pointer-events:none;opacity:.5"><i class="fa-solid fa-download"></i> Download PDF</a>
+      <a id="downloadPdfBtn" class="btn btn-secondary" href="#" download="images.pdf" style="pointer-events:none; opacity:.5;"><i class="fa-solid fa-download"></i> Download PDF</a>
       <button id="downloadZipBtn" class="btn btn-secondary" disabled><i class="fa-solid fa-file-zipper"></i> Download All as ZIP</button>
-      <div id="spinnerWrap" style="color:var(--muted);font-weight:700;"></div>
+      <div id="spinnerWrap" style="display:inline-flex;align-items:center;margin-left:6px;color:var(--muted);font-weight:700;"></div>
     </div>
+
+    <!-- SEO content section -->
+    <section class="seo">
+      <h2>Why use this Image to PDF Converter?</h2>
+      <ul>
+        <li>Fast and secure: conversion runs <strong>100% in your browser</strong>, no uploads required.</li>
+        <li>Convert JPG to PDF, PNG to PDF and more — single or multiple images supported.</li>
+        <li>Reorder pages visually and choose A4 / Letter or keep image native size.</li>
+        <li>Download the generated PDF or a ZIP containing the PDF and original images.</li>
+      </ul>
+
+      <h2>How to convert images to PDF</h2>
+      <ol>
+        <li>Click the upload area or drag & drop JPG/PNG images.</li>
+        <li>Reorder images by dragging thumbnails or using Up/Down buttons on mobile.</li>
+        <li>Choose page size and fit mode, then click <strong>Generate PDF</strong>.</li>
+        <li>Use <strong>Download PDF</strong> to save the file, or <strong>Download All as ZIP</strong> for a bundle.</li>
+      </ol>
+
+      <p style="color:var(--muted);font-size:.95rem;margin-top:8px">
+        Keywords (SEO): image to pdf, jpg to pdf, png to pdf, convert images to pdf online, bulk image to pdf, merge images into pdf.
+      </p>
+    </section>
+
+    <!-- FAQ Schema (also visible for users) -->
+    <section style="margin-top:18px">
+      <h2>FAQ</h2>
+      <div style="color:var(--muted)">
+        <strong>Are my images uploaded to your servers?</strong>
+        <div>No — everything happens in your browser, locally on your device.</div>
+
+        <strong>Can I reorder images before conversion?</strong>
+        <div>Yes — drag and drop thumbnails or use the move buttons to reorder pages.</div>
+
+        <strong>Can I convert many images at once?</strong>
+        <div>Yes — simply select or drop multiple files; the tool supports bulk conversion and ZIP download.</div>
+      </div>
+    </section>
   </main>
 
+  <!-- Footer -->
   <footer>
     <div>© <span id="year"></span> Smarttool Hub</div>
     <div class="links">
       <a href="../privacy.html">Privacy</a>
       <a href="../terms.html">Terms</a>
       <a href="../contact.html">Contact</a>
+      <a href="../faq.html">FAQ</a>
     </div>
   </footer>
 
+  <!-- FAQ JSON-LD for search engines -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Are my images uploaded to your servers?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No — all conversions happen client-side in your browser." }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I reorder images before converting?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Drag the thumbnails to reorder or use the move buttons." }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I download a ZIP with the PDF and originals?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes — the tool offers Download All as ZIP which includes the generated PDF and original image files." }
+      }
+    ]
+  }
+  </script>
+
+  <!-- Tool JavaScript -->
   <script>
-  // JS for dark mode, uploads, preview, PDF generation
+  // ---------------------------
+  // Image -> PDF tool (client-side)
+  // ---------------------------
+
+  // Utility / DOM refs
+  const fileInput = document.getElementById('fileInput');
+  const preview = document.getElementById('preview');
+  const countBadge = document.getElementById('countBadge');
+  const generateBtn = document.getElementById('generateBtn');
+  const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+  const downloadZipBtn = document.getElementById('downloadZipBtn');
+  const progressBar = document.getElementById('progressBar');
+  const spinnerWrap = document.getElementById('spinnerWrap');
+  const pageSizeSelect = document.getElementById('pageSize');
+
+  // local state: array of { file, dataUrl }
+  let images = []; // order-sensitive
+  let lastPdfBlobUrl = null; // to revoke old blob URLs
+
+  // Theme toggle: use same localStorage key as other pages
+  (function initThemeToggle() {
+    const themeBtn = document.getElementById('themeToggle');
+    if (localStorage.getItem('sth_theme') === 'light') { document.body.classList.add('light'); themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>'; }
+    themeBtn.addEventListener('click', () => {
+      document.body.classList.toggle('light');
+      if (document.body.classList.contains('light')) { themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>'; localStorage.setItem('sth_theme','light'); }
+      else { themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); }
+    });
+  })();
+
+  // Helpers: update count badge
+  function updateCount() {
+    countBadge.textContent = images.length + (images.length === 1 ? ' image' : ' images');
+  }
+
+  // Read files from input or drop event
+  fileInput.addEventListener('change', e => handleFiles(e.target.files));
+  const uploaderLabel = document.getElementById('uploaderLabel');
+
+  // Drag & drop for uploads
+  uploaderLabel.addEventListener('dragover', e => { e.preventDefault(); uploaderLabel.style.borderColor = 'var(--primary)'; });
+  uploaderLabel.addEventListener('dragleave', e => { uploaderLabel.style.borderColor = ''; });
+  uploaderLabel.addEventListener('drop', e => {
+    e.preventDefault();
+    uploaderLabel.style.borderColor = '';
+    if (e.dataTransfer && e.dataTransfer.files) handleFiles(e.dataTransfer.files);
+  });
+
+  // Accept files (append to existing images)
+  async function handleFiles(fileList) {
+    const files = Array.from(fileList).filter(f => f.type && f.type.startsWith('image/'));
+    if (files.length === 0) return;
+    // convert to {file, dataUrl}
+    for (const f of files) {
+      const dataUrl = await readFileAsDataURL(f);
+      images.push({ file: f, dataUrl });
+    }
+    renderPreview();
+    updateCount();
+  }
+
+  function readFileAsDataURL(file) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+  }
+
+  // Render preview thumbnails with controls: remove, move up/down, drag handle
+  function renderPreview() {
+    preview.innerHTML = '';
+    images.forEach((imgObj, idx) => {
+      const card = document.createElement('div');
+      card.className = 'file-card';
+      card.setAttribute('draggable', 'true');
+      card.dataset.index = idx;
+
+      // Drag handle (left)
+      const dragHandle = document.createElement('div');
+      dragHandle.className = 'drag-handle';
+      dragHandle.innerHTML = '<i class="fa-solid fa-grip-lines"></i>';
+      card.appendChild(dragHandle);
+
+      // thumbnail
+      const thumb = document.createElement('img');
+      thumb.className = 'file-thumb';
+      thumb.src = imgObj.dataUrl;
+      thumb.alt = imgObj.file.name;
+      card.appendChild(thumb);
+
+      // filename
+      const nameEl = document.createElement('div');
+      nameEl.className = 'file-name';
+      nameEl.textContent = imgObj.file.name;
+      card.appendChild(nameEl);
+
+      // actions (move up/down for mobile + remove)
+      const actions = document.createElement('div');
+      actions.className = 'file-actions';
+
+      // Move left (up)
+      const upBtn = document.createElement('button');
+      upBtn.className = 'small-btn';
+      upBtn.title = 'Move up';
+      upBtn.innerHTML = '<i class="fa-solid fa-arrow-up"></i>';
+      upBtn.onclick = (ev) => { ev.stopPropagation(); moveItem(idx, idx - 1); };
+
+      // Move right (down)
+      const downBtn = document.createElement('button');
+      downBtn.className = 'small-btn';
+      downBtn.title = 'Move down';
+      downBtn.innerHTML = '<i class="fa-solid fa-arrow-down"></i>';
+      downBtn.onclick = (ev) => { ev.stopPropagation(); moveItem(idx, idx + 1); };
+
+      // Remove
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'small-btn';
+      removeBtn.title = 'Remove';
+      removeBtn.style.background = 'rgba(255,0,0,0.12)';
+      removeBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+      removeBtn.onclick = (ev) => { ev.stopPropagation(); removeItem(idx); };
+
+      actions.appendChild(upBtn);
+      actions.appendChild(downBtn);
+      actions.appendChild(removeBtn);
+
+      card.appendChild(actions);
+
+      // Drag events to support reordering (desktop)
+      card.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', idx.toString());
+        card.style.opacity = '0.5';
+      });
+      card.addEventListener('dragend', () => { card.style.opacity = ''; });
+      card.addEventListener('dragover', (e) => { e.preventDefault(); card.style.borderColor = 'var(--primary)'; });
+      card.addEventListener('dragleave', () => { card.style.borderColor = ''; });
+      card.addEventListener('drop', (e) => {
+        e.preventDefault();
+        card.style.borderColor = '';
+        const from = Number(e.dataTransfer.getData('text/plain'));
+        const to = idx;
+        moveItem(from, to);
+      });
+
+      preview.appendChild(card);
+    });
+  }
+
+  // Move item within images array (from -> to). Handles bounds and re-render.
+  function moveItem(from, to) {
+    if (from < 0 || from >= images.length || to < 0 || to >= images.length || from === to) return;
+    const item = images.splice(from, 1)[0];
+    images.splice(to, 0, item);
+    renderPreview();
+  }
+
+  // Remove item
+  function removeItem(i) {
+    images.splice(i, 1);
+    renderPreview();
+    updateCount();
+  }
+
+  // Utility to clear previously generated download URL
+  function revokeLastPdfUrl() {
+    if (lastPdfBlobUrl) {
+      URL.revokeObjectURL(lastPdfBlobUrl);
+      lastPdfBlobUrl = null;
+    }
+  }
+
+  // Generate PDF using pdf-lib
+  generateBtn.addEventListener('click', async () => {
+    if (images.length === 0) {
+      alert('Please upload at least one image.');
+      return;
+    }
+
+    // UI: reset states
+    progressBar.style.width = '0%';
+    downloadPdfBtn.style.pointerEvents = 'none';
+    downloadPdfBtn.style.opacity = '.5';
+    downloadZipBtn.disabled = true;
+    spinnerWrap.innerHTML = '<span class="spinner" role="status" aria-hidden="true"></span> Processing...';
+
+    try {
+      const pdfDoc = await PDFLib.PDFDocument.create();
+
+      // Determine page size in PDF points (pt)
+      // A4: 595 x 842 pt ; Letter: 612 x 792 pt
+      const pageSize = document.getElementById('pageSize').value || 'A4';
+      let pageW = 595, pageH = 842;
+      if (pageSize === 'Letter') { pageW = 612; pageH = 792; }
+
+      // Fit mode
+      const fitMode = Array.from(document.getElementsByName('fit')).find(r => r.checked).value || 'contain';
+
+      // Process each image sequentially to allow progress updates
+      for (let i = 0; i < images.length; ++i) {
+        const imgObj = images[i];
+        // obtain arrayBuffer for image
+        const arrayBuffer = await imgObj.file.arrayBuffer();
+
+        // Decide embed method by type
+        let embeddedImage;
+        if (imgObj.file.type === 'image/png' || imgObj.file.type === 'image/x-png') {
+          embeddedImage = await pdfDoc.embedPng(arrayBuffer);
+        } else {
+          // attempt jpeg embed for jpg/jpeg; fallback to png embed if needed
+          try { embeddedImage = await pdfDoc.embedJpg(arrayBuffer); }
+          catch (err) { embeddedImage = await pdfDoc.embedPng(arrayBuffer); }
+        }
+
+        // image natural dimensions in PDF-lib units
+        const imgWidth = embeddedImage.width;
+        const imgHeight = embeddedImage.height;
+
+        // If user selected "Image native" set page size to image size
+        let targetW = pageW, targetH = pageH;
+        let actualPageW = pageW, actualPageH = pageH;
+        if (pageSize === 'Image') {
+          // use image dimensions as page size
+          actualPageW = imgWidth;
+          actualPageH = imgHeight;
+          targetW = imgWidth;
+          targetH = imgHeight;
+        } else {
+          // Fit logic: contain or cover
+          if (fitMode === 'contain') {
+            const scale = Math.min(pageW / imgWidth, pageH / imgHeight, 1);
+            targetW = imgWidth * scale;
+            targetH = imgHeight * scale;
+          } else { // cover: fill page while preserving aspect ratio (may crop visually)
+            const scale = Math.max(pageW / imgWidth, pageH / imgHeight);
+            targetW = imgWidth * scale;
+            targetH = imgHeight * scale;
+          }
+        }
+
+        // create a page sized to actualPageW/actualPageH
+        const page = pdfDoc.addPage([actualPageW, actualPageH]);
+
+        // center image
+        const x = (actualPageW - targetW) / 2;
+        const y = (actualPageH - targetH) / 2;
+
+        // draw image on page
+        page.drawImage(embeddedImage, { x, y, width: targetW, height: targetH });
+
+        // update progress bar
+        const percent = Math.round(((i + 1) / images.length) * 100);
+        progressBar.style.width = percent + '%';
+        // small await to yield UI update if many large images
+        await new Promise(r => setTimeout(r, 60));
+      }
+
+      // Save PDF bytes
+      const pdfBytes = await pdfDoc.save();
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      revokeLastPdfUrl();
+      lastPdfBlobUrl = URL.createObjectURL(blob);
+
+      // Setup Download PDF anchor
+      downloadPdfBtn.href = lastPdfBlobUrl;
+      downloadPdfBtn.download = 'images.pdf';
+      downloadPdfBtn.style.pointerEvents = 'auto';
+      downloadPdfBtn.style.opacity = '1.0';
+
+      // Enable ZIP download: include both generated PDF and original images
+      downloadZipBtn.disabled = false;
+      // store the blob for zip step
+      downloadZipBtn._pdfBlob = blob;
+
+      spinnerWrap.innerHTML = 'Done ✓';
+
+    } catch (err) {
+      console.error(err);
+      alert('Error while generating PDF: ' + (err && err.message ? err.message : err));
+      spinnerWrap.innerHTML = '';
+    }
+  });
+
+  // Download all as ZIP (PDF + original images)
+  downloadZipBtn.addEventListener('click', async () => {
+    if (!downloadZipBtn._pdfBlob) { alert('Please generate the PDF first.'); return; }
+    downloadZipBtn.disabled = true;
+    spinnerWrap.innerHTML = '<span class="spinner" role="status" aria-hidden="true"></span> Preparing ZIP...';
+
+    const zip = new JSZip();
+    // add generated pdf
+    zip.file('images.pdf', downloadZipBtn._pdfBlob);
+
+    // add original image files
+    for (let i = 0; i < images.length; ++i) {
+      const file = images[i].file;
+      const arr = await file.arrayBuffer();
+      zip.file('originals/' + file.name, arr);
+    }
+
+    // generate zip
+    const content = await zip.generateAsync({ type: 'blob' }, (meta) => {
+      // optional: show zip progress in progress bar
+      if (meta && meta.percent) { progressBar.style.width = Math.round(meta.percent) + '%'; }
+    });
+
+    // download zip
+    const url = URL.createObjectURL(content);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'images_bundle.zip';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    spinnerWrap.innerHTML = 'ZIP ready ✓';
+    downloadZipBtn.disabled = false;
+    progressBar.style.width = '0%';
+  });
+
+  // Utility: download single generated PDF if user clicks the anchor
+  downloadPdfBtn.addEventListener('click', () => {
+    if (!downloadPdfBtn.href || downloadPdfBtn.href === '#') {
+      alert('Please generate the PDF first.');
+    }
+  });
+
+  // init UI: update year
+  document.getElementById('year').textContent = new Date().getFullYear();
+  updateCount();
+
   </script>
 </body>
 </html>
