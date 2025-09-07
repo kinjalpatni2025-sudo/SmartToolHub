@@ -1,61 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Rotate PDF Pages — Smarttool Hub</title>
-<meta name="description" content="Rotate PDF pages online. Upload a PDF, rotate individual pages or all pages, preview and download the rotated PDF. 100% client-side." />
-<meta name="keywords" content="rotate pdf, rotate pages, rotate pdf pages online, rotate pdf client-side, pdf rotate tool" />
-<link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-<style>
-:root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8}
-body.light{--bg:#f6f8fb;--text:#0b1220;--card:#fff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
-*{box-sizing:border-box}
-body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text);transition:.22s}
-.container{max-width:1100px;margin:0 auto;padding:18px}
-header{display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:12px;border-bottom:1px solid var(--border)}
-.brand a{display:flex;gap:12px;align-items:center;text-decoration:none;color:inherit}
-.brand img{width:46px;height:46px;border-radius:8px}
-.title{font-weight:700;color:var(--primary)}
-.tag{font-size:.85rem;color:var(--muted)}
-.header-actions{display:flex;gap:8px;align-items:center}
-.btn-header{border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;color:var(--text);cursor:pointer;display:flex;gap:8px;align-items:center;text-decoration:none;font-weight:600}
-main{padding:18px 0}
-h1{margin:6px 0 8px;color:var(--primary)}
-.meta{color:var(--muted);margin-bottom:12px}
-.uploader{min-height:110px;border-radius:12px;border:2px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;background:var(--card);cursor:pointer}
-.uploader:hover{border-color:var(--primary)}
-input[type=file]{display:none}
-.controls{display:flex;gap:12px;align-items:center;margin-top:12px;flex-wrap:wrap}
-.controls .small{padding:8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text)}
-.progress{height:12px;background:var(--border);border-radius:999px;overflow:hidden;margin-top:12px}
-.progress-bar{height:100%;width:0;background:var(--primary);transition:width .2s}
-.pages{margin-top:18px;display:flex;flex-wrap:wrap;gap:12px;max-height:420px;overflow:auto;padding:8px}
-.page-card{width:120px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:8px}
-.page-card canvas{width:100%;height:auto;background:#fff;border-radius:6px}
-.page-label{font-size:.9rem;color:var(--muted);text-align:center}
-.rotate-controls{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
-.actions{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
-.btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
-.btn-primary{background:var(--primary);color:#00131f}
-.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
-.status{color:var(--muted);display:flex;align-items:center;gap:8px}
-.spinner{width:18px;height:18px;border-radius:50%;border:3px solid rgba(255,255,255,0.08);border-top-color:var(--primary);animation:spin .9s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.modal{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:9999}
-.modal .card{width:92%;max-width:1000px;background:var(--card);padding:16px;border-radius:12px;border:1px solid var(--border);display:flex;gap:12px;color:var(--text)}
-.modal canvas{max-width:100%;height:auto;background:#fff;border-radius:6px}
-footer{margin-top:24px;padding:12px 0;background:var(--card);border-top:1px solid var(--border)}
-@media(max-width:820px){.page-card{width:30%}.controls{flex-direction:column;align-items:flex-start}.modal .card{flex-direction:column}}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Batch Rotate PDF — Per-page angles & Accurate Preview — Smarttool Hub</title>
+  <meta name="description" content="Batch rotate PDFs client-side. Upload multiple PDFs, set per-page rotation angles, re-render accurate rotated thumbnails, and download rotated PDFs or a ZIP. Uses pdf.js + pdf-lib." />
+  <meta name="keywords" content="rotate pdf, batch rotate pdf, rotate pages, per-page rotation, pdf preview, pdf.js, pdf-lib, rotate pdf online" />
+  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    :root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8}
+    body.light{--bg:#f6f8fb;--text:#0b1220;--card:#fff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text);transition:.22s}
+    .container{max-width:1200px;margin:0 auto;padding:18px}
+    header{display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:12px;border-bottom:1px solid var(--border)}
+    .brand a{display:flex;gap:12px;align-items:center;text-decoration:none;color:inherit}
+    .brand img{width:46px;height:46px;border-radius:8px}
+    .title{font-weight:700;color:var(--primary)}
+    .tag{font-size:.85rem;color:var(--muted)}
+    .header-actions{display:flex;gap:8px;align-items:center}
+    .btn-header{border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;color:var(--text);cursor:pointer;display:flex;gap:8px;align-items:center;text-decoration:none;font-weight:600}
+    main{padding:18px 0}
+    h1{margin:6px 0 8px;color:var(--primary)}
+    .meta{color:var(--muted);margin-bottom:12px}
+    .uploader{min-height:120px;border-radius:12px;border:2px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;background:var(--card);cursor:pointer}
+    .uploader:hover{border-color:var(--primary)}
+    input[type=file]{display:none}
+    .queue{margin-top:18px;display:flex;flex-direction:column;gap:12px}
+    .file-card{background:var(--card);border:1px solid var(--border);padding:12px;border-radius:10px;display:flex;gap:12px;flex-direction:column}
+    .file-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .file-info{display:flex;gap:12px;align-items:center}
+    .file-meta{display:flex;flex-direction:column}
+    .file-name{font-weight:700}
+    .file-sub{color:var(--muted);font-size:.9rem}
+    .file-body{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start}
+    .thumbs{display:flex;gap:8px;flex-wrap:wrap;max-height:220px;overflow:auto;padding:6px;border-radius:8px}
+    .thumb{width:120px;background:rgba(255,255,255,0.02);padding:6px;border-radius:6px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;align-items:center;gap:6px}
+    .thumb canvas{width:100%;height:auto;border-radius:4px;background:#fff}
+    .thumb .label{font-size:.9rem;color:var(--muted);text-align:center}
+    .rotate-controls{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+    .rotate-controls input{width:68px;padding:6px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text)}
+    .small{padding:8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text)}
+    .actions{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
+    .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+    .btn-primary{background:var(--primary);color:#00131f}
+    .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+    .progress{height:12px;background:var(--border);border-radius:999px;overflow:hidden;margin-top:12px}
+    .progress-bar{height:100%;width:0;background:var(--primary);transition:width .22s}
+    .status{color:var(--muted);display:flex;align-items:center;gap:8px}
+    .spinner{width:18px;height:18px;border-radius:50%;border:3px solid rgba(255,255,255,0.08);border-top-color:var(--primary);animation:spin .9s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    footer{margin-top:24px;padding:12px 0;background:var(--card);border-top:1px solid var(--border)}
+    @media(max-width:980px){ .file-body{flex-direction:column} .thumb{width:28%} }
+  </style>
 </head>
 <body>
   <header class="container">
     <div class="brand">
       <a href="../../index.html" title="Smarttool Hub home">
         <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub logo">
-        <div><div class="title">Smarttool Hub</div><div class="tag">Fast • Private • Client-side</div></div>
+        <div>
+          <div class="title">Smarttool Hub</div>
+          <div class="tag">Batch Rotate PDFs — Client-side</div>
+        </div>
       </a>
     </div>
     <div class="header-actions">
@@ -65,39 +73,35 @@ footer{margin-top:24px;padding:12px 0;background:var(--card);border-top:1px soli
   </header>
 
   <main class="container">
-    <h1>Rotate PDF Pages</h1>
-    <p class="meta">Upload a PDF, rotate specific pages or rotate all pages, preview and download the rotated PDF. The tool tries to preserve vector content using pdf-lib; if the PDF is encrypted or can't be processed vectorially, it falls back to raster processing (pages become images).</p>
+    <h1>Batch Rotate PDFs — per-page rotation & accurate preview</h1>
+    <p class="meta">Upload multiple PDFs, open each file's thumbnails, set per-page rotation (0 / 90 / 180 / 270), optionally re-render accurate rotated thumbnails, then process the queue and download rotated PDFs (vector when possible; raster fallback) or a ZIP of all rotated files.</p>
 
     <label class="uploader" id="uploader">
-      <div style="font-size:28px;color:var(--primary)"><i class="fa-solid fa-file-pdf"></i></div>
-      <div style="margin-top:8px;font-weight:700">Click or drag & drop a PDF</div>
-      <div style="margin-top:6px;color:var(--muted)">Supported: .pdf — single file at a time.</div>
-      <input type="file" id="fileInput" accept="application/pdf" />
+      <div style="font-size:30px;color:var(--primary)"><i class="fa-solid fa-file-pdf"></i></div>
+      <div style="margin-top:8px;font-weight:700">Click or drag & drop PDFs (multiple)</div>
+      <div style="margin-top:6px;color:var(--muted)">Supported: .pdf — upload many files, then preview & set rotations per page.</div>
+      <input type="file" id="fileInput" accept="application/pdf" multiple />
     </label>
 
-    <div class="controls" role="region" aria-label="rotate controls">
-      <label class="small">Rotate all pages:
-        <select id="rotateAll" class="small">
-          <option value="0">0° (no change)</option>
-          <option value="90">90°</option>
-          <option value="180">180°</option>
-          <option value="270">270°</option>
-        </select>
-      </label>
-      <button id="applyRotateAll" class="btn btn-ghost">Apply to all</button>
-      <div style="margin-left:auto;color:var(--muted)" id="fileInfo">No PDF loaded</div>
-    </div>
+    <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
 
-    <div class="progress" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
-
-    <div class="pages" id="pages" aria-live="polite"></div>
+    <div class="queue" id="queue"></div>
 
     <div class="actions">
-      <button id="downloadBtn" class="btn btn-primary" disabled><i class="fa-solid fa-download"></i> Download rotated PDF</button>
-      <button id="downloadRasterBtn" class="btn btn-ghost" disabled><i class="fa-solid fa-image"></i> Force raster & download</button>
-      <button id="clearBtn" class="btn btn-ghost" disabled><i class="fa-solid fa-trash-can"></i> Clear</button>
+      <button id="processBtn" class="btn btn-primary" disabled><i class="fa-solid fa-spinner"></i> Process queue & download ZIP</button>
+      <button id="processSingleBtn" class="btn btn-ghost" disabled><i class="fa-solid fa-file-arrow-down"></i> Process & download individually</button>
+      <button id="clearBtn" class="btn btn-ghost" disabled><i class="fa-solid fa-trash-can"></i> Clear all</button>
       <div class="status" id="status"></div>
     </div>
+
+    <section style="margin-top:18px;color:var(--muted)">
+      <h3 style="color:var(--primary)">Notes</h3>
+      <ul>
+        <li>Accurate preview re-render uses <strong>pdf.js</strong> and rotation is applied when rendering (slower for many pages).</li>
+        <li>Final output tries to preserve vectors/text using <strong>pdf-lib</strong> page-copy + rotation. If that fails (encrypted PDFs or incompatible), the tool falls back to rasterizing pages and embedding images (visual output preserved, text becomes image).</li>
+        <li>For per-page rotation angles only multiples of <strong>90°</strong> are supported (0, 90, 180, 270).</li>
+      </ul>
+    </section>
   </main>
 
   <footer class="container">
@@ -107,7 +111,7 @@ footer{margin-top:24px;padding:12px 0;background:var(--card);border-top:1px soli
 
   <!-- FAQ JSON-LD -->
   <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Will text remain selectable after rotation?","acceptedAnswer":{"@type":"Answer","text":"If the tool is able to use pdf-lib to copy pages and set rotations, the pages remain vector and text stays selectable. If the tool falls back to raster processing (for encrypted or problematic PDFs), pages become images and text is not selectable."}}]}
+  {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can I rotate different pages by different angles?","acceptedAnswer":{"@type":"Answer","text":"Yes — for each uploaded PDF you can set a rotation angle (0,90,180,270) per page."}},{"@type":"Question","name":"Will text remain selectable after rotate?","acceptedAnswer":{"@type":"Answer","text":"If pdf-lib can copy pages and set rotation the output remains vector and text stays selectable. If not, the tool falls back to raster-based output where pages become images."}}]}
   </script>
 
   <!-- libs -->
@@ -131,327 +135,399 @@ footer{margin-top:24px;padding:12px 0;background:var(--card);border-top:1px soli
     // ---------- DOM refs ----------
     const uploader = document.getElementById('uploader');
     const fileInput = document.getElementById('fileInput');
-    const pagesDiv = document.getElementById('pages');
-    const rotateAllSelect = document.getElementById('rotateAll');
-    const applyRotateAllBtn = document.getElementById('applyRotateAll');
-    const fileInfo = document.getElementById('fileInfo');
-    const progressBar = document.getElementById('progressBar');
-    const statusEl = document.getElementById('status');
-    const downloadBtn = document.getElementById('downloadBtn');
-    const downloadRasterBtn = document.getElementById('downloadRasterBtn');
+    const queueEl = document.getElementById('queue');
+    const processBtn = document.getElementById('processBtn');
+    const processSingleBtn = document.getElementById('processSingleBtn');
     const clearBtn = document.getElementById('clearBtn');
+    const statusEl = document.getElementById('status');
+    const progressBar = document.getElementById('progressBar');
 
     // ---------- state ----------
-    // pdfData: { arrayBuffer, pdfjsDoc, pageCount, pages:[ { rotation:0 } ], fileName }
-    let pdfData = null;
+    // queueFiles: array of { id, file, arrayBuffer, pdfjsDoc, pageCount, pages:[{rotation}], ready }
+    let queueFiles = [];
 
     // ---------- helpers ----------
+    function uuid(){ return Math.random().toString(36).slice(2,9); }
     function showStatus(txt, busy=false, hideMs=0){
       statusEl.textContent = txt || '';
       if(busy) statusEl.insertAdjacentHTML('afterbegin','<span class="spinner" aria-hidden="true"></span>');
       if(hideMs) setTimeout(()=> statusEl.textContent = '', hideMs);
     }
-    function setProgress(p){ document.getElementById('progressBar').style.width = Math.min(100,Math.max(0,Math.round(p))) + '%'; }
-    function resetProgress(){ document.getElementById('progressBar').style.width = '0%'; }
+    function setProgress(p){ progressBar.style.width = Math.min(100,Math.max(0,Math.round(p))) + '%'; }
+    function resetProgress(){ progressBar.style.width = '0%'; }
     function sanitize(name){ return name.replace(/[^a-z0-9_\-\.]/gi, '_'); }
     function triggerDownload(blob, filename){
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
       setTimeout(()=> URL.revokeObjectURL(a.href), 3000);
     }
 
-    // ---------- file handlers ----------
+    // ---------- file input & drop ----------
     uploader.addEventListener('click', ()=> fileInput.click());
     uploader.addEventListener('dragover', e => { e.preventDefault(); uploader.style.borderColor = 'var(--primary)'; });
     uploader.addEventListener('dragleave', e => { uploader.style.borderColor = ''; });
-    uploader.addEventListener('drop', e => { e.preventDefault(); uploader.style.borderColor = ''; handleFile(e.dataTransfer.files[0]); });
-    fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+    uploader.addEventListener('drop', e => { e.preventDefault(); uploader.style.borderColor = ''; handleFiles(e.dataTransfer.files); });
+    fileInput.addEventListener('change', e => handleFiles(e.target.files));
 
-    async function handleFile(file){
-      if(!file) return;
-      if(!(file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))){
-        alert('Please select a PDF file.');
-        return;
+    async function handleFiles(fileList){
+      const arr = Array.from(fileList).filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+      if(arr.length === 0) return;
+      showStatus('Adding files...', true);
+      for(const f of arr){
+        const id = uuid();
+        const stub = { id, file: f, arrayBuffer: null, pdfjsDoc: null, pageCount: 0, pages: [], ready: false, name: f.name };
+        queueFiles.push(stub);
+        renderQueue();
+        await loadFile(stub); // load sequentially (keeps UI responsive)
       }
-      showStatus('Loading PDF...', true);
-      resetProgress();
+      updateControls();
+      showStatus('Files added', false, 900);
+    }
+
+    async function loadFile(stub){
       try{
-        const buffer = await file.arrayBuffer();
-        // Try to load with pdf.js (for thumbnails and password handling)
+        const buffer = await stub.file.arrayBuffer();
+        // try pdf.js load, handle password detection via prompt (simple)
         let pdfjsDoc = null;
         try{
           pdfjsDoc = await pdfjsLib.getDocument({ data: buffer }).promise;
         } catch(err){
-          // if password required, prompt for password using simple prompt
           if(err && (err.name === 'PasswordException' || /password/i.test(String(err.message || err)))){
-            const pw = prompt('This PDF is password-protected. Enter password (client-side):', '');
-            if(pw === null) { showStatus('Password prompt cancelled', false); return; }
-            try{ pdfjsDoc = await pdfjsLib.getDocument({ data: buffer, password: pw }).promise; }
-            catch(e){ console.error('Password failed', e); showStatus('Password incorrect or cannot open PDF', false); return; }
-          } else { console.error('pdf.js load error', err); showStatus('Failed to open PDF', false); return; }
+            const pw = prompt('PDF "' + stub.name + '" is password-protected. Enter password (client-side):', '');
+            if(pw === null){ stub.ready = false; renderQueue(); return; }
+            pdfjsDoc = await pdfjsLib.getDocument({ data: buffer, password: pw }).promise;
+          } else {
+            console.warn('pdf.js load error', err);
+            stub.ready = false; renderQueue(); return;
+          }
         }
-        const pageCount = pdfjsDoc.numPages;
-        // initialize rotation state for each page
-        const pages = [];
-        for(let i=0;i<pageCount;i++) pages.push({ rotation: 0 });
-        pdfData = { arrayBuffer: buffer, pdfjsDoc, pageCount, pages, fileName: file.name };
-        fileInfo.textContent = `${file.name} — ${pageCount} pages`;
-        await renderThumbnails();
-        downloadBtn.disabled = false; downloadRasterBtn.disabled = false; clearBtn.disabled = false;
-        showStatus('PDF loaded', false, 1400);
+        stub.arrayBuffer = buffer;
+        stub.pdfjsDoc = pdfjsDoc;
+        stub.pageCount = pdfjsDoc.numPages;
+        stub.pages = Array.from({length: stub.pageCount}, ()=> ({ rotation: 0 }));
+        stub.ready = true;
+        renderQueue();
       } catch(err){
-        console.error(err);
-        showStatus('Failed to load PDF — see console', false);
+        console.error('Failed load', err);
+        stub.ready = false;
+        renderQueue();
       }
     }
 
-    // ---------- render thumbnails ----------
-    async function renderThumbnails(){
-      pagesDiv.innerHTML = '';
-      if(!pdfData) return;
-      for(let p=1;p<=pdfData.pageCount;p++){
+    // ---------- render queue UI ----------
+    function renderQueue(){
+      queueEl.innerHTML = '';
+      if(queueFiles.length === 0){ queueEl.innerHTML = '<div style="color:var(--muted)">No files in queue.</div>'; return; }
+      queueFiles.forEach((st, idx) => {
+        const fc = document.createElement('div');
+        fc.className = 'file-card';
+        fc.dataset.id = st.id;
+        fc.innerHTML = `
+          <div class="file-head">
+            <div class="file-info">
+              <div style="font-size:20px;color:var(--primary)"><i class="fa-solid fa-file-pdf"></i></div>
+              <div class="file-meta">
+                <div class="file-name">${escapeHtml(st.name)}</div>
+                <div class="file-sub">${st.ready ? (st.pageCount + ' pages') : 'Loading or failed to parse'}</div>
+              </div>
+            </div>
+            <div>
+              <button class="btn btn-ghost btn-preview small" ${st.ready ? '' : 'disabled'}>Accurate preview</button>
+              <button class="btn btn-ghost btn-remove small">Remove</button>
+            </div>
+          </div>
+          <div class="file-body">
+            <div style="flex:1">
+              <div class="thumbs"></div>
+            </div>
+            <div style="width:280px;display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+              <div style="width:100%;">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <div style="color:var(--muted)">Per-page rotation (0/90/180/270)</div>
+                  <div style="color:var(--muted)">${st.ready ? ('Pages: '+st.pageCount) : ''}</div>
+                </div>
+                <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+                  <button class="btn btn-ghost quick-apply small" data-angle="0" ${st.ready? '' : 'disabled'}>0°</button>
+                  <button class="btn btn-ghost quick-apply small" data-angle="90" ${st.ready? '' : 'disabled'}>90°</button>
+                  <button class="btn btn-ghost quick-apply small" data-angle="180" ${st.ready? '' : 'disabled'}>180°</button>
+                  <button class="btn btn-ghost quick-apply small" data-angle="270" ${st.ready? '' : 'disabled'}>270°</button>
+                </div>
+              </div>
+              <div style="width:100%;display:flex;gap:8px;flex-direction:column">
+                <label style="color:var(--muted)">Render preview rotated thumbnails?</label>
+                <button class="btn btn-ghost render-rotated small" ${st.ready? '' : 'disabled'}>Re-render rotated thumbnails</button>
+                <div style="display:flex;gap:8px;align-items:center;justify-content:flex-end">
+                  <button class="btn btn-primary process-single small" ${st.ready? '' : 'disabled'}>Process file</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        queueEl.appendChild(fc);
+
+        // fill thumbs container (initial unrotated thumbnails)
+        const thumbs = fc.querySelector('.thumbs');
+        if(st.ready){
+          // render lightweight thumbnails (scale small) without rotation
+          for(let p=1;p<=st.pageCount;p++){
+            const box = document.createElement('div');
+            box.className = 'thumb';
+            box.innerHTML = `<canvas></canvas><div class="label">Page ${p}</div><div style="margin-top:4px"><input class="angle-input small" data-page="${p-1}" value="${st.pages[p-1].rotation}" title="Enter 0/90/180/270"></div>`;
+            thumbs.appendChild(box);
+            // render page thumbnail
+            (async function(canvasEl, pdfjsDoc, pageNum){
+              try{
+                const page = await pdfjsDoc.getPage(pageNum);
+                const vp = page.getViewport({ scale: 0.14 });
+                canvasEl.width = Math.round(vp.width); canvasEl.height = Math.round(vp.height);
+                await page.render({ canvasContext: canvasEl.getContext('2d'), viewport: vp }).promise;
+              } catch(err){
+                console.warn('thumb err', err);
+              }
+            })(box.querySelector('canvas'), st.pdfjsDoc, p);
+          }
+        } else {
+          thumbs.innerHTML = '<div style="color:var(--muted)">Unable to show thumbnails</div>';
+        }
+
+        // attach handlers
+        fc.querySelector('.btn-remove').addEventListener('click', ()=> {
+          queueFiles = queueFiles.filter(x => x.id !== st.id);
+          renderQueue(); updateControls();
+        });
+        fc.querySelectorAll('.quick-apply').forEach(b => b.addEventListener('click', ()=> {
+          const angle = Number(b.dataset.angle) || 0;
+          if(!st.ready) return;
+          for(let i=0;i<st.pageCount;i++) st.pages[i].rotation = angle;
+          // update input boxes in thumbs
+          fc.querySelectorAll('.angle-input').forEach(inp => inp.value = angle);
+          showStatus('Applied ' + angle + '° to all pages of ' + st.name, false, 1400);
+        }));
+        // per-page angle input change
+        fc.querySelectorAll('.angle-input').forEach(input => {
+          input.addEventListener('change', (ev) => {
+            const pageIndex = Number(ev.target.dataset.page);
+            const v = Number(ev.target.value) || 0;
+            const normalized = [0,90,180,270].includes(v) ? v : 0;
+            ev.target.value = normalized;
+            st.pages[pageIndex].rotation = normalized;
+          });
+        });
+        // accurate preview re-render: re-render thumbnails with rotation applied
+        fc.querySelector('.render-rotated').addEventListener('click', async () => {
+          if(!st.ready) return;
+          showStatus('Re-rendering rotated thumbnails for ' + st.name + ' (this may take a while)...', true);
+          const canvases = fc.querySelectorAll('.thumb canvas');
+          for(let p=0;p<st.pageCount;p++){
+            const c = canvases[p];
+            // render with pdf.js using rotation
+            try{
+              const page = await st.pdfjsDoc.getPage(p+1);
+              const vp = page.getViewport({ scale: 0.14, rotation: st.pages[p].rotation || 0 });
+              c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+              await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+            } catch(err){
+              console.warn('render rotated thumb failed', err);
+            }
+            // small yield for UI
+            await new Promise(r=>setTimeout(r, 12));
+          }
+          showStatus('Rotated thumbnails updated for ' + st.name, false, 1200);
+        });
+        // process single file
+        fc.querySelector('.process-single').addEventListener('click', async () => {
+          await processSingleFile(st);
+        });
+        // accurate preview button - opens a modal showing pages (not implemented full modal here to keep code readable)
+        fc.querySelector('.btn-preview').addEventListener('click', async () => {
+          // quick re-render all pages in a larger new window canvas - simple approach: open new tab with thumbnails page
+          await openPreviewWindow(st);
+        });
+      });
+    }
+
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+    // ---------- controls ----------
+    function updateControls(){
+      const readyCount = queueFiles.filter(x=>x.ready).length;
+      processBtn.disabled = readyCount === 0;
+      processSingleBtn.disabled = readyCount === 0;
+      clearBtn.disabled = queueFiles.length === 0;
+    }
+    clearBtn.addEventListener('click', ()=> { queueFiles = []; renderQueue(); updateControls(); resetProgress(); showStatus('', false); });
+
+    // ---------- preview helper (opens a new window with rotated previews) ----------
+    async function openPreviewWindow(stub){
+      if(!stub.ready) return;
+      const w = window.open('', '_blank', 'noopener,noreferrer');
+      w.document.title = 'Preview - ' + stub.name;
+      const wrapper = w.document.createElement('div');
+      wrapper.style.fontFamily = 'Arial,system-ui';
+      wrapper.style.background = '#111827'; wrapper.style.color = '#f8fafc';
+      wrapper.style.padding = '16px';
+      wrapper.innerHTML = `<h2 style="color:#22d3ee">${escapeHtml(stub.name)}</h2><div style="display:flex;flex-wrap:wrap;gap:12px" id="pv"></div>`;
+      w.document.body.appendChild(wrapper);
+      const pv = w.document.getElementById('pv');
+      for(let p=0;p<stub.pageCount;p++){
+        const canvas = w.document.createElement('canvas');
+        canvas.style.border = '1px solid rgba(255,255,255,0.06)';
+        const lbl = w.document.createElement('div');
+        lbl.textContent = 'Page ' + (p+1)+ ' (' + (stub.pages[p].rotation||0) + '°)';
+        const box = w.document.createElement('div');
+        box.style.width='220px'; box.style.display='flex'; box.style.flexDirection='column'; box.style.alignItems='center';
+        box.appendChild(canvas); box.appendChild(lbl);
+        pv.appendChild(box);
+        // render with rotation
         try{
-          const page = await pdfData.pdfjsDoc.getPage(p);
-          const viewport = page.getViewport({ scale: 0.18 });
+          const page = await stub.pdfjsDoc.getPage(p+1);
+          const vp = page.getViewport({ scale: 0.9, rotation: stub.pages[p].rotation || 0 });
+          canvas.width = Math.round(vp.width); canvas.height = Math.round(vp.height);
+          await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+        } catch(err){
+          console.warn('preview page render failed', err);
+        }
+      }
+    }
+
+    // ---------- processing logic ----------
+    // processSingleFile: process one file and download (vector if possible; fallback to raster)
+    async function processSingleFile(stub){
+      showStatus('Processing: ' + stub.name, true);
+      setProgress(0);
+      try{
+        const resultBlob = await processFileApplyRotation(stub);
+        triggerDownload(resultBlob, sanitize(stub.name).replace(/\.[^/.]+$/, '') + '_rotated.pdf');
+        showStatus('Processed: ' + stub.name, false, 1600);
+      } catch(err){
+        console.error('process single failed', err);
+        showStatus('Processing failed for ' + stub.name, false);
+      } finally { resetProgress(); }
+    }
+
+    // processQueue: produce zip with all processed files
+    processBtn.addEventListener('click', async () => {
+      if(queueFiles.length === 0) return;
+      showStatus('Processing queue...', true);
+      setProgress(0);
+      try{
+        const zip = new JSZip();
+        const toProcess = queueFiles.filter(x=>x.ready);
+        for(let i=0;i<toProcess.length;i++){
+          const st = toProcess[i];
+          setProgress((i / toProcess.length) * 100);
+          showStatus('Processing: ' + st.name, true);
+          try{
+            const blob = await processFileApplyRotation(st, (i+1)/toProcess.length);
+            zip.file(sanitize(st.name).replace(/\.[^/.]+$/, '') + '_rotated.pdf', await blob.arrayBuffer());
+          } catch(err){
+            console.error('file processing error', err);
+            // continue with others
+          }
+          await new Promise(r=>setTimeout(r, 60));
+        }
+        setProgress(90);
+        const zblob = await zip.generateAsync({ type: 'blob' }, meta => setProgress(90 + Math.round(meta.percent/10)));
+        triggerDownload(zblob, 'rotated_pdfs.zip');
+        showStatus('Queue processed — download ready', false, 2000);
+      } catch(err){
+        console.error('queue processing failed', err);
+        showStatus('Queue processing failed — see console', false);
+      } finally { resetProgress(); }
+    });
+
+    // process individually (download each file individually rather than zip)
+    processSingleBtn.addEventListener('click', async () => {
+      const toProcess = queueFiles.filter(x=>x.ready);
+      for(let i=0;i<toProcess.length;i++){
+        const st = toProcess[i];
+        await processSingleFile(st);
+        await new Promise(r=>setTimeout(r, 400));
+      }
+      showStatus('All files processed', false, 1600);
+    });
+
+    // core function: produce rotated PDF Blob for a single stub
+    // strategy:
+    // 1) try vector copy: load pdf-lib from stub.arrayBuffer, copy pages, set rotation using page.setRotation()
+    //    - this preserves text/selectability
+    // 2) if that fails, fallback to raster: render each page with pdf.js, rotate canvas, embed into new pdf as image
+    async function processFileApplyRotation(stub, progressBase = 0){
+      // progressBase is optional to help queue progress; we will call setProgress inside
+      try{
+        // Attempt pdf-lib vector copy
+        try{
+          const src = await PDFLib.PDFDocument.load(stub.arrayBuffer, { ignoreEncryption: true });
+          const out = await PDFLib.PDFDocument.create();
+          const total = src.getPageCount();
+          for(let i=0;i<total;i++){
+            const [copied] = await out.copyPages(src, [i]);
+            out.addPage(copied);
+            const deg = stub.pages[i].rotation || 0;
+            if(deg % 360 !== 0) copied.setRotation(PDFLib.degrees(deg));
+            // progress update relative to file
+            setProgress(progressBase*100 + Math.round(((i+1)/total) * (100*(1 - progressBase))));
+            await new Promise(r=>setTimeout(r, 10));
+          }
+          const bytes = await out.save();
+          return new Blob([bytes], { type: 'application/pdf' });
+        } catch(err){
+          console.warn('pdf-lib copy failed, falling back to raster for', stub.name, err);
+          // fallback to raster
+        }
+        // Raster fallback
+        const out = await PDFLib.PDFDocument.create();
+        const total = stub.pageCount;
+        for(let p=0;p<total;p++){
+          const rotation = stub.pages[p].rotation || 0;
+          const page = await stub.pdfjsDoc.getPage(p+1);
+          // choose scale reasonably (1.5 for decent quality) — could be user option
+          const viewport = page.getViewport({ scale: 1.5, rotation: 0 }); // render without rotation
           const canvas = document.createElement('canvas');
           canvas.width = Math.round(viewport.width);
           canvas.height = Math.round(viewport.height);
           const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);
           await page.render({ canvasContext: ctx, viewport }).promise;
-
-          const card = document.createElement('div');
-          card.className = 'page-card';
-          card.dataset.page = p-1;
-          card.innerHTML = `<canvas></canvas><div class="page-label">Page ${p}</div><div class="rotate-controls"></div>`;
-          const innerCanvas = card.querySelector('canvas');
-          innerCanvas.width = canvas.width; innerCanvas.height = canvas.height;
-          innerCanvas.getContext('2d').drawImage(canvas,0,0);
-
-          const rc = card.querySelector('.rotate-controls');
-          // per-page rotate buttons
-          [90,180,270].forEach(deg => {
-            const b = document.createElement('button');
-            b.className = 'btn btn-ghost small';
-            b.style.padding = '6px 8px';
-            b.textContent = deg + '°';
-            b.title = `Rotate ${deg}°`;
-            b.addEventListener('click', (ev) => {
-              ev.stopPropagation();
-              rotatePage(Number(card.dataset.page), deg);
-            });
-            rc.appendChild(b);
-          });
-          // preview open onclick
-          innerCanvas.addEventListener('click', () => openPreviewModal(Number(card.dataset.page)));
-          pagesDiv.appendChild(card);
-        } catch(err){
-          console.warn('thumbnail render error page', p, err);
-        }
-      }
-    }
-
-    // ---------- rotate handling ----------
-    function rotatePage(index, byDeg){
-      if(!pdfData) return;
-      // rotate relative: add byDeg to current rotation and keep 0..270
-      const cur = pdfData.pages[index].rotation || 0;
-      const next = (cur + byDeg) % 360;
-      pdfData.pages[index].rotation = next;
-      showStatus(`Page ${index+1} rotated to ${next}°`, false, 1200);
-      // update thumbnail to indicate rotation visually (simple transform)
-      const card = pagesDiv.querySelector(`.page-card[data-page="${index}"]`);
-      if(card){
-        const canvas = card.querySelector('canvas');
-        // rotate preview visually by drawing canvas onto temp with rotation
-        rotateCanvasPreview(canvas, next);
-      }
-    }
-
-    function rotateCanvasPreview(canvas, degrees){
-      try{
-        // create temp canvas and draw rotated content
-        const tmp = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        // preserve original image data
-        const img = document.createElement('img');
-        img.src = canvas.toDataURL();
-        img.onload = () => {
-          let w = img.width, h = img.height;
-          if(degrees === 90 || degrees === 270){ tmp.width = h; tmp.height = w; } else { tmp.width = w; tmp.height = h; }
-          const tctx = tmp.getContext('2d');
-          tctx.save();
-          if(degrees === 90){ tctx.translate(tmp.width,0); tctx.rotate(Math.PI/2); }
-          else if(degrees === 180){ tctx.translate(tmp.width,tmp.height); tctx.rotate(Math.PI); }
-          else if(degrees === 270){ tctx.translate(0,tmp.height); tctx.rotate(-Math.PI/2); }
-          tctx.drawImage(img, 0, 0);
-          tctx.restore();
-          // copy back to original canvas (resize)
-          canvas.width = tmp.width; canvas.height = tmp.height;
-          canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
-          canvas.getContext('2d').drawImage(tmp,0,0);
-        };
-      }catch(e){ console.warn('rotate preview failed', e); }
-    }
-
-    applyRotateAllBtn.addEventListener('click', ()=> {
-      const deg = Number(rotateAllSelect.value) || 0;
-      if(!pdfData) return;
-      for(let i=0;i<pdfData.pageCount;i++) pdfData.pages[i].rotation = deg;
-      // update thumbnails by reloading them or applying visual rotate
-      // easiest: re-render thumbnails (but that is heavier). We'll adjust previews visually via rotateCanvasPreview
-      const cards = pagesDiv.querySelectorAll('.page-card');
-      cards.forEach(c => {
-        const idx = Number(c.dataset.page);
-        rotateCanvasPreview(c.querySelector('canvas'), pdfData.pages[idx].rotation);
-      });
-      showStatus(`Applied ${deg}° to all pages`, false, 1200);
-    });
-
-    // ---------- preview modal ----------
-    const previewModal = document.createElement('div');
-    previewModal.className = 'modal';
-    previewModal.innerHTML = `<div class="card"><div style="flex:1"><canvas id="modalCanvas"></canvas></div><div style="width:180px;display:flex;flex-direction:column;gap:8px"><button id="modalRotate90" class="btn btn-ghost small">Rotate 90°</button><button id="modalClose" class="btn btn-ghost small">Close</button></div></div>`;
-    document.body.appendChild(previewModal);
-    const modalCanvas = previewModal.querySelector('#modalCanvas');
-    const modalRotate90 = previewModal.querySelector('#modalRotate90');
-    const modalClose = previewModal.querySelector('#modalClose');
-    let currentPreviewIndex = null;
-
-    async function openPreviewModal(index){
-      if(!pdfData) return;
-      currentPreviewIndex = index;
-      previewModal.style.display = 'flex';
-      previewModal.removeAttribute('aria-hidden');
-      await renderModalCanvas(index);
-    }
-    modalClose.addEventListener('click', ()=> { previewModal.style.display = 'none'; previewModal.setAttribute('aria-hidden','true'); });
-    modalRotate90.addEventListener('click', async ()=> {
-      if(currentPreviewIndex === null) return;
-      rotatePage(currentPreviewIndex, 90);
-      await renderModalCanvas(currentPreviewIndex); // refresh modal render with rotation
-    });
-
-    async function renderModalCanvas(index){
-      const page = await pdfData.pdfjsDoc.getPage(index+1);
-      const rot = pdfData.pages[index].rotation || 0;
-      // use slightly larger scale
-      const viewport = page.getViewport({ scale: 1.3, rotation: rot });
-      modalCanvas.width = Math.round(viewport.width);
-      modalCanvas.height = Math.round(viewport.height);
-      const ctx = modalCanvas.getContext('2d');
-      ctx.clearRect(0,0,modalCanvas.width,modalCanvas.height);
-      await page.render({ canvasContext: ctx, viewport }).promise;
-    }
-
-    // ---------- download rotated PDF (vector approach using pdf-lib) ----------
-    downloadBtn.addEventListener('click', async () => {
-      if(!pdfData) return;
-      showStatus('Attempting vector rotation (preserve text if possible)...', true);
-      setProgress(0);
-      try{
-        // Try to load with pdf-lib (preserves text/vectors)
-        let src;
-        try{
-          src = await PDFLib.PDFDocument.load(pdfData.arrayBuffer, { ignoreEncryption: true });
-        } catch(err){
-          // if load fails (e.g., encrypted), fallback to raster approach
-          console.warn('pdf-lib load failed', err);
-          showStatus('pdf-lib cannot load this PDF (maybe encrypted) — falling back to raster approach', false, 2000);
-          await rasterRotateAndDownload();
-          return;
-        }
-        const out = await PDFLib.PDFDocument.create();
-        const total = src.getPageCount();
-        // For each page, copy and set rotation
-        for(let i=0;i<total;i++){
-          const [copied] = await out.copyPages(src, [i]);
-          out.addPage(copied);
-          // set rotation on added page according to pdfData.pages[i].rotation
-          const deg = pdfData.pages[i].rotation || 0;
-          if(deg % 360 !== 0){
-            copied.setRotation(PDFLib.degrees(deg));
-          }
-          setProgress(((i+1)/total)*100);
-          await new Promise(r=>setTimeout(r, 20));
-        }
-        const bytes = await out.save();
-        triggerDownload(new Blob([bytes], { type: 'application/pdf' }), sanitize(pdfData.fileName).replace(/\.[^/.]+$/, '') + '_rotated.pdf');
-        showStatus('Download ready (vector) ✓', false, 2000);
-      } catch(err){
-        console.error('Vector rotation failed', err);
-        showStatus('Vector rotation failed — falling back to raster', false, 1200);
-        await rasterRotateAndDownload();
-      } finally { setTimeout(()=> resetProgress(), 800); }
-    });
-
-    // ---------- raster fallback: render each page, rotate in canvas, embed image into pdf ----------
-    async function rasterRotateAndDownload(){
-      try{
-        const out = await PDFLib.PDFDocument.create();
-        const total = pdfData.pageCount;
-        for(let i=0;i<total;i++){
-          const pageNum = i+1;
-          showStatus(`Rendering page ${pageNum}...`, true);
-          const page = await pdfData.pdfjsDoc.getPage(pageNum);
-          const rot = pdfData.pages[i].rotation || 0;
-          const viewport = page.getViewport({ scale: 1.5 }); // scale may be tuned
-          // render to canvas first (without rotation), then rotate via canvas ops
-          const c = document.createElement('canvas');
-          c.width = Math.round(viewport.width);
-          c.height = Math.round(viewport.height);
-          const ctx = c.getContext('2d');
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0,0,c.width,c.height);
-          await page.render({ canvasContext: ctx, viewport }).promise;
-          // apply rotation by drawing onto tmp canvas
+          // rotate canvas as needed
           const final = document.createElement('canvas');
-          if(rot === 90 || rot === 270){ final.width = c.height; final.height = c.width; }
-          else { final.width = c.width; final.height = c.height; }
+          if(rotation === 90 || rotation === 270){ final.width = canvas.height; final.height = canvas.width; }
+          else { final.width = canvas.width; final.height = canvas.height; }
           const fctx = final.getContext('2d');
           fctx.save();
-          if(rot === 90){ fctx.translate(final.width, 0); fctx.rotate(Math.PI/2); }
-          else if(rot === 180){ fctx.translate(final.width, final.height); fctx.rotate(Math.PI); }
-          else if(rot === 270){ fctx.translate(0, final.height); fctx.rotate(-Math.PI/2); }
-          fctx.drawImage(c, 0, 0);
+          if(rotation === 90){ fctx.translate(final.width,0); fctx.rotate(Math.PI/2); }
+          else if(rotation === 180){ fctx.translate(final.width,final.height); fctx.rotate(Math.PI); }
+          else if(rotation === 270){ fctx.translate(0, final.height); fctx.rotate(-Math.PI/2); }
+          fctx.drawImage(canvas,0,0);
           fctx.restore();
-          // convert to PNG and embed
+          // toBlob and embed PNG
           const blob = await new Promise(res => final.toBlob(res, 'image/png'));
           const arr = await blob.arrayBuffer();
           const img = await out.embedPng(arr);
           const { width, height } = img.scale(1);
-          const pageObj = out.addPage([width, height]);
+          const pageObj = out.addPage([width,height]);
           pageObj.drawImage(img, { x:0, y:0, width, height });
-          setProgress(((i+1)/total)*100);
-          await new Promise(r=>setTimeout(r, 20));
+          setProgress(progressBase*100 + Math.round(((p+1)/total) * (100*(1 - progressBase))));
+          await new Promise(r=>setTimeout(r, 10));
         }
         const bytes = await out.save();
-        triggerDownload(new Blob([bytes], { type: 'application/pdf' }), sanitize(pdfData.fileName).replace(/\.[^/.]+$/, '') + '_rotated_raster.pdf');
-        showStatus('Raster rotated PDF ready ✓', false, 2000);
+        return new Blob([bytes], { type: 'application/pdf' });
       } catch(err){
-        console.error('Raster rotate failed', err);
-        showStatus('Raster rotate failed — see console', false);
-      } finally { setTimeout(()=> resetProgress(), 800); }
+        console.error('processFileApplyRotation error', err);
+        throw err;
+      }
     }
 
-    // Download raster-forced button: always rasterize (useful when pdf-lib copy is undesired)
-    downloadRasterBtn.addEventListener('click', ()=> {
-      if(!pdfData) return;
-      rasterRotateAndDownload();
-    });
+    // expose state for debugging
+    window._batch_queue = () => queueFiles;
 
-    // ---------- clear ----------
-    clearBtn.addEventListener('click', ()=> {
-      if(pdfData && pdfData.pdfjsDoc) try{ pdfData.pdfjsDoc.destroy(); } catch(e){}
-      pdfData = null;
-      pagesDiv.innerHTML = '';
-      fileInfo.textContent = 'No PDF loaded';
-      downloadBtn.disabled = true; downloadRasterBtn.disabled = true; clearBtn.disabled = true;
-      resetProgress();
-      showStatus('', false);
-    });
-
-    // ---------- helper: expose state for debugging ----------
-    window._sth_pdfData = () => pdfData;
-
+    // initial render
+    renderQueue();
+    updateControls();
   })();
   </script>
 </body>
