@@ -33,7 +33,6 @@ input[type=file]{display:none}
 .toolbar{display:flex;flex-direction:column;gap:10px}
 .tool-btn{display:flex;align-items:center;gap:8px;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--text)}
 .tool-btn.active{background:var(--primary);color:#00131f;border-color:transparent}
-.tool-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .small{font-size:.9rem;padding:8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);width:100%}
 .center{display:flex;align-items:center;gap:8px;justify-content:space-between}
 
@@ -45,15 +44,20 @@ input[type=file]{display:none}
 .page-container{position:relative;background:#ffffff;border-radius:6px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,0.25)}
 .page-canvas{display:block;max-width:100%;height:auto;display:block}
 .svg-overlay{position:absolute;left:0;top:0;pointer-events:auto}
-.page-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
-.progress{height:10px;background:var(--border);border-radius:999px;overflow:hidden}
-.progress-bar{height:100%;width:0;background:var(--primary);transition:width .2s}
 
 /* annotation visuals */
 .annot-text{font-family:Inter, system-ui, Arial; cursor:move}
 .annot-rect{fill:transparent;stroke-width:1.6;stroke:var(--primary);cursor:move}
 .annot-highlight{fill:yellow;opacity:0.35;cursor:move}
 
+/* resize handles container (SVG foreignObject) */
+.handle{fill:#ffffff;stroke:#222;stroke-width:1;cursor:nwse-resize}
+
+/* progress bar */
+.progress{height:10px;background:var(--border);border-radius:999px;overflow:hidden}
+.progress-bar{height:100%;width:0;background:var(--primary);transition:width .2s}
+
+/* footer */
 .footer{margin-top:18px;padding:12px 0;background:var(--card);border-top:1px solid var(--border);text-align:center;color:var(--muted)}
 
 /* responsive */
@@ -79,7 +83,7 @@ input[type=file]{display:none}
 
 <main class="container">
   <h1 style="color:var(--primary);margin:8px 0">PDF Editor — Add Text, Shapes & Highlights</h1>
-  <p style="color:var(--muted)">Upload a PDF, add annotations (text, rectangle, ellipse, highlights), move them around, and export a new PDF with vector annotations — all in your browser.</p>
+  <p style="color:var(--muted)">Upload a PDF, add annotations (text, rectangle, ellipse, highlights), move and resize them, and export a new PDF with vector annotations — all in your browser.</p>
 
   <label id="uploader" class="uploader" title="Click or drop PDF">
     <div style="font-size:22px;color:var(--primary)"><i class="fa-solid fa-file-pdf"></i></div>
@@ -123,7 +127,7 @@ input[type=file]{display:none}
         <strong>How to use</strong>
         <ul>
           <li>Choose a tool, then click (text) or drag (shapes/highlight) on the page.</li>
-          <li>Double-click text to edit. Drag to move annotations. Select an annotation and press Delete to remove.</li>
+          <li>Double-click text to edit. Drag to move annotations. Click to select and use corner handles to resize. Delete to remove.</li>
           <li>Export creates a new PDF with vector annotations added.</li>
         </ul>
       </div>
@@ -164,25 +168,17 @@ input[type=file]{display:none}
 <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
 
 <script>
-// ========== PDF Editor (client-side) ==========
-// Outline:
-// - Load PDF with pdf.js for rendering pages (canvas)
-// - Create an SVG overlay per page to keep vector annotations
-// - Annotations stored per-page as normalized objects {type, x,y,w,h,color,text,size,id}
-// - Tools: select/move, add text, highlight (rect), rect, ellipse
-// - Export: use pdf-lib to copy pages & add annotations with vector drawing
+// ========== PDF Editor with Resize Handles ==========
 
-// --- state ---
-let pdfDocJS = null;          // pdf.js document
-let pdfFileBuffer = null;     // original ArrayBuffer
+let pdfDocJS = null;
+let pdfFileBuffer = null;
 let pageCount = 0;
 let currentPage = 0;
-const annotations = {};       // annotations[pageIndex] = [ ... ]
+const annotations = {}; // annotations[pageIndex] = [ ... ]
 let activeTool = 'select';
 let annotColor = '#ffd200';
 let textSize = 14;
 
-// --- DOM refs ---
 const fileInput = document.getElementById('fileInput');
 const uploader = document.getElementById('uploader');
 const pageArea = document.getElementById('pageArea');
@@ -201,7 +197,6 @@ const themeIcon = document.getElementById('themeIcon');
 
 document.getElementById('year').textContent = new Date().getFullYear();
 
-// --- theme handling ---
 if(localStorage.getItem('sth_theme') === 'light'){ document.body.classList.add('light'); themeIcon.className='fa-solid fa-sun'; }
 themeBtn.addEventListener('click', ()=> {
   document.body.classList.toggle('light');
@@ -209,7 +204,6 @@ themeBtn.addEventListener('click', ()=> {
   else { localStorage.removeItem('sth_theme'); themeIcon.className='fa-solid fa-moon'; }
 });
 
-// --- file input / drag & drop ---
 uploader.addEventListener('click', ()=> fileInput.click());
 uploader.addEventListener('dragover', e=> { e.preventDefault(); uploader.style.borderColor = 'var(--primary)'; });
 uploader.addEventListener('dragleave', e=> { uploader.style.borderColor = ''; });
@@ -231,7 +225,7 @@ async function handleFile(file){
     pageCount = pdfDocJS.numPages;
     pageCountEl.textContent = pageCount;
     currentPage = 1;
-    annotationsForAllPagesInit(pageCount);
+    for(let i=1;i<=pageCount;i++) if(!annotations[i]) annotations[i] = [];
     await renderPage(currentPage);
     setProgress(100);
   } catch(err){
@@ -240,16 +234,8 @@ async function handleFile(file){
   } finally { setTimeout(()=> setProgress(0), 400); }
 }
 
-function annotationsForAllPagesInit(n){
-  for(let i=1;i<=n;i++) if(!annotations[i]) annotations[i] = [];
-}
+function setProgress(p){ progressBar.style.width = Math.min(100,Math.max(0,Math.round(p))) + '%'; }
 
-// --- helper: progress ---
-function setProgress(p){
-  progressBar.style.width = Math.min(100,Math.max(0,Math.round(p))) + '%';
-}
-
-// --- tool selection ---
 toolButtons.forEach(btn => btn.addEventListener('click', () => {
   toolButtons.forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -259,33 +245,28 @@ toolButtons.forEach(btn => btn.addEventListener('click', () => {
 annotColorInput.addEventListener('input', (e) => annotColor = e.target.value);
 textSizeInput.addEventListener('change', (e) => textSize = Number(e.target.value) || 14);
 
-// --- page navigation ---
 prevPageBtn.addEventListener('click', ()=> { if(currentPage>1) renderPage(currentPage-1); });
 nextPageBtn.addEventListener('click', ()=> { if(currentPage<pageCount) renderPage(currentPage+1); });
 
-// --- render one page into container with SVG overlay ---
 async function renderPage(pageNum){
   if(!pdfDocJS) return;
   setProgress(5);
   currentPage = pageNum;
   pageNumberEl.textContent = pageNum;
-  pageArea.innerHTML = ''; // clear
+  pageArea.innerHTML = '';
   const page = await pdfDocJS.getPage(pageNum);
-  const viewport = page.getViewport({ scale: 1.5 }); // initial scale for viewing
+  const viewport = page.getViewport({ scale: 1.5 });
   const canvas = document.createElement('canvas');
   canvas.className = 'page-canvas';
   canvas.width = Math.round(viewport.width);
   canvas.height = Math.round(viewport.height);
   const ctx = canvas.getContext('2d');
-  // white background
   ctx.fillStyle = '#fff'; ctx.fillRect(0,0,canvas.width,canvas.height);
   await page.render({ canvasContext: ctx, viewport }).promise;
-  // container
   const container = document.createElement('div');
   container.className = 'page-container';
   container.style.width = canvas.width + 'px';
   container.style.height = canvas.height + 'px';
-  // svg overlay (same size, absolute)
   const svgNS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(svgNS, 'svg');
   svg.setAttribute('width', canvas.width);
@@ -294,22 +275,18 @@ async function renderPage(pageNum){
   svg.style.width = canvas.width + 'px';
   svg.style.height = canvas.height + 'px';
   svg.style.pointerEvents = 'auto';
-  // add existing annotations for page
   const pageAnn = annotations[pageNum] || [];
   pageAnn.forEach(a => drawAnnotationOnSVG(svg, a, canvas.width, canvas.height));
-  // attach event handlers for creating annotations
   attachSvgEvents(svg, canvas, pageNum);
   container.appendChild(canvas);
   container.appendChild(svg);
   pageArea.appendChild(container);
   setProgress(60);
-  // small delay update
   await new Promise(r=>setTimeout(r,50));
   setProgress(100);
   setTimeout(()=> setProgress(0),200);
 }
 
-// --- draw annotation into svg (visual) ---
 function drawAnnotationOnSVG(svg, ann, pageW, pageH){
   const svgNS = 'http://www.w3.org/2000/svg';
   const elId = ann.id || ('a'+Math.random().toString(36).slice(2,9));
@@ -323,7 +300,6 @@ function drawAnnotationOnSVG(svg, ann, pageW, pageH){
     t.setAttribute('class', 'annot-text');
     t.setAttribute('data-id', elId);
     t.textContent = ann.text || 'Text';
-    // enable double-click edit
     t.addEventListener('dblclick', (ev)=> {
       ev.stopPropagation();
       const newText = prompt('Edit text', ann.text || '');
@@ -331,6 +307,7 @@ function drawAnnotationOnSVG(svg, ann, pageW, pageH){
     });
     makeDraggableSVG(t, ann, svg, pageW, pageH);
     svg.appendChild(t);
+    addResizeHandlesSVG(svg, t, ann, pageW, pageH);
   } else if(ann.type === 'rect' || ann.type === 'highlight'){
     const r = document.createElementNS(svgNS, 'rect');
     r.setAttribute('x', ann.x * pageW);
@@ -345,6 +322,7 @@ function drawAnnotationOnSVG(svg, ann, pageW, pageH){
     r.setAttribute('data-id', elId);
     makeDraggableSVG(r, ann, svg, pageW, pageH);
     svg.appendChild(r);
+    addResizeHandlesSVG(svg, r, ann, pageW, pageH);
   } else if(ann.type === 'ellipse'){
     const e = document.createElementNS(svgNS, 'ellipse');
     const cx = (ann.x + (ann.w || 0)/2) * pageW;
@@ -356,62 +334,180 @@ function drawAnnotationOnSVG(svg, ann, pageW, pageH){
     e.setAttribute('data-id', elId);
     makeDraggableSVG(e, ann, svg, pageW, pageH);
     svg.appendChild(e);
+    addResizeHandlesSVG(svg, e, ann, pageW, pageH);
   }
 }
 
-// --- make an SVG element draggable, update ann normalized coords ---
+// Make an SVG element draggable AND track normalized coords
 function makeDraggableSVG(svgEl, ann, svgRoot, pageW, pageH){
   svgEl.style.cursor = 'move';
   let isDown=false, startX=0, startY=0, origX=0, origY=0;
   svgEl.addEventListener('mousedown', (e)=> {
     e.stopPropagation();
+    if(activeTool !== 'select') return; // only move in select mode
     isDown=true;
     const pt = svgRoot.getBoundingClientRect();
-    startX = e.clientX - pt.left;
-    startY = e.clientY - pt.top;
-    // record original depending type
-    if(ann.type === 'text'){ origX = ann.x * pageW; origY = ann.y * pageH; }
-    else { origX = ann.x * pageW; origY = ann.y * pageH; }
+    startX = e.clientX - pt.left; startY = e.clientY - pt.top;
+    origX = (ann.x || 0) * pageW; origY = (ann.y || 0) * pageH;
     highlightSelected(svgEl);
   });
   window.addEventListener('mousemove', (e)=> {
     if(!isDown) return;
     const pt = svgRoot.getBoundingClientRect();
-    const curX = e.clientX - pt.left;
-    const curY = e.clientY - pt.top;
+    const curX = e.clientX - pt.left, curY = e.clientY - pt.top;
     const dx = curX - startX, dy = curY - startY;
-    // update element visually
     if(ann.type === 'text'){
-      const newX = origX + dx; const newY = origY + dy;
+      const newX = origX + dx, newY = origY + dy;
       svgEl.setAttribute('x', newX); svgEl.setAttribute('y', newY);
       ann.x = newX / pageW; ann.y = newY / pageH;
+      // update handles position if present
+      updateHandlesPosition(svgRoot, ann, pageW, pageH);
     } else if(ann.type === 'rect' || ann.type === 'highlight'){
-      const newX = origX + dx; const newY = origY + dy;
+      const newX = origX + dx, newY = origY + dy;
       svgEl.setAttribute('x', newX); svgEl.setAttribute('y', newY);
       ann.x = newX / pageW; ann.y = newY / pageH;
+      updateHandlesPosition(svgRoot, ann, pageW, pageH);
     } else if(ann.type === 'ellipse'){
       const newCx = (origX + dx) + ((ann.w||0)*pageW)/2;
       const newCy = (origY + dy) + ((ann.h||0)*pageH)/2;
       svgEl.setAttribute('cx', newCx); svgEl.setAttribute('cy', newCy);
       ann.x = (newCx - ((ann.w||0)*pageW)/2) / pageW;
       ann.y = (newCy - ((ann.h||0)*pageH)/2) / pageH;
+      updateHandlesPosition(svgRoot, ann, pageW, pageH);
     }
   });
-  window.addEventListener('mouseup', ()=> { if(isDown){ isDown=false; } });
-  // delete on DEL when selected
+  window.addEventListener('mouseup', ()=> { if(isDown) isDown=false; });
   svgEl.addEventListener('click', (e)=> { e.stopPropagation(); selectAnnotation(svgEl, ann, svgRoot); });
 }
 
-// keep a pointer to selected element
+/* ----- Resize handles -----
+   We'll add 4 small square handles (TL, TR, BR, BL). Dragging a handle resizes the annotation.
+   Resize math updates ann.x, ann.y, ann.w, ann.h (normalized).
+*/
+function addResizeHandlesSVG(svgRoot, svgEl, ann, pageW, pageH){
+  // ensure there's a group container for handles per annotation id
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const gid = 'handles_' + ann.id;
+  // remove existing handles if any (to avoid duplicates)
+  const old = svgRoot.querySelector('#' + gid);
+  if(old) old.remove();
+  const g = document.createElementNS(svgNS, 'g');
+  g.setAttribute('id', gid);
+  // compute bbox depending on annotation type
+  let x=0,y=0,w=0,h=0;
+  if(ann.type === 'text'){
+    x = (ann.x || 0) * pageW; y = (ann.y || 0) * pageH; w = (ann.w || 0) * pageW || 60; h = (ann.h || 0) * pageH || parseFloat(ann.size || 14);
+  } else if(ann.type === 'rect' || ann.type === 'highlight'){
+    x = (ann.x || 0) * pageW; y = (ann.y || 0) * pageH; w = (ann.w || 0) * pageW; h = (ann.h || 0) * pageH;
+  } else if(ann.type === 'ellipse'){
+    x = (ann.x || 0) * pageW; y = (ann.y || 0) * pageH; w = (ann.w || 0) * pageW; h = (ann.h || 0) * pageH;
+  }
+  // if zero-size, don't add handles
+  if(w <= 2 && h <= 2) return;
+  // handle positions: tl,tr,br,bl
+  const size = 10;
+  const points = [
+    {cx: x,      cy: y,       name:'tl', cursor:'nwse-resize'},
+    {cx: x + w,  cy: y,       name:'tr', cursor:'nesw-resize'},
+    {cx: x + w,  cy: y + h,   name:'br', cursor:'nwse-resize'},
+    {cx: x,      cy: y + h,   name:'bl', cursor:'nesw-resize'}
+  ];
+  points.forEach(pt => {
+    const rect = document.createElementNS(svgNS, 'rect');
+    rect.setAttribute('x', pt.cx - size/2); rect.setAttribute('y', pt.cy - size/2);
+    rect.setAttribute('width', size); rect.setAttribute('height', size);
+    rect.setAttribute('fill', '#fff'); rect.setAttribute('stroke', '#222'); rect.setAttribute('stroke-width', 1);
+    rect.setAttribute('class', 'annot-handle');
+    rect.style.cursor = pt.cursor;
+    rect.dataset.handle = pt.name;
+    // attach drag handlers
+    makeHandleDraggable(rect, ann, svgRoot, pageW, pageH);
+    g.appendChild(rect);
+  });
+  svgRoot.appendChild(g);
+}
+
+// update handles position after move or resize
+function updateHandlesPosition(svgRoot, ann, pageW, pageH){
+  const gid = 'handles_' + ann.id;
+  const g = svgRoot.querySelector('#' + gid);
+  if(!g) return;
+  let x=0,y=0,w=0,h=0;
+  if(ann.type === 'text'){ x = (ann.x || 0) * pageW; y = (ann.y || 0) * pageH; w = (ann.w || 0) * pageW || 60; h = (ann.h || 0) * pageH || (ann.size||14); }
+  else { x = (ann.x || 0) * pageW; y = (ann.y || 0) * pageH; w = (ann.w || 0) * pageW; h = (ann.h || 0) * pageH; }
+  const rects = g.querySelectorAll('rect.annot-handle');
+  const size = 10;
+  rects.forEach(r => {
+    const name = r.dataset.handle;
+    let cx=0, cy=0;
+    if(name === 'tl'){ cx = x; cy = y; }
+    if(name === 'tr'){ cx = x + w; cy = y; }
+    if(name === 'br'){ cx = x + w; cy = y + h; }
+    if(name === 'bl'){ cx = x; cy = y + h; }
+    r.setAttribute('x', cx - size/2); r.setAttribute('y', cy - size/2);
+  });
+}
+
+// Drag logic for a handle -> resize ann
+function makeHandleDraggable(handleEl, ann, svgRoot, pageW, pageH){
+  let dragging = false, startX=0,startY=0, startAnn = null;
+  handleEl.addEventListener('mousedown', (e)=> {
+    e.stopPropagation();
+    dragging = true;
+    const rect = svgRoot.getBoundingClientRect();
+    startX = e.clientX - rect.left; startY = e.clientY - rect.top;
+    // clone ann for baseline
+    startAnn = Object.assign({}, ann);
+    // prevent selection of other elements
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  });
+  function onMove(e){
+    if(!dragging) return;
+    const rect = svgRoot.getBoundingClientRect();
+    const curX = e.clientX - rect.left, curY = e.clientY - rect.top;
+    const dx = curX - startX, dy = curY - startY;
+    // compute original absolute values
+    const ox = (startAnn.x || 0) * pageW, oy = (startAnn.y || 0) * pageH;
+    const ow = (startAnn.w || 0) * pageW, oh = (startAnn.h || 0) * pageH;
+    const handleName = handleEl.dataset.handle;
+    // Depending on handle, compute new bbox
+    let nx=ox, ny=oy, nw=ow, nh=oh;
+    if(handleName === 'tl'){
+      nx = ox + dx; ny = oy + dy; nw = ow - dx; nh = oh - dy;
+    } else if(handleName === 'tr'){
+      nx = ox; ny = oy + dy; nw = ow + dx; nh = oh - dy;
+    } else if(handleName === 'br'){
+      nx = ox; ny = oy; nw = ow + dx; nh = oh + dy;
+    } else if(handleName === 'bl'){
+      nx = ox + dx; ny = oy; nw = ow - dx; nh = oh + dy;
+    }
+    // Prevent negative sizes: clamp
+    if(nw < 4){ nw = 4; if(handleName === 'tl' || handleName === 'bl') nx = ox + ow - nw; }
+    if(nh < 4){ nh = 4; if(handleName === 'tl' || handleName === 'tr') ny = oy + oh - nh; }
+    // Update ann normalized
+    ann.x = nx / pageW; ann.y = ny / pageH; ann.w = nw / pageW; ann.h = nh / pageH;
+    // Update the corresponding SVG element visuals
+    refreshSVG(svgRoot, getPageForSVG(svgRoot), pageW, pageH);
+  }
+  function onUp(e){
+    dragging = false;
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('mouseup', onUp);
+  }
+}
+
+// helper to get current page index for a given svgRoot — locate container and compute page index from DOM
+function getPageForSVG(svgRoot){
+  // the svgRoot lives inside pageArea -> container -> index among children corresponds to page? we only show one page at a time, so return currentPage
+  return currentPage;
+}
+
 let selectedSVGEl = null;
 function highlightSelected(svgEl){
-  // remove prev highlight
-  if(selectedSVGEl){
-    selectedSVGEl.style.outline = 'none';
-  }
+  if(selectedSVGEl){ selectedSVGEl.style.outline = 'none'; }
   selectedSVGEl = svgEl;
   svgEl.style.outline = '2px dashed rgba(255,255,255,0.12)';
-  // add key listener for delete
   window.addEventListener('keydown', onKeyDownDelete);
 }
 function onKeyDownDelete(e){
@@ -419,22 +515,26 @@ function onKeyDownDelete(e){
     if(!selectedSVGEl) return;
     const id = selectedSVGEl.getAttribute('data-id');
     if(!id) return;
-    // remove from page annotations
     const anns = annotations[currentPage] || [];
     const idx = anns.findIndex(a => a.id === id);
-    if(idx >= 0){
-      anns.splice(idx,1);
-      // remove DOM
-      selectedSVGEl.remove();
-      selectedSVGEl = null;
-    }
+    if(idx >= 0){ anns.splice(idx,1); selectedSVGEl.remove(); selectedSVGEl = null; refreshPage(); }
     window.removeEventListener('keydown', onKeyDownDelete);
   }
 }
 
-// click on canvas to create items for some tools (text) or start drag for others
+function selectAnnotation(svgEl, ann, svgRoot){
+  highlightSelected(svgEl);
+  // ensure handles are visible (handled by drawAnnotationOnSVG which creates handles)
+}
+
+// click on empty space deselects
+document.addEventListener('click', (e)=> {
+  if(selectedSVGEl){ selectedSVGEl.style.outline = 'none'; selectedSVGEl = null; window.removeEventListener('keydown', onKeyDownDelete); }
+});
+
+// Creation interactions (click to add text, drag to add shapes)
 function attachSvgEvents(svg, canvas, pageNum){
-  let isDrawing=false, startX=0, startY=0, curRect=null;
+  let isDrawing=false, startX=0, startY=0, curTemp=null;
   const pageW = canvas.width, pageH = canvas.height;
   svg.addEventListener('mousedown', (e)=> {
     if(activeTool === 'select') return;
@@ -442,121 +542,93 @@ function attachSvgEvents(svg, canvas, pageNum){
     startX = e.clientX - rect.left; startY = e.clientY - rect.top;
     isDrawing = true;
     if(activeTool === 'text'){
-      // add text annotation at click position
       const normX = startX / pageW, normY = startY / pageH;
-      const ann = { id: 'a'+Math.random().toString(36).slice(2,9), type:'text', x: normX, y: normY, color: annotColor, size: textSize, text:'New text' };
+      const ann = { id:'a'+Math.random().toString(36).slice(2,9), type:'text', x: normX, y: normY, color: annotColor, size: textSize, text:'New text' };
       annotations[pageNum].push(ann);
       drawAnnotationOnSVG(svg, ann, pageW, pageH);
       setTimeout(()=> {
-        // prompt inline edit
         const newText = prompt('Edit text', ann.text);
-        if(newText !== null) {
-          ann.text = newText;
-          // refresh
-          refreshSVG(svg, pageNum, pageW, pageH);
-        }
+        if(newText !== null){ ann.text = newText; refreshSVG(svg, pageNum, pageW, pageH); }
       }, 40);
       isDrawing = false;
     } else if(activeTool === 'highlight' || activeTool === 'rect' || activeTool === 'ellipse'){
-      // create a temporary rect/ellipse
       const svgNS = 'http://www.w3.org/2000/svg';
       if(activeTool === 'highlight' || activeTool === 'rect'){
-        curRect = document.createElementNS(svgNS,'rect');
-        curRect.setAttribute('x', startX); curRect.setAttribute('y', startY); curRect.setAttribute('width', 0); curRect.setAttribute('height', 0);
-        curRect.setAttribute('fill', activeTool === 'highlight' ? annotColor : 'transparent');
-        if(activeTool === 'highlight') curRect.setAttribute('fill-opacity', 0.35);
-        curRect.setAttribute('stroke', annotColor); curRect.setAttribute('stroke-width', 1.5);
-        svg.appendChild(curRect);
+        curTemp = document.createElementNS(svgNS,'rect');
+        curTemp.setAttribute('x', startX); curTemp.setAttribute('y', startY); curTemp.setAttribute('width', 0); curTemp.setAttribute('height', 0);
+        curTemp.setAttribute('fill', activeTool === 'highlight' ? annotColor : 'transparent');
+        if(activeTool === 'highlight') curTemp.setAttribute('fill-opacity', 0.35);
+        curTemp.setAttribute('stroke', annotColor); curTemp.setAttribute('stroke-width', 1.5);
+        svg.appendChild(curTemp);
       } else if(activeTool === 'ellipse'){
-        curRect = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
-        curRect.setAttribute('cx', startX); curRect.setAttribute('cy', startY); curRect.setAttribute('rx',0); curRect.setAttribute('ry',0);
-        curRect.setAttribute('stroke', annotColor); curRect.setAttribute('fill','transparent'); curRect.setAttribute('stroke-width',1.6);
-        svg.appendChild(curRect);
+        curTemp = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+        curTemp.setAttribute('cx', startX); curTemp.setAttribute('cy', startY); curTemp.setAttribute('rx',0); curTemp.setAttribute('ry',0);
+        curTemp.setAttribute('stroke', annotColor); curTemp.setAttribute('fill','transparent'); curTemp.setAttribute('stroke-width',1.6);
+        svg.appendChild(curTemp);
       }
     }
   });
   svg.addEventListener('mousemove', (e)=> {
-    if(!isDrawing || !curRect) return;
+    if(!isDrawing || !curTemp) return;
     const rect = svg.getBoundingClientRect();
     const mx = e.clientX - rect.left, my = e.clientY - rect.top;
     const x = Math.min(startX, mx), y = Math.min(startY, my), w = Math.abs(mx - startX), h = Math.abs(my - startY);
-    if(curRect.tagName === 'rect'){
-      curRect.setAttribute('x', x); curRect.setAttribute('y', y); curRect.setAttribute('width', w); curRect.setAttribute('height', h);
-    } else if(curRect.tagName === 'ellipse'){
-      curRect.setAttribute('cx', x + w/2); curRect.setAttribute('cy', y + h/2); curRect.setAttribute('rx', w/2); curRect.setAttribute('ry', h/2);
-    }
+    if(curTemp.tagName === 'rect'){ curTemp.setAttribute('x', x); curTemp.setAttribute('y', y); curTemp.setAttribute('width', w); curTemp.setAttribute('height', h); }
+    else if(curTemp.tagName === 'ellipse'){ curTemp.setAttribute('cx', x + w/2); curTemp.setAttribute('cy', y + h/2); curTemp.setAttribute('rx', w/2); curTemp.setAttribute('ry', h/2); }
   });
   svg.addEventListener('mouseup', (e)=> {
-    if(isDrawing && curRect){
-      const rectBox = curRect.getBBox();
-      // normalized
+    if(isDrawing && curTemp){
+      const rectBox = curTemp.getBBox();
       const ann = { id:'a'+Math.random().toString(36).slice(2,9), type: (activeTool === 'highlight' ? 'highlight' : (activeTool==='rect'?'rect':'ellipse')), x: rectBox.x / pageW, y: rectBox.y / pageH, w: rectBox.width / pageW, h: rectBox.height / pageH, color: annotColor, opacity: 0.35 };
-      // push to annotations and refresh
       annotations[pageNum].push(ann);
-      // remove temp and redraw using drawAnnotationOnSVG
-      curRect.remove(); curRect = null;
+      curTemp.remove(); curTemp = null;
       drawAnnotationOnSVG(svg, ann, pageW, pageH);
     }
     isDrawing = false;
   });
-  // clicking empty space deselects
   svg.addEventListener('click', (e)=> {
+    // clicking empty area deselects
     if(selectedSVGEl){ selectedSVGEl.style.outline = 'none'; selectedSVGEl = null; window.removeEventListener('keydown', onKeyDownDelete); }
   });
 }
 
-// refresh svg overlay (clear and redraw)
+// refresh svg overlay (clear & redraw)
 function refreshSVG(svg, pageNum, pageW, pageH){
   while(svg.firstChild) svg.removeChild(svg.firstChild);
   const pageAnn = annotations[pageNum] || [];
   pageAnn.forEach(a => drawAnnotationOnSVG(svg, a, pageW, pageH));
 }
 
-// --- export logic (pdf-lib) ---
+// Export using pdf-lib
 exportBtn.addEventListener('click', async ()=>{
   if(!pdfFileBuffer) { alert('Load a PDF first'); return; }
   try{
     setProgress(5);
-    // load original PDF
     const src = await PDFLib.PDFDocument.load(pdfFileBuffer, { ignoreEncryption: true });
     const out = await PDFLib.PDFDocument.create();
     const total = src.getPageCount();
-    // copy pages
     const copiedPages = await out.copyPages(src, Array.from({length: total}, (_,i)=>i));
-    // add pages to out doc
-    for(let i=0;i<total;i++){ out.addPage(copiedPages[i]); }
+    for(let i=0;i<total;i++) out.addPage(copiedPages[i]);
     setProgress(30);
-    // now iterate pages and draw annotations
     for(let i=1;i<=total;i++){
       const page = out.getPage(i-1);
       const annList = annotations[i] || [];
-      if(annList.length === 0) { setProgress(30 + (i/total)*60); continue; }
-      // get page size in PDF points
+      if(annList.length === 0){ setProgress(30 + (i/total)*60); continue; }
       const { width, height } = page.getSize();
-      // draw each annotation
       for(const ann of annList){
         if(ann.type === 'text'){
           const x = ann.x * width;
-          // PDF-lib draws text from bottom-left; our normalized y is top-based from canvas, so convert:
           const y = height - (ann.y * height);
-          // draw text
-          page.drawText(ann.text || '', {
-            x: x,
-            y: y,
-            size: ann.size || 14,
-            color: PDFLib.rgb(...hexToRgbNormalized(ann.color || '#000')),
-            // default font
-          });
+          page.drawText(ann.text || '', { x: x, y: y, size: ann.size || 14, color: PDFLib.rgb(...hexToRgbNormalized(ann.color || '#000')) });
         } else if(ann.type === 'rect' || ann.type === 'highlight'){
           const x = ann.x * width;
           const y = height - (ann.y * height) - (ann.h * height);
           const w = ann.w * width;
           const h = ann.h * height;
           const colorRgb = hexToRgbNormalized(ann.color || '#000');
-          // draw rectangle (stroke + optional fill)
           if(ann.type === 'rect'){
             page.drawRectangle({ x, y, width: w, height: h, borderColor: PDFLib.rgb(...colorRgb), borderWidth: 1.4 });
-          } else { // highlight
+          } else {
             page.drawRectangle({ x, y, width: w, height: h, color: PDFLib.rgb(...colorRgb), opacity: ann.opacity ?? 0.35 });
           }
         } else if(ann.type === 'ellipse'){
@@ -564,8 +636,13 @@ exportBtn.addEventListener('click', async ()=>{
           const cy = height - (ann.y * height) - (ann.h * height)/2;
           const rx = (ann.w * width)/2;
           const ry = (ann.h * height)/2;
-          // pdf-lib does not have direct drawEllipse; approximate with bezier curve path
-          drawEllipseOnPdf(page, cx, cy, rx, ry, ann.color || '#000');
+          // pdf-lib supports drawEllipse in recent builds; use it if available
+          if(typeof page.drawEllipse === 'function'){
+            page.drawEllipse({ x: cx, y: cy, xScale: rx, yScale: ry, borderColor: PDFLib.rgb(...hexToRgbNormalized(ann.color||'#000')), borderWidth: 1.4 });
+          } else {
+            // fallback: draw rectangle border as approximation
+            page.drawRectangle({ x: cx - rx, y: cy - ry, width: rx*2, height: ry*2, borderColor: PDFLib.rgb(...hexToRgbNormalized(ann.color||'#000')), borderWidth: 1.4 });
+          }
         }
       }
       setProgress(30 + (i/total)*60);
@@ -584,32 +661,6 @@ exportBtn.addEventListener('click', async ()=>{
   }
 });
 
-// helper: draw ellipse on pdf using bezier approximation
-function drawEllipseOnPdf(page, cx, cy, rx, ry, colorHex){
-  const color = PDFLib.rgb(...hexToRgbNormalized(colorHex));
-  // approximate ellipse using 4 bezier curves
-  const kappa = 0.5522847498307936;
-  const ox = rx * kappa;
-  const oy = ry * kappa;
-  // start at rightmost point
-  const x0 = cx + rx, y0 = cy;
-  const ops = [
-    ['moveTo', x0, y0],
-    ['bezierCurveTo', cx + rx, cy + oy, cx + ox, cy + ry, cx, cy + ry],
-    ['bezierCurveTo', cx - ox, cy + ry, cx - rx, cy + oy, cx - rx, cy],
-    ['bezierCurveTo', cx - rx, cy - oy, cx - ox, cy - ry, cx, cy - ry],
-    ['bezierCurveTo', cx + ox, cy - ry, cx + rx, cy - oy, cx + rx, cy],
-    ['closePath']
-  ];
-  // begin path
-  const pd = page.getContentStream();
-  // pdf-lib doesn't expose direct low-level path API; use page.drawSvgPath? Not available.
-  // Workaround: draw many small circles approximating ellipse using drawEllipse isn't supported.
-  // We'll draw a rectangle around ellipse with border to approximate (fallback).
-  page.drawEllipse({ x: cx, y: cy, xScale: rx, yScale: ry, borderColor: color, borderWidth: 1.2, color: undefined });
-}
-
-// download helper
 function downloadBlob(blob, filename){
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -619,34 +670,14 @@ function downloadBlob(blob, filename){
   a.remove();
   setTimeout(()=> URL.revokeObjectURL(a.href), 4000);
 }
-
-// hex -> rgb normalized [0..1]
 function hexToRgbNormalized(hex){
   const c = hex.replace('#','');
-  const bigint = parseInt(c.length===3 ? c.split('').map(ch=>ch+ch).join('') : c, 16);
-  const r = (bigint >> 16) & 255;
-  const g = (bigint >> 8) & 255;
-  const b = bigint & 255;
+  const full = c.length===3 ? c.split('').map(ch=>ch+ch).join('') : c;
+  const bigint = parseInt(full, 16);
+  const r = (bigint >> 16) & 255, g = (bigint >> 8) & 255, b = bigint & 255;
   return [r/255, g/255, b/255];
 }
-
-// reset internal state
-function resetState(){
-  pdfDocJS = null; pdfFileBuffer = null; pageCount = 0; currentPage = 0;
-  for(const k in annotations) delete annotations[k];
-  pageArea.innerHTML = '';
-  pageNumberEl.textContent = '0'; pageCountEl.textContent = '0';
-}
-
-// --- utilities / select annotation ---
-function selectAnnotation(svgEl, ann, svgRoot){
-  // highlight and allow delete
-  highlightSelected(svgEl);
-}
-
-// small polyfill: PDFLib page.drawEllipse exists in latest pdf-lib; if not, fallback is used
-// the code uses page.drawEllipse if available in the pdf-lib build; above helper will call drawEllipse.
-
+function resetState(){ pdfDocJS = null; pdfFileBuffer = null; pageCount = 0; currentPage = 0; for(const k in annotations) delete annotations[k]; pageArea.innerHTML = ''; pageNumberEl.textContent = '0'; pageCountEl.textContent = '0'; }
 </script>
 </body>
 </html>
