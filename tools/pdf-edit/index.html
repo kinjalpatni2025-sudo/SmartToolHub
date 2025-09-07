@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Edit PDF Online — Add Text, Shapes & Highlights — Smarttool Hub</title>
+<title>Edit PDF Online — Fixed Preview — Smarttool Hub</title>
 <meta name="description" content="Edit PDF online: add text, shapes, highlights and save back to PDF. 100% client-side. Vector annotations preserved using pdf-lib." />
 <meta name="keywords" content="edit pdf online, pdf editor, add text to pdf, highlight pdf, annotate pdf, pdf shapes client-side" />
 <link rel="icon" href="https://img.icons8.com/fluency/48/edit-file.png" />
@@ -38,20 +38,22 @@ input[type=file]{display:none}
 
 .viewer{flex:1;display:flex;flex-direction:column;gap:12px}
 .viewer-top{display:flex;gap:12px;align-items:center}
-.page-area{background:var(--card);padding:12px;border-radius:10px;border:1px solid var(--border);display:flex;flex-direction:column;gap:10px;align-items:center}
+.page-area{background:var(--card);padding:12px;border-radius:10px;border:1px solid var(--border);display:flex;align-items:flex-start;justify-content:flex-start;gap:10px;overflow:auto;min-height:360px}
 
 /* page container: canvas + svg overlay */
-.page-container{position:relative;background:#ffffff;border-radius:6px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,0.25)}
-.page-canvas{display:block;max-width:100%;height:auto;display:block}
-.svg-overlay{position:absolute;left:0;top:0;pointer-events:auto}
+.page-container{position:relative;background:#ffffff;border-radius:6px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,0.25); flex: 0 0 auto;}
+.page-canvas{display:block;max-width:100%;height:auto;display:block;user-select:none}
+
+/* svg overlay uses viewBox and absolute positioning */
+.svg-overlay{position:absolute;left:0;top:0;display:block;pointer-events:auto;}
 
 /* annotation visuals */
 .annot-text{font-family:Inter, system-ui, Arial; cursor:move}
 .annot-rect{fill:transparent;stroke-width:1.6;stroke:var(--primary);cursor:move}
 .annot-highlight{fill:yellow;opacity:0.35;cursor:move}
 
-/* resize handles container (SVG foreignObject) */
-.handle{fill:#ffffff;stroke:#222;stroke-width:1;cursor:nwse-resize}
+/* resize handles container (SVG) */
+.annot-handle{fill:#fff;stroke:#222;stroke-width:1;cursor:nwse-resize}
 
 /* progress bar */
 .progress{height:10px;background:var(--border);border-radius:999px;overflow:hidden}
@@ -82,8 +84,8 @@ input[type=file]{display:none}
 </header>
 
 <main class="container">
-  <h1 style="color:var(--primary);margin:8px 0">PDF Editor — Add Text, Shapes & Highlights</h1>
-  <p style="color:var(--muted)">Upload a PDF, add annotations (text, rectangle, ellipse, highlights), move and resize them, and export a new PDF with vector annotations — all in your browser.</p>
+  <h1 style="color:var(--primary);margin:8px 0">PDF Editor — Fixed Preview</h1>
+  <p style="color:var(--muted)">Upload a PDF, add annotations, move/resize, export. This version fixes preview overlay alignment.</p>
 
   <label id="uploader" class="uploader" title="Click or drop PDF">
     <div style="font-size:22px;color:var(--primary)"><i class="fa-solid fa-file-pdf"></i></div>
@@ -93,11 +95,10 @@ input[type=file]{display:none}
   </label>
 
   <div class="editor-wrap">
-    <!-- left toolbar -->
-    <aside class="left-panel" aria-label="tools">
+    <aside class="left-panel">
       <div style="font-weight:800;color:var(--primary)">Tools</div>
       <div class="toolbar" id="toolbar">
-        <button class="tool-btn" data-tool="select" id="tool-select"><i class="fa-solid fa-arrow-pointer"></i> Select/Move</button>
+        <button class="tool-btn active" data-tool="select" id="tool-select"><i class="fa-solid fa-arrow-pointer"></i> Select/Move</button>
         <button class="tool-btn" data-tool="text" id="tool-text"><i class="fa-solid fa-font"></i> Add Text</button>
         <button class="tool-btn" data-tool="highlight" id="tool-highlight"><i class="fa-solid fa-highlighter"></i> Highlight</button>
         <button class="tool-btn" data-tool="rect" id="tool-rect"><i class="fa-solid fa-square-full"></i> Rectangle</button>
@@ -108,7 +109,6 @@ input[type=file]{display:none}
         <label class="small">Annotation color</label>
         <input id="annotColor" type="color" value="#ffd200" class="small" style="width:100%;padding:6px"/>
       </div>
-
       <div style="margin-top:10px">
         <label class="small">Text size</label>
         <input id="textSize" type="number" min="8" max="72" value="14" class="small"/>
@@ -122,33 +122,21 @@ input[type=file]{display:none}
       <div style="margin-top:12px">
         <button id="exportBtn" class="tool-btn" style="background:var(--primary);color:#00131f"><i class="fa-solid fa-download"></i> Export PDF</button>
       </div>
-
-      <div style="margin-top:14px;color:var(--muted);font-size:.92rem">
-        <strong>How to use</strong>
-        <ul>
-          <li>Choose a tool, then click (text) or drag (shapes/highlight) on the page.</li>
-          <li>Double-click text to edit. Drag to move annotations. Click to select and use corner handles to resize. Delete to remove.</li>
-          <li>Export creates a new PDF with vector annotations added.</li>
-        </ul>
-      </div>
     </aside>
 
-    <!-- viewer -->
-    <section class="viewer">
+    <section class="viewer" style="min-width:0">
       <div class="viewer-top center">
-        <div style="display:flex;gap:10px;align-items:center">
-          <div><strong>Page</strong> <span id="pageNumber">0</span> / <span id="pageCount">0</span></div>
-        </div>
+        <div><strong>Page</strong> <span id="pageNumber">0</span> / <span id="pageCount">0</span></div>
         <div style="min-width:280px">
           <div class="progress"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
         </div>
       </div>
 
       <div class="page-area" id="pageArea">
-        <!-- page container created dynamically -->
+        <!-- containers will be appended here. Now supports overflow/scroll and top-left alignment -->
       </div>
 
-      <div style="color:var(--muted)">Tip: annotations are saved in-memory — export to download the edited PDF.</div>
+      <div style="color:var(--muted)">Tip: annotations stored in memory. Export to download edited PDF.</div>
     </section>
   </div>
 
@@ -157,35 +145,23 @@ input[type=file]{display:none}
   </div>
 </main>
 
-<!-- FAQ JSON-LD -->
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can I edit PDF text content?","acceptedAnswer":{"@type":"Answer","text":"This editor lets you add new text annotations. It does not alter the original embedded text streams; it adds vector text annotations on top."}},{"@type":"Question","name":"Are files uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No. All processing is done inside your browser; files are not uploaded."}}]}
-</script>
-
-<!-- libs -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <script>pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';</script>
 <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
 
 <script>
-// ========== PDF Editor with Resize Handles ==========
+/* --- State --- */
+let pdfDocJS = null, pdfFileBuffer = null, pageCount = 0, currentPage = 0;
+const annotations = {}; // per-page list
+let activeTool = 'select', annotColor = '#ffd200', textSize = 14;
 
-let pdfDocJS = null;
-let pdfFileBuffer = null;
-let pageCount = 0;
-let currentPage = 0;
-const annotations = {}; // annotations[pageIndex] = [ ... ]
-let activeTool = 'select';
-let annotColor = '#ffd200';
-let textSize = 14;
-
+/* --- DOM refs --- */
 const fileInput = document.getElementById('fileInput');
 const uploader = document.getElementById('uploader');
 const pageArea = document.getElementById('pageArea');
 const progressBar = document.getElementById('progressBar');
 const pageNumberEl = document.getElementById('pageNumber');
 const pageCountEl = document.getElementById('pageCount');
-const toolbar = document.getElementById('toolbar');
 const toolButtons = document.querySelectorAll('.tool-btn');
 const annotColorInput = document.getElementById('annotColor');
 const textSizeInput = document.getElementById('textSize');
@@ -194,9 +170,9 @@ const nextPageBtn = document.getElementById('nextPage');
 const exportBtn = document.getElementById('exportBtn');
 const themeBtn = document.getElementById('themeBtn');
 const themeIcon = document.getElementById('themeIcon');
-
 document.getElementById('year').textContent = new Date().getFullYear();
 
+/* --- Theme --- */
 if(localStorage.getItem('sth_theme') === 'light'){ document.body.classList.add('light'); themeIcon.className='fa-solid fa-sun'; }
 themeBtn.addEventListener('click', ()=> {
   document.body.classList.toggle('light');
@@ -204,6 +180,7 @@ themeBtn.addEventListener('click', ()=> {
   else { localStorage.removeItem('sth_theme'); themeIcon.className='fa-solid fa-moon'; }
 });
 
+/* --- File input --- */
 uploader.addEventListener('click', ()=> fileInput.click());
 uploader.addEventListener('dragover', e=> { e.preventDefault(); uploader.style.borderColor = 'var(--primary)'; });
 uploader.addEventListener('dragleave', e=> { uploader.style.borderColor = ''; });
@@ -212,48 +189,37 @@ fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
 
 async function handleFile(file){
   if(!file) return;
-  if(!(file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))){
-    alert('Please select a PDF file.');
-    return;
-  }
+  if(!(file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))) { alert('Please select a PDF'); return; }
   resetState();
-  setProgress(3);
-  const buf = await file.arrayBuffer();
-  pdfFileBuffer = buf;
+  setProgress(5);
+  pdfFileBuffer = await file.arrayBuffer();
   try{
-    pdfDocJS = await pdfjsLib.getDocument({data:buf}).promise;
-    pageCount = pdfDocJS.numPages;
-    pageCountEl.textContent = pageCount;
-    currentPage = 1;
-    for(let i=1;i<=pageCount;i++) if(!annotations[i]) annotations[i] = [];
+    pdfDocJS = await pdfjsLib.getDocument({data:pdfFileBuffer}).promise;
+    pageCount = pdfDocJS.numPages; pageCountEl.textContent = pageCount; currentPage = 1;
+    for(let i=1;i<=pageCount;i++) if(!annotations[i]) annotations[i]=[];
     await renderPage(currentPage);
     setProgress(100);
-  } catch(err){
-    console.error('Failed to load PDF', err);
-    alert('Failed to load PDF.');
-  } finally { setTimeout(()=> setProgress(0), 400); }
+  } catch(err){ console.error(err); alert('Failed to load PDF'); setProgress(0); }
 }
 
-function setProgress(p){ progressBar.style.width = Math.min(100,Math.max(0,Math.round(p))) + '%'; }
-
-toolButtons.forEach(btn => btn.addEventListener('click', () => {
-  toolButtons.forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+/* --- Tool UI --- */
+toolButtons.forEach(btn => btn.addEventListener('click', ()=> {
+  toolButtons.forEach(b=>b.classList.remove('active')); btn.classList.add('active');
   activeTool = btn.dataset.tool;
 }));
-
-annotColorInput.addEventListener('input', (e) => annotColor = e.target.value);
-textSizeInput.addEventListener('change', (e) => textSize = Number(e.target.value) || 14);
-
+annotColorInput.addEventListener('input', (e)=> annotColor = e.target.value);
+textSizeInput.addEventListener('change', (e)=> textSize = Number(e.target.value) || 14);
 prevPageBtn.addEventListener('click', ()=> { if(currentPage>1) renderPage(currentPage-1); });
 nextPageBtn.addEventListener('click', ()=> { if(currentPage<pageCount) renderPage(currentPage+1); });
 
+function setProgress(p){ progressBar.style.width = Math.min(100,Math.max(0,Math.round(p))) + '%'; }
+
+/* --- Render page with canvas + SVG overlay (fixed alignment) --- */
 async function renderPage(pageNum){
   if(!pdfDocJS) return;
   setProgress(5);
-  currentPage = pageNum;
-  pageNumberEl.textContent = pageNum;
-  pageArea.innerHTML = '';
+  currentPage = pageNum; pageNumberEl.textContent = pageNum;
+  pageArea.innerHTML = ''; // clear
   const page = await pdfDocJS.getPage(pageNum);
   const viewport = page.getViewport({ scale: 1.5 });
   const canvas = document.createElement('canvas');
@@ -263,343 +229,258 @@ async function renderPage(pageNum){
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#fff'; ctx.fillRect(0,0,canvas.width,canvas.height);
   await page.render({ canvasContext: ctx, viewport }).promise;
+
+  // container
   const container = document.createElement('div');
   container.className = 'page-container';
   container.style.width = canvas.width + 'px';
   container.style.height = canvas.height + 'px';
+  container.style.minWidth = '300px';
+  container.style.minHeight = '200px';
+  container.style.margin = '6px';
+
+  // SVG overlay: set viewBox to canvas pixel dims and absolute positioning to top-left
   const svgNS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(svgNS, 'svg');
-  svg.setAttribute('width', canvas.width);
+  svg.setAttribute('viewBox', `0 0 ${canvas.width} ${canvas.height}`);
+  svg.setAttribute('width', canvas.width); // px width
   svg.setAttribute('height', canvas.height);
   svg.classList.add('svg-overlay');
-  svg.style.width = canvas.width + 'px';
-  svg.style.height = canvas.height + 'px';
+  // ensure overlay covers canvas exactly
+  svg.style.left = '0px'; svg.style.top = '0px'; svg.style.width = canvas.width + 'px'; svg.style.height = canvas.height + 'px';
+  svg.style.position = 'absolute';
   svg.style.pointerEvents = 'auto';
-  const pageAnn = annotations[pageNum] || [];
-  pageAnn.forEach(a => drawAnnotationOnSVG(svg, a, canvas.width, canvas.height));
-  attachSvgEvents(svg, canvas, pageNum);
+  // draw existing annotations using the page pixel dims (viewBox ensures correct scaling)
+  (annotations[pageNum] || []).forEach(a => drawAnnotationOnSVG(svg, a, canvas.width, canvas.height));
+  // attach events (mouse coords will use svg.getBoundingClientRect())
+  attachSvgEvents(svg, pageNum);
+
   container.appendChild(canvas);
   container.appendChild(svg);
   pageArea.appendChild(container);
+
   setProgress(60);
   await new Promise(r=>setTimeout(r,50));
   setProgress(100);
   setTimeout(()=> setProgress(0),200);
 }
 
+/* --- Draw annotations (SVG) --- */
 function drawAnnotationOnSVG(svg, ann, pageW, pageH){
   const svgNS = 'http://www.w3.org/2000/svg';
-  const elId = ann.id || ('a'+Math.random().toString(36).slice(2,9));
-  ann.id = elId;
+  const id = ann.id || ('a'+Math.random().toString(36).slice(2,9));
+  ann.id = id;
   if(ann.type === 'text'){
-    const t = document.createElementNS(svgNS, 'text');
-    t.setAttribute('x', ann.x * pageW);
-    t.setAttribute('y', ann.y * pageH);
-    t.setAttribute('fill', ann.color || '#000');
-    t.setAttribute('font-size', ann.size || 14);
-    t.setAttribute('class', 'annot-text');
-    t.setAttribute('data-id', elId);
+    const t = document.createElementNS(svgNS,'text');
+    t.setAttribute('x', ann.x * pageW); t.setAttribute('y', ann.y * pageH);
+    t.setAttribute('fill', ann.color || '#000'); t.setAttribute('font-size', ann.size || 14);
+    t.setAttribute('data-id', id); t.setAttribute('class','annot-text');
     t.textContent = ann.text || 'Text';
-    t.addEventListener('dblclick', (ev)=> {
-      ev.stopPropagation();
-      const newText = prompt('Edit text', ann.text || '');
-      if(newText !== null){ ann.text = newText; t.textContent = newText; }
-    });
-    makeDraggableSVG(t, ann, svg, pageW, pageH);
+    t.addEventListener('dblclick', (e)=> { e.stopPropagation(); const v = prompt('Edit text', ann.text||''); if(v!==null){ ann.text = v; refreshSVG(svg, getPageForSVG(svg), pageW, pageH); } });
     svg.appendChild(t);
-    addResizeHandlesSVG(svg, t, ann, pageW, pageH);
+    addHandlesForSVG(svg, ann, pageW, pageH);
   } else if(ann.type === 'rect' || ann.type === 'highlight'){
-    const r = document.createElementNS(svgNS, 'rect');
-    r.setAttribute('x', ann.x * pageW);
-    r.setAttribute('y', ann.y * pageH);
-    r.setAttribute('width', (ann.w || 0) * pageW);
-    r.setAttribute('height', (ann.h || 0) * pageH);
+    const r = document.createElementNS(svgNS,'rect');
+    r.setAttribute('x', ann.x * pageW); r.setAttribute('y', ann.y * pageH);
+    r.setAttribute('width', (ann.w||0) * pageW); r.setAttribute('height', (ann.h||0) * pageH);
     r.setAttribute('stroke', ann.color || '#000');
-    r.setAttribute('fill', ann.type === 'highlight' ? (ann.color || '#ffff00') : 'transparent');
-    if(ann.type === 'highlight') r.setAttribute('fill-opacity', ann.opacity ?? 0.35);
-    r.setAttribute('stroke-width', 1.5);
-    r.setAttribute('class', ann.type === 'highlight' ? 'annot-highlight' : 'annot-rect');
-    r.setAttribute('data-id', elId);
-    makeDraggableSVG(r, ann, svg, pageW, pageH);
+    if(ann.type === 'highlight'){ r.setAttribute('fill', ann.color || '#ffff00'); r.setAttribute('fill-opacity', ann.opacity ?? 0.35); } else { r.setAttribute('fill','transparent'); }
+    r.setAttribute('stroke-width', 1.5); r.setAttribute('data-id', id);
     svg.appendChild(r);
-    addResizeHandlesSVG(svg, r, ann, pageW, pageH);
+    addHandlesForSVG(svg, ann, pageW, pageH);
   } else if(ann.type === 'ellipse'){
-    const e = document.createElementNS(svgNS, 'ellipse');
-    const cx = (ann.x + (ann.w || 0)/2) * pageW;
-    const cy = (ann.y + (ann.h || 0)/2) * pageH;
-    const rx = (ann.w || 0) * pageW / 2;
-    const ry = (ann.h || 0) * pageH / 2;
+    const cx = (ann.x + (ann.w||0)/2)*pageW;
+    const cy = (ann.y + (ann.h||0)/2)*pageH;
+    const rx = (ann.w||0)*pageW/2; const ry = (ann.h||0)*pageH/2;
+    const e = document.createElementNS(svgNS,'ellipse');
     e.setAttribute('cx', cx); e.setAttribute('cy', cy); e.setAttribute('rx', rx); e.setAttribute('ry', ry);
-    e.setAttribute('stroke', ann.color || '#000'); e.setAttribute('fill','transparent'); e.setAttribute('stroke-width',1.6);
-    e.setAttribute('data-id', elId);
-    makeDraggableSVG(e, ann, svg, pageW, pageH);
+    e.setAttribute('stroke', ann.color || '#000'); e.setAttribute('fill','transparent'); e.setAttribute('stroke-width',1.6); e.setAttribute('data-id', id);
     svg.appendChild(e);
-    addResizeHandlesSVG(svg, e, ann, pageW, pageH);
+    addHandlesForSVG(svg, ann, pageW, pageH);
   }
+  // make annotation draggable / selectable
+  makeAnnotationInteractive(svg, ann, pageW, pageH);
 }
 
-// Make an SVG element draggable AND track normalized coords
-function makeDraggableSVG(svgEl, ann, svgRoot, pageW, pageH){
-  svgEl.style.cursor = 'move';
-  let isDown=false, startX=0, startY=0, origX=0, origY=0;
-  svgEl.addEventListener('mousedown', (e)=> {
-    e.stopPropagation();
-    if(activeTool !== 'select') return; // only move in select mode
-    isDown=true;
-    const pt = svgRoot.getBoundingClientRect();
-    startX = e.clientX - pt.left; startY = e.clientY - pt.top;
-    origX = (ann.x || 0) * pageW; origY = (ann.y || 0) * pageH;
-    highlightSelected(svgEl);
-  });
-  window.addEventListener('mousemove', (e)=> {
-    if(!isDown) return;
-    const pt = svgRoot.getBoundingClientRect();
-    const curX = e.clientX - pt.left, curY = e.clientY - pt.top;
-    const dx = curX - startX, dy = curY - startY;
-    if(ann.type === 'text'){
-      const newX = origX + dx, newY = origY + dy;
-      svgEl.setAttribute('x', newX); svgEl.setAttribute('y', newY);
-      ann.x = newX / pageW; ann.y = newY / pageH;
-      // update handles position if present
-      updateHandlesPosition(svgRoot, ann, pageW, pageH);
-    } else if(ann.type === 'rect' || ann.type === 'highlight'){
-      const newX = origX + dx, newY = origY + dy;
-      svgEl.setAttribute('x', newX); svgEl.setAttribute('y', newY);
-      ann.x = newX / pageW; ann.y = newY / pageH;
-      updateHandlesPosition(svgRoot, ann, pageW, pageH);
-    } else if(ann.type === 'ellipse'){
-      const newCx = (origX + dx) + ((ann.w||0)*pageW)/2;
-      const newCy = (origY + dy) + ((ann.h||0)*pageH)/2;
-      svgEl.setAttribute('cx', newCx); svgEl.setAttribute('cy', newCy);
-      ann.x = (newCx - ((ann.w||0)*pageW)/2) / pageW;
-      ann.y = (newCy - ((ann.h||0)*pageH)/2) / pageH;
-      updateHandlesPosition(svgRoot, ann, pageW, pageH);
-    }
-  });
-  window.addEventListener('mouseup', ()=> { if(isDown) isDown=false; });
-  svgEl.addEventListener('click', (e)=> { e.stopPropagation(); selectAnnotation(svgEl, ann, svgRoot); });
+/* --- Ensure pointer math uses svg bounding rect which accounts for CSS scaling --- */
+function clientToSvgPoint(svg, clientX, clientY){
+  const rect = svg.getBoundingClientRect();
+  const viewBox = svg.viewBox.baseVal;
+  // scale factors
+  const sx = viewBox.width / rect.width;
+  const sy = viewBox.height / rect.height;
+  const x = (clientX - rect.left) * sx;
+  const y = (clientY - rect.top) * sy;
+  return { x, y };
 }
 
-/* ----- Resize handles -----
-   We'll add 4 small square handles (TL, TR, BR, BL). Dragging a handle resizes the annotation.
-   Resize math updates ann.x, ann.y, ann.w, ann.h (normalized).
-*/
-function addResizeHandlesSVG(svgRoot, svgEl, ann, pageW, pageH){
-  // ensure there's a group container for handles per annotation id
-  const svgNS = 'http://www.w3.org/2000/svg';
-  const gid = 'handles_' + ann.id;
-  // remove existing handles if any (to avoid duplicates)
-  const old = svgRoot.querySelector('#' + gid);
-  if(old) old.remove();
-  const g = document.createElementNS(svgNS, 'g');
-  g.setAttribute('id', gid);
-  // compute bbox depending on annotation type
-  let x=0,y=0,w=0,h=0;
-  if(ann.type === 'text'){
-    x = (ann.x || 0) * pageW; y = (ann.y || 0) * pageH; w = (ann.w || 0) * pageW || 60; h = (ann.h || 0) * pageH || parseFloat(ann.size || 14);
-  } else if(ann.type === 'rect' || ann.type === 'highlight'){
-    x = (ann.x || 0) * pageW; y = (ann.y || 0) * pageH; w = (ann.w || 0) * pageW; h = (ann.h || 0) * pageH;
-  } else if(ann.type === 'ellipse'){
-    x = (ann.x || 0) * pageW; y = (ann.y || 0) * pageH; w = (ann.w || 0) * pageW; h = (ann.h || 0) * pageH;
-  }
-  // if zero-size, don't add handles
-  if(w <= 2 && h <= 2) return;
-  // handle positions: tl,tr,br,bl
-  const size = 10;
-  const points = [
-    {cx: x,      cy: y,       name:'tl', cursor:'nwse-resize'},
-    {cx: x + w,  cy: y,       name:'tr', cursor:'nesw-resize'},
-    {cx: x + w,  cy: y + h,   name:'br', cursor:'nwse-resize'},
-    {cx: x,      cy: y + h,   name:'bl', cursor:'nesw-resize'}
-  ];
-  points.forEach(pt => {
-    const rect = document.createElementNS(svgNS, 'rect');
-    rect.setAttribute('x', pt.cx - size/2); rect.setAttribute('y', pt.cy - size/2);
-    rect.setAttribute('width', size); rect.setAttribute('height', size);
-    rect.setAttribute('fill', '#fff'); rect.setAttribute('stroke', '#222'); rect.setAttribute('stroke-width', 1);
-    rect.setAttribute('class', 'annot-handle');
-    rect.style.cursor = pt.cursor;
-    rect.dataset.handle = pt.name;
-    // attach drag handlers
-    makeHandleDraggable(rect, ann, svgRoot, pageW, pageH);
-    g.appendChild(rect);
-  });
-  svgRoot.appendChild(g);
-}
-
-// update handles position after move or resize
-function updateHandlesPosition(svgRoot, ann, pageW, pageH){
-  const gid = 'handles_' + ann.id;
-  const g = svgRoot.querySelector('#' + gid);
-  if(!g) return;
-  let x=0,y=0,w=0,h=0;
-  if(ann.type === 'text'){ x = (ann.x || 0) * pageW; y = (ann.y || 0) * pageH; w = (ann.w || 0) * pageW || 60; h = (ann.h || 0) * pageH || (ann.size||14); }
-  else { x = (ann.x || 0) * pageW; y = (ann.y || 0) * pageH; w = (ann.w || 0) * pageW; h = (ann.h || 0) * pageH; }
-  const rects = g.querySelectorAll('rect.annot-handle');
-  const size = 10;
-  rects.forEach(r => {
-    const name = r.dataset.handle;
-    let cx=0, cy=0;
-    if(name === 'tl'){ cx = x; cy = y; }
-    if(name === 'tr'){ cx = x + w; cy = y; }
-    if(name === 'br'){ cx = x + w; cy = y + h; }
-    if(name === 'bl'){ cx = x; cy = y + h; }
-    r.setAttribute('x', cx - size/2); r.setAttribute('y', cy - size/2);
-  });
-}
-
-// Drag logic for a handle -> resize ann
-function makeHandleDraggable(handleEl, ann, svgRoot, pageW, pageH){
-  let dragging = false, startX=0,startY=0, startAnn = null;
-  handleEl.addEventListener('mousedown', (e)=> {
-    e.stopPropagation();
+/* --- make annotations interactive (click selects, drag moves) --- */
+function makeAnnotationInteractive(svg, ann, pageW, pageH){
+  const el = svg.querySelector(`[data-id="${ann.id}"]`);
+  if(!el) return;
+  el.style.cursor = 'move';
+  let dragging=false, startPt=null, orig={x:0,y:0};
+  el.addEventListener('mousedown', (ev)=>{
+    if(activeTool !== 'select') return;
+    ev.stopPropagation();
     dragging = true;
-    const rect = svgRoot.getBoundingClientRect();
-    startX = e.clientX - rect.left; startY = e.clientY - rect.top;
-    // clone ann for baseline
-    startAnn = Object.assign({}, ann);
-    // prevent selection of other elements
+    startPt = clientToSvgPoint(svg, ev.clientX, ev.clientY);
+    orig.x = ann.x * pageW; orig.y = ann.y * pageH;
+    selectSVGElement(el);
+  });
+  window.addEventListener('mousemove', (ev)=>{
+    if(!dragging) return;
+    const pt = clientToSvgPoint(svg, ev.clientX, ev.clientY);
+    const dx = pt.x - startPt.x, dy = pt.y - startPt.y;
+    ann.x = (orig.x + dx) / pageW;
+    ann.y = (orig.y + dy) / pageH;
+    refreshSVG(svg, getPageForSVG(svg), pageW, pageH);
+  });
+  window.addEventListener('mouseup', ()=> dragging = false);
+}
+
+/* --- add resize handles (TL, TR, BR, BL) --- */
+function addHandlesForSVG(svg, ann, pageW, pageH){
+  const id = 'handles_' + ann.id;
+  const old = svg.getElementById(id); if(old) old.remove();
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g'); g.setAttribute('id', id);
+  const bbox = {
+    x: ann.x * pageW,
+    y: ann.y * pageH,
+    w: (ann.w||0)*pageW || 60,
+    h: (ann.h||0)*pageH || (ann.size||14)
+  };
+  if(bbox.w <= 2 && bbox.h <= 2) return;
+  const size = 10;
+  const pts = [
+    {x: bbox.x, y: bbox.y, n:'tl'},
+    {x: bbox.x + bbox.w, y: bbox.y, n:'tr'},
+    {x: bbox.x + bbox.w, y: bbox.y + bbox.h, n:'br'},
+    {x: bbox.x, y: bbox.y + bbox.h, n:'bl'}
+  ];
+  pts.forEach(p => {
+    const r = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    r.setAttribute('x', p.x - size/2); r.setAttribute('y', p.y - size/2);
+    r.setAttribute('width', size); r.setAttribute('height', size);
+    r.setAttribute('fill', '#fff'); r.setAttribute('stroke', '#222'); r.setAttribute('stroke-width', 1);
+    r.classList.add('annot-handle'); r.dataset.handle = p.n; r.dataset.annId = ann.id;
+    svg.appendChild(r);
+    // drag handler
+    makeHandleDraggable(svg, r, ann, pageW, pageH);
+  });
+}
+
+/* --- Handle dragging/resizing (uses svg coordinate space) --- */
+function makeHandleDraggable(svg, handleEl, ann, pageW, pageH){
+  let dragging=false;
+  let startPt=null;
+  const hb = handleEl.dataset.handle;
+  handleEl.addEventListener('mousedown', (ev)=>{
+    ev.stopPropagation();
+    dragging = true;
+    startPt = clientToSvgPoint(svg, ev.clientX, ev.clientY);
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
   });
-  function onMove(e){
+  function onMove(ev){
     if(!dragging) return;
-    const rect = svgRoot.getBoundingClientRect();
-    const curX = e.clientX - rect.left, curY = e.clientY - rect.top;
-    const dx = curX - startX, dy = curY - startY;
-    // compute original absolute values
-    const ox = (startAnn.x || 0) * pageW, oy = (startAnn.y || 0) * pageH;
-    const ow = (startAnn.w || 0) * pageW, oh = (startAnn.h || 0) * pageH;
-    const handleName = handleEl.dataset.handle;
-    // Depending on handle, compute new bbox
+    const cur = clientToSvgPoint(svg, ev.clientX, ev.clientY);
+    const dx = cur.x - startPt.x, dy = cur.y - startPt.y;
+    // original absolute
+    let ox = ann.x * pageW, oy = ann.y * pageH, ow = (ann.w||0)*pageW, oh = (ann.h||0)*pageH;
     let nx=ox, ny=oy, nw=ow, nh=oh;
-    if(handleName === 'tl'){
-      nx = ox + dx; ny = oy + dy; nw = ow - dx; nh = oh - dy;
-    } else if(handleName === 'tr'){
-      nx = ox; ny = oy + dy; nw = ow + dx; nh = oh - dy;
-    } else if(handleName === 'br'){
-      nx = ox; ny = oy; nw = ow + dx; nh = oh + dy;
-    } else if(handleName === 'bl'){
-      nx = ox + dx; ny = oy; nw = ow - dx; nh = oh + dy;
-    }
-    // Prevent negative sizes: clamp
-    if(nw < 4){ nw = 4; if(handleName === 'tl' || handleName === 'bl') nx = ox + ow - nw; }
-    if(nh < 4){ nh = 4; if(handleName === 'tl' || handleName === 'tr') ny = oy + oh - nh; }
-    // Update ann normalized
+    if(hb === 'tl'){ nx = ox + dx; ny = oy + dy; nw = ow - dx; nh = oh - dy; }
+    if(hb === 'tr'){ nx = ox; ny = oy + dy; nw = ow + dx; nh = oh - dy; }
+    if(hb === 'br'){ nx = ox; ny = oy; nw = ow + dx; nh = oh + dy; }
+    if(hb === 'bl'){ nx = ox + dx; ny = oy; nw = ow - dx; nh = oh + dy; }
+    if(nw < 4){ nw = 4; if(hb === 'tl' || hb === 'bl') nx = ox + ow - nw; }
+    if(nh < 4){ nh = 4; if(hb === 'tl' || hb === 'tr') ny = oy + oh - nh; }
     ann.x = nx / pageW; ann.y = ny / pageH; ann.w = nw / pageW; ann.h = nh / pageH;
-    // Update the corresponding SVG element visuals
-    refreshSVG(svgRoot, getPageForSVG(svgRoot), pageW, pageH);
+    refreshSVG(svg, getPageForSVG(svg), pageW, pageH);
   }
-  function onUp(e){
-    dragging = false;
-    window.removeEventListener('mousemove', onMove);
-    window.removeEventListener('mouseup', onUp);
-  }
+  function onUp(){ dragging=false; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); }
 }
 
-// helper to get current page index for a given svgRoot — locate container and compute page index from DOM
-function getPageForSVG(svgRoot){
-  // the svgRoot lives inside pageArea -> container -> index among children corresponds to page? we only show one page at a time, so return currentPage
-  return currentPage;
+/* --- convert client coords to svg coords used above when creating new ann --- */
+function svgClientPos(svg, clientX, clientY){
+  return clientToSvgPoint(svg, clientX, clientY);
 }
 
-let selectedSVGEl = null;
-function highlightSelected(svgEl){
-  if(selectedSVGEl){ selectedSVGEl.style.outline = 'none'; }
-  selectedSVGEl = svgEl;
-  svgEl.style.outline = '2px dashed rgba(255,255,255,0.12)';
-  window.addEventListener('keydown', onKeyDownDelete);
-}
-function onKeyDownDelete(e){
-  if(e.key === 'Delete' || e.key === 'Backspace'){
-    if(!selectedSVGEl) return;
-    const id = selectedSVGEl.getAttribute('data-id');
-    if(!id) return;
-    const anns = annotations[currentPage] || [];
-    const idx = anns.findIndex(a => a.id === id);
-    if(idx >= 0){ anns.splice(idx,1); selectedSVGEl.remove(); selectedSVGEl = null; refreshPage(); }
-    window.removeEventListener('keydown', onKeyDownDelete);
-  }
-}
-
-function selectAnnotation(svgEl, ann, svgRoot){
-  highlightSelected(svgEl);
-  // ensure handles are visible (handled by drawAnnotationOnSVG which creates handles)
-}
-
-// click on empty space deselects
-document.addEventListener('click', (e)=> {
-  if(selectedSVGEl){ selectedSVGEl.style.outline = 'none'; selectedSVGEl = null; window.removeEventListener('keydown', onKeyDownDelete); }
-});
-
-// Creation interactions (click to add text, drag to add shapes)
-function attachSvgEvents(svg, canvas, pageNum){
-  let isDrawing=false, startX=0, startY=0, curTemp=null;
-  const pageW = canvas.width, pageH = canvas.height;
-  svg.addEventListener('mousedown', (e)=> {
+/* --- attach events for creating annotations on an svg (page-level) --- */
+function attachSvgEvents(svg, pageNum){
+  let isDrawing=false, start=null, tempEl=null;
+  svg.addEventListener('mousedown', (ev)=>{
     if(activeTool === 'select') return;
-    const rect = svg.getBoundingClientRect();
-    startX = e.clientX - rect.left; startY = e.clientY - rect.top;
-    isDrawing = true;
+    const pt = svgClientPos(svg, ev.clientX, ev.clientY);
+    start = pt; isDrawing = true;
     if(activeTool === 'text'){
-      const normX = startX / pageW, normY = startY / pageH;
-      const ann = { id:'a'+Math.random().toString(36).slice(2,9), type:'text', x: normX, y: normY, color: annotColor, size: textSize, text:'New text' };
+      const ann = { id:'a'+Math.random().toString(36).slice(2,9), type:'text', x: pt.x / svg.viewBox.baseVal.width, y: pt.y / svg.viewBox.baseVal.height, color: annotColor, size: textSize, text:'New text' };
       annotations[pageNum].push(ann);
-      drawAnnotationOnSVG(svg, ann, pageW, pageH);
-      setTimeout(()=> {
-        const newText = prompt('Edit text', ann.text);
-        if(newText !== null){ ann.text = newText; refreshSVG(svg, pageNum, pageW, pageH); }
-      }, 40);
+      refreshSVG(svg, pageNum, svg.viewBox.baseVal.width, svg.viewBox.baseVal.height);
+      setTimeout(()=> { const v = prompt('Edit text', ann.text||''); if(v!==null){ ann.text = v; refreshSVG(svg,pageNum,svg.viewBox.baseVal.width,svg.viewBox.baseVal.height); } }, 20);
       isDrawing = false;
-    } else if(activeTool === 'highlight' || activeTool === 'rect' || activeTool === 'ellipse'){
-      const svgNS = 'http://www.w3.org/2000/svg';
-      if(activeTool === 'highlight' || activeTool === 'rect'){
-        curTemp = document.createElementNS(svgNS,'rect');
-        curTemp.setAttribute('x', startX); curTemp.setAttribute('y', startY); curTemp.setAttribute('width', 0); curTemp.setAttribute('height', 0);
-        curTemp.setAttribute('fill', activeTool === 'highlight' ? annotColor : 'transparent');
-        if(activeTool === 'highlight') curTemp.setAttribute('fill-opacity', 0.35);
-        curTemp.setAttribute('stroke', annotColor); curTemp.setAttribute('stroke-width', 1.5);
-        svg.appendChild(curTemp);
-      } else if(activeTool === 'ellipse'){
-        curTemp = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
-        curTemp.setAttribute('cx', startX); curTemp.setAttribute('cy', startY); curTemp.setAttribute('rx',0); curTemp.setAttribute('ry',0);
-        curTemp.setAttribute('stroke', annotColor); curTemp.setAttribute('fill','transparent'); curTemp.setAttribute('stroke-width',1.6);
-        svg.appendChild(curTemp);
-      }
+    } else if(activeTool === 'rect' || activeTool === 'highlight' || activeTool === 'ellipse'){
+      if(activeTool === 'ellipse') tempEl = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+      else tempEl = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      if(activeTool === 'highlight'){ tempEl.setAttribute('fill', annotColor); tempEl.setAttribute('fill-opacity', 0.35); } else { tempEl.setAttribute('fill','transparent'); }
+      tempEl.setAttribute('stroke', annotColor); tempEl.setAttribute('stroke-width',1.5);
+      svg.appendChild(tempEl);
     }
   });
-  svg.addEventListener('mousemove', (e)=> {
-    if(!isDrawing || !curTemp) return;
-    const rect = svg.getBoundingClientRect();
-    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-    const x = Math.min(startX, mx), y = Math.min(startY, my), w = Math.abs(mx - startX), h = Math.abs(my - startY);
-    if(curTemp.tagName === 'rect'){ curTemp.setAttribute('x', x); curTemp.setAttribute('y', y); curTemp.setAttribute('width', w); curTemp.setAttribute('height', h); }
-    else if(curTemp.tagName === 'ellipse'){ curTemp.setAttribute('cx', x + w/2); curTemp.setAttribute('cy', y + h/2); curTemp.setAttribute('rx', w/2); curTemp.setAttribute('ry', h/2); }
+  svg.addEventListener('mousemove', (ev)=>{
+    if(!isDrawing || !tempEl) return;
+    const cur = svgClientPos(svg, ev.clientX, ev.clientY);
+    const x = Math.min(start.x, cur.x), y = Math.min(start.y, cur.y), w = Math.abs(cur.x - start.x), h = Math.abs(cur.y - start.y);
+    if(tempEl.tagName === 'rect'){ tempEl.setAttribute('x', x); tempEl.setAttribute('y', y); tempEl.setAttribute('width', w); tempEl.setAttribute('height', h); }
+    else { tempEl.setAttribute('cx', x + w/2); tempEl.setAttribute('cy', y + h/2); tempEl.setAttribute('rx', w/2); tempEl.setAttribute('ry', h/2); }
   });
-  svg.addEventListener('mouseup', (e)=> {
-    if(isDrawing && curTemp){
-      const rectBox = curTemp.getBBox();
-      const ann = { id:'a'+Math.random().toString(36).slice(2,9), type: (activeTool === 'highlight' ? 'highlight' : (activeTool==='rect'?'rect':'ellipse')), x: rectBox.x / pageW, y: rectBox.y / pageH, w: rectBox.width / pageW, h: rectBox.height / pageH, color: annotColor, opacity: 0.35 };
-      annotations[pageNum].push(ann);
-      curTemp.remove(); curTemp = null;
-      drawAnnotationOnSVG(svg, ann, pageW, pageH);
+  svg.addEventListener('mouseup', (ev)=>{
+    if(isDrawing && tempEl){
+      const vb = svg.viewBox.baseVal;
+      let ann;
+      if(tempEl.tagName === 'rect'){
+        const bb = tempEl.getBBox();
+        ann = { id:'a'+Math.random().toString(36).slice(2,9), type: activeTool === 'highlight' ? 'highlight' : 'rect', x: bb.x / vb.width, y: bb.y / vb.height, w: bb.width / vb.width, h: bb.height / vb.height, color: annotColor, opacity: 0.35 };
+      } else {
+        const bb = tempEl.getBBox();
+        ann = { id:'a'+Math.random().toString(36).slice(2,9), type:'ellipse', x: bb.x / vb.width, y: bb.y / vb.height, w: bb.width / vb.width, h: bb.height / vb.height, color: annotColor };
+      }
+      tempEl.remove(); tempEl = null; annotations[pageNum].push(ann);
+      refreshSVG(svg, pageNum, vb.width, vb.height);
     }
     isDrawing = false;
   });
-  svg.addEventListener('click', (e)=> {
-    // clicking empty area deselects
-    if(selectedSVGEl){ selectedSVGEl.style.outline = 'none'; selectedSVGEl = null; window.removeEventListener('keydown', onKeyDownDelete); }
-  });
+  // deselect on background click
+  svg.addEventListener('click', ()=> { deselectAll(svg); });
 }
 
-// refresh svg overlay (clear & redraw)
+/* --- refresh svg overlay (clear & redraw) --- */
 function refreshSVG(svg, pageNum, pageW, pageH){
+  // remove everything then redraw
   while(svg.firstChild) svg.removeChild(svg.firstChild);
-  const pageAnn = annotations[pageNum] || [];
-  pageAnn.forEach(a => drawAnnotationOnSVG(svg, a, pageW, pageH));
+  (annotations[pageNum]||[]).forEach(a => drawAnnotationOnSVG(svg, a, pageW, pageH));
 }
 
-// Export using pdf-lib
+/* --- helper for selection / deselection --- */
+let currentSelected = null;
+function selectSVGElement(el){
+  deselectAll(el.ownerSVGElement);
+  currentSelected = el;
+  el.style.outline = '2px dashed rgba(255,255,255,0.12)';
+  window.addEventListener('keydown', deleteSelectedOnKey);
+}
+function deselectAll(svg){
+  if(currentSelected){ currentSelected.style.outline = 'none'; currentSelected = null; window.removeEventListener('keydown', deleteSelectedOnKey); }
+}
+function deleteSelectedOnKey(ev){ if(ev.key === 'Delete' || ev.key === 'Backspace'){ if(currentSelected){ const id = currentSelected.getAttribute('data-id'); if(id){ const arr = annotations[currentPage]||[]; const idx = arr.findIndex(a=>a.id===id); if(idx>=0){ arr.splice(idx,1); refreshPage(); } } deselectAll(currentSelected.ownerSVGElement); } } }
+
+/* --- get page index for svg (we only show one page at a time) --- */
+function getPageForSVG(svg){ return currentPage; }
+
+/* --- Refresh current page DOM (re-render) --- */
+function refreshPage(){ renderPage(currentPage); }
+
+/* --- Export using pdf-lib (vector annotations) --- */
 exportBtn.addEventListener('click', async ()=>{
   if(!pdfFileBuffer) { alert('Load a PDF first'); return; }
   try{
@@ -607,41 +488,32 @@ exportBtn.addEventListener('click', async ()=>{
     const src = await PDFLib.PDFDocument.load(pdfFileBuffer, { ignoreEncryption: true });
     const out = await PDFLib.PDFDocument.create();
     const total = src.getPageCount();
-    const copiedPages = await out.copyPages(src, Array.from({length: total}, (_,i)=>i));
-    for(let i=0;i<total;i++) out.addPage(copiedPages[i]);
+    const copied = await out.copyPages(src, Array.from({length: total}, (_,i)=>i));
+    copied.forEach(p => out.addPage(p));
     setProgress(30);
     for(let i=1;i<=total;i++){
       const page = out.getPage(i-1);
       const annList = annotations[i] || [];
-      if(annList.length === 0){ setProgress(30 + (i/total)*60); continue; }
+      if(!annList.length){ setProgress(30 + (i/total)*60); continue; }
       const { width, height } = page.getSize();
       for(const ann of annList){
         if(ann.type === 'text'){
-          const x = ann.x * width;
-          const y = height - (ann.y * height);
-          page.drawText(ann.text || '', { x: x, y: y, size: ann.size || 14, color: PDFLib.rgb(...hexToRgbNormalized(ann.color || '#000')) });
+          const x = ann.x * width; const y = height - (ann.y * height);
+          page.drawText(ann.text||'', { x, y, size: ann.size||14, color: PDFLib.rgb(...hexToRgbNormalized(ann.color||'#000')) });
         } else if(ann.type === 'rect' || ann.type === 'highlight'){
-          const x = ann.x * width;
-          const y = height - (ann.y * height) - (ann.h * height);
-          const w = ann.w * width;
-          const h = ann.h * height;
-          const colorRgb = hexToRgbNormalized(ann.color || '#000');
-          if(ann.type === 'rect'){
-            page.drawRectangle({ x, y, width: w, height: h, borderColor: PDFLib.rgb(...colorRgb), borderWidth: 1.4 });
-          } else {
-            page.drawRectangle({ x, y, width: w, height: h, color: PDFLib.rgb(...colorRgb), opacity: ann.opacity ?? 0.35 });
-          }
+          const x = ann.x * width; const y = height - (ann.y * height) - (ann.h * height);
+          const w = ann.w * width; const h = ann.h * height;
+          const col = hexToRgbNormalized(ann.color || '#000');
+          if(ann.type === 'rect'){ page.drawRectangle({ x, y, width: w, height: h, borderColor: PDFLib.rgb(...col), borderWidth: 1.4 }); }
+          else { page.drawRectangle({ x, y, width: w, height: h, color: PDFLib.rgb(...col), opacity: ann.opacity ?? 0.35 }); }
         } else if(ann.type === 'ellipse'){
           const cx = ann.x * width + (ann.w * width)/2;
           const cy = height - (ann.y * height) - (ann.h * height)/2;
-          const rx = (ann.w * width)/2;
-          const ry = (ann.h * height)/2;
-          // pdf-lib supports drawEllipse in recent builds; use it if available
+          const rx = (ann.w * width)/2; const ry = (ann.h * height)/2;
           if(typeof page.drawEllipse === 'function'){
             page.drawEllipse({ x: cx, y: cy, xScale: rx, yScale: ry, borderColor: PDFLib.rgb(...hexToRgbNormalized(ann.color||'#000')), borderWidth: 1.4 });
           } else {
-            // fallback: draw rectangle border as approximation
-            page.drawRectangle({ x: cx - rx, y: cy - ry, width: rx*2, height: ry*2, borderColor: PDFLib.rgb(...hexToRgbNormalized(ann.color||'#000')), borderWidth: 1.4 });
+            page.drawRectangle({ x: cx-rx, y: cy-ry, width: rx*2, height: ry*2, borderColor: PDFLib.rgb(...hexToRgbNormalized(ann.color||'#000')), borderWidth: 1.4 });
           }
         }
       }
@@ -649,35 +521,27 @@ exportBtn.addEventListener('click', async ()=>{
     }
     setProgress(95);
     const bytes = await out.save();
-    const blob = new Blob([bytes], { type: 'application/pdf' });
-    downloadBlob(blob, 'edited_' + (new Date().toISOString().replace(/[:.]/g,'-')) + '.pdf');
+    downloadBytes(bytes, 'edited_' + (new Date().toISOString().replace(/[:.]/g,'-')) + '.pdf');
     setProgress(100);
     setTimeout(()=> setProgress(0), 800);
-    alert('Export complete. Download should start automatically.');
-  } catch(err){
-    console.error(err);
-    alert('Export failed — see console for details.');
-    setProgress(0);
-  }
+    alert('Export complete — download started.');
+  } catch(err){ console.error(err); alert('Export failed — check console.'); setProgress(0); }
 });
 
-function downloadBlob(blob, filename){
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
+function downloadBytes(bytes, filename){
+  const blob = new Blob([bytes], { type: 'application/pdf' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=> URL.revokeObjectURL(a.href), 4000);
 }
+
 function hexToRgbNormalized(hex){
-  const c = hex.replace('#','');
-  const full = c.length===3 ? c.split('').map(ch=>ch+ch).join('') : c;
-  const bigint = parseInt(full, 16);
-  const r = (bigint >> 16) & 255, g = (bigint >> 8) & 255, b = bigint & 255;
-  return [r/255, g/255, b/255];
+  const c = hex.replace('#',''); const full = c.length===3 ? c.split('').map(ch=>ch+ch).join('') : c;
+  const bigint = parseInt(full,16); const r=(bigint>>16)&255, g=(bigint>>8)&255, b=bigint&255;
+  return [r/255,g/255,b/255];
 }
-function resetState(){ pdfDocJS = null; pdfFileBuffer = null; pageCount = 0; currentPage = 0; for(const k in annotations) delete annotations[k]; pageArea.innerHTML = ''; pageNumberEl.textContent = '0'; pageCountEl.textContent = '0'; }
+
+function resetState(){ pdfDocJS=null; pdfFileBuffer=null; pageCount=0; currentPage=0; for(const k in annotations) delete annotations[k]; pageArea.innerHTML=''; pageNumberEl.textContent='0'; pageCountEl.textContent='0'; setProgress(0); }
+
 </script>
 </body>
 </html>
