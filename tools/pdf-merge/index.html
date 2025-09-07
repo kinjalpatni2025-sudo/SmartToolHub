@@ -3,15 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Merge Multiple PDFs — Smarttool Hub</title>
-  <meta name="description" content="Merge multiple PDF files into a single PDF — upload, reorder, preview file names & page counts, and download the merged PDF. 100% client-side." />
-  <meta name="keywords" content="merge pdf, pdf merge, combine pdf, online pdf merge, merge multiple pdfs" />
+  <title>Merge Multiple PDFs with Page Preview & Page-Range — Smarttool Hub</title>
+  <meta name="description" content="Merge multiple PDFs client-side. Preview pages (thumbnails) using pdf.js, select page ranges per file, reorder files and merge selected pages into one PDF." />
+  <meta name="keywords" content="merge pdf, pdf merge, pdf thumbnails, pdf preview, page range merge, pdf.js, pdf-lib" />
   <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <style>
-    :root{
-      --bg:#0b1220; --text:#eaf2ff; --card:#182335; --border:#2a3b55; --primary:#22d3ee; --muted:#9fb3c8;
-    }
+    :root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8}
     body.light{--bg:#f6f8fb;--text:#0b1220;--card:#fff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
     *{box-sizing:border-box}
     body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text);transition:.22s}
@@ -30,7 +28,8 @@
     .uploader:hover{border-color:var(--primary)}
     input[type=file]{display:none}
     .file-list{margin-top:16px;display:flex;flex-direction:column;gap:10px}
-    .file-item{background:var(--card);border:1px solid var(--border);padding:12px;border-radius:10px;display:flex;gap:12px;align-items:center;justify-content:space-between}
+    .file-item{background:var(--card);border:1px solid var(--border);padding:12px;border-radius:10px;display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-direction:column}
+    .file-head{display:flex;gap:12px;width:100%;align-items:center;justify-content:space-between}
     .file-left{display:flex;gap:12px;align-items:center}
     .pdf-icon{font-size:28px;color:var(--primary)}
     .file-meta{display:flex;flex-direction:column}
@@ -38,6 +37,12 @@
     .file-sub{color:var(--muted);font-size:.9rem}
     .file-actions{display:flex;gap:8px;align-items:center}
     .drag-handle{cursor:grab;color:var(--muted);font-size:16px;padding:6px}
+    .pages-container{margin-top:10px;border-top:1px dashed var(--border);padding-top:10px;display:none}
+    .thumbnails{display:flex;flex-wrap:wrap;gap:8px;max-height:220px;overflow:auto;padding:6px}
+    .thumb-box{width:84px;background:rgba(255,255,255,0.02);padding:6px;border-radius:6px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;align-items:center;gap:6px}
+    .thumb-box canvas{width:72px;height:auto;border-radius:4px;background:#fff}
+    .thumb-label{font-size:11px;color:var(--muted);text-align:center}
+    .range-input{margin-top:8px;display:flex;gap:8px;align-items:center}
     .progress{height:12px;background:var(--border);border-radius:999px;overflow:hidden;margin-top:12px}
     .progress-bar{height:100%;width:0;background:var(--primary);transition:width .2s}
     .actions{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
@@ -48,7 +53,7 @@
     .spinner{width:18px;height:18px;border-radius:50%;border:3px solid rgba(255,255,255,0.08);border-top-color:var(--primary);animation:spin .9s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
     footer{margin-top:24px;padding:12px 0;background:var(--card);border-top:1px solid var(--border)}
-    @media(max-width:820px){.file-item{flex-direction:column;align-items:flex-start}.file-actions{align-self:flex-end}}
+    @media(max-width:820px){.file-head{flex-direction:column;align-items:flex-start}.file-actions{align-self:flex-end}}
   </style>
 </head>
 <body>
@@ -70,8 +75,8 @@
   </header>
 
   <main class="container">
-    <h1>Merge Multiple PDFs</h1>
-    <p class="meta">Upload multiple PDF files, reorder them (drag & drop), and combine every page into a single merged PDF — all in your browser. No uploads to server.</p>
+    <h1>Merge Multiple PDFs — Preview & Page-Range</h1>
+    <p class="meta">Upload PDFs, click <em>Show pages</em> to load thumbnails (pdf.js), select pages (checkboxes or enter ranges like <code>1-3,5</code>), reorder files, and merge selected pages into one PDF. All processing is performed in your browser.</p>
 
     <label class="uploader" id="uploader">
       <div style="font-size:28px;color:var(--primary)"><i class="fa-solid fa-file-pdf"></i></div>
@@ -85,19 +90,18 @@
     <div class="file-list" id="fileList" aria-live="polite"></div>
 
     <div class="actions">
-      <button id="mergeBtn" class="btn btn-primary" disabled><i class="fa-solid fa-object-group"></i> Merge into single PDF</button>
+      <button id="mergeBtn" class="btn btn-primary" disabled><i class="fa-solid fa-object-group"></i> Merge selected pages</button>
       <button id="downloadOriginalsZip" class="btn btn-ghost" disabled><i class="fa-solid fa-file-zipper"></i> Download originals (ZIP)</button>
       <button id="clearBtn" class="btn btn-ghost" disabled><i class="fa-solid fa-trash-can"></i> Clear</button>
       <div class="status" id="status"></div>
     </div>
 
     <section style="margin-top:18px">
-      <h2 style="color:var(--primary)">How to use</h2>
-      <ol>
-        <li>Click or drag PDFs into the uploader.</li>
-        <li>Drag items in the list to reorder them — the merge will preserve this order.</li>
-        <li>Click <strong>Merge into single PDF</strong> to create and download the merged document.</li>
-      </ol>
+      <h2 style="color:var(--primary)">Notes</h2>
+      <ul>
+        <li>Thumbnails load on demand (click "Show pages") to save resources for large batches.</li>
+        <li>For very large merges, use a modern desktop browser. Merging happens sequentially to reduce memory spikes.</li>
+      </ul>
     </section>
   </main>
 
@@ -106,235 +110,347 @@
     <div style="color:var(--muted)">Privacy • Terms • Contact</div>
   </footer>
 
-  <!-- FAQ JSON-LD -->
+  <!-- SEO JSON-LD -->
   <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can I merge multiple PDFs?","acceptedAnswer":{"@type":"Answer","text":"Yes — upload multiple PDF files, reorder them and click merge. The merged PDF will be downloaded to your device."}},{"@type":"Question","name":"Are files uploaded to server?","acceptedAnswer":{"@type":"Answer","text":"No. All merging happens client-side in your browser."}}]}
+  {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I merge specific pages?","acceptedAnswer":{"@type":"Answer","text":"Upload PDFs, click Show pages to preview and select pages with checkboxes or type ranges like 1-3,5. Then click Merge selected pages."}}]}
   </script>
 
-  <!-- Libraries -->
+  <!-- Libraries: pdf.js (thumbnails) and pdf-lib (merge), jszip -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';</script>
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
   <script>
-  // ---------- Theme + year ----------
   (function(){
-    const btn = document.getElementById('themeToggle');
-    if(localStorage.getItem('sth_theme') === 'light'){ document.body.classList.add('light'); btn.innerHTML = '<i class="fa-solid fa-sun"></i>'; }
-    btn.addEventListener('click', ()=> {
+    // ---------- theme + year ----------
+    const themeBtn = document.getElementById('themeToggle');
+    if(localStorage.getItem('sth_theme') === 'light'){ document.body.classList.add('light'); themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>'; }
+    themeBtn.addEventListener('click', ()=> {
       document.body.classList.toggle('light');
-      if(document.body.classList.contains('light')){ btn.innerHTML = '<i class="fa-solid fa-sun"></i>'; localStorage.setItem('sth_theme','light'); }
-      else { btn.innerHTML = '<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); }
+      if(document.body.classList.contains('light')){ themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>'; localStorage.setItem('sth_theme','light'); }
+      else { themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); }
     });
     document.getElementById('year').textContent = new Date().getFullYear();
-  })();
 
-  // ---------- DOM refs ----------
-  const uploader = document.getElementById('uploader');
-  const fileInput = document.getElementById('fileInput');
-  const fileList = document.getElementById('fileList');
-  const mergeBtn = document.getElementById('mergeBtn');
-  const downloadOriginalsZip = document.getElementById('downloadOriginalsZip');
-  const clearBtn = document.getElementById('clearBtn');
-  const progressBar = document.getElementById('progressBar');
-  const statusEl = document.getElementById('status');
+    // ---------- DOM refs ----------
+    const uploader = document.getElementById('uploader');
+    const fileInput = document.getElementById('fileInput');
+    const fileList = document.getElementById('fileList');
+    const mergeBtn = document.getElementById('mergeBtn');
+    const downloadOriginalsZip = document.getElementById('downloadOriginalsZip');
+    const clearBtn = document.getElementById('clearBtn');
+    const progressBar = document.getElementById('progressBar');
+    const statusEl = document.getElementById('status');
 
-  // ---------- State ----------
-  // files = [{ id, file, name, size, pageCount }]
-  let files = [];
+    // ---------- state ----------
+    // files: [{ id, file, name, size, pageCount, arrayBuffer, pdfjsDoc, selectedPages:Set }]
+    let files = [];
 
-  // ---------- Helpers ----------
-  function uuid(){ return Math.random().toString(36).slice(2,9); }
-  function showStatus(txt, busy=false, autoMs=0){
-    statusEl.textContent = txt || '';
-    if(busy) statusEl.insertAdjacentHTML('afterbegin','<span class="spinner" aria-hidden="true"></span>');
-    if(autoMs>0) setTimeout(()=> statusEl.textContent = '', autoMs);
-  }
-  function setProgress(p){ progressBar.style.width = Math.min(100,Math.max(0,Math.round(p))) + '%'; }
-  function resetProgress(){ progressBar.style.width = '0%'; }
-  function bytesToSize(bytes){
-    if(bytes === 0) return '0 B';
-    const k = 1024, sizes = ['B','KB','MB','GB','TB'];
-    const i = Math.floor(Math.log(bytes)/Math.log(k));
-    return parseFloat((bytes / Math.pow(k,i)).toFixed(2)) + ' ' + sizes[i];
-  }
-  function triggerDownload(blob, name){
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = name;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(()=> URL.revokeObjectURL(a.href), 3000);
-  }
+    // ---------- helpers ----------
+    function uuid(){ return Math.random().toString(36).slice(2,9); }
+    function showStatus(txt, busy=false, hideMs=0){ statusEl.textContent = txt || ''; if(busy) statusEl.insertAdjacentHTML('afterbegin','<span class="spinner" aria-hidden="true"></span>'); if(hideMs) setTimeout(()=> statusEl.textContent='', hideMs); }
+    function setProgress(p){ progressBar.style.width = Math.min(100,Math.max(0,Math.round(p))) + '%'; }
+    function resetProgress(){ progressBar.style.width = '0%'; }
+    function bytesToSize(bytes){ if(bytes === 0) return '0 B'; const k=1024,sizes=['B','KB','MB','GB']; const i=Math.floor(Math.log(bytes)/Math.log(k)); return (bytes/Math.pow(k,i)).toFixed(2) + ' ' + sizes[i]; }
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
-  // ---------- File input & drop ----------
-  uploader.addEventListener('click', ()=> fileInput.click());
-  uploader.addEventListener('dragover', e => { e.preventDefault(); uploader.style.borderColor = 'var(--primary)'; });
-  uploader.addEventListener('dragleave', e => { uploader.style.borderColor = ''; });
-  uploader.addEventListener('drop', e => { e.preventDefault(); uploader.style.borderColor = ''; handleFiles(e.dataTransfer.files); });
-  fileInput.addEventListener('change', e => handleFiles(e.target.files));
+    // ---------- file input and drop handlers ----------
+    uploader.addEventListener('click', ()=> fileInput.click());
+    uploader.addEventListener('dragover', e => { e.preventDefault(); uploader.style.borderColor = 'var(--primary)'; });
+    uploader.addEventListener('dragleave', e => { uploader.style.borderColor = ''; });
+    uploader.addEventListener('drop', e => { e.preventDefault(); uploader.style.borderColor = ''; handleFiles(e.dataTransfer.files); });
+    fileInput.addEventListener('change', e => handleFiles(e.target.files));
 
-  // Read PDFs, get page count using pdf-lib
-  async function handleFiles(list){
-    const array = Array.from(list).filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
-    if(array.length === 0) return;
-    showStatus('Reading PDFs...', true);
-    // process sequentially to avoid heavy parallel memory use
-    for(const f of array){
-      const id = uuid();
-      try{
-        const arr = await f.arrayBuffer();
-        const src = await PDFLib.PDFDocument.load(arr, { ignoreEncryption: true });
-        const pageCount = src.getPageCount();
-        files.push({ id, file: f, name: f.name, size: f.size, pageCount, arrayBuffer: arr });
-      } catch(err){
-        console.warn('Failed to read PDF', f.name, err);
-        // still push with pageCount=0 and no arrayBuffer? skip it
-        files.push({ id, file: f, name: f.name + ' (failed)', size: f.size, pageCount: 0, arrayBuffer: null, error: true });
-      }
-      renderList();
-      updateButtons();
-      await new Promise(r => setTimeout(r, 40)); // let UI breathe
-    }
-    showStatus('', false);
-    fileInput.value = ''; // reset
-  }
-
-  // ---------- Render file list (draggable reorder) ----------
-  function renderList(){
-    fileList.innerHTML = '';
-    if(files.length === 0){ fileList.innerHTML = '<div style="color:var(--muted)">No PDFs added yet.</div>'; return; }
-    files.forEach((it, idx) => {
-      const div = document.createElement('div');
-      div.className = 'file-item';
-      div.draggable = true;
-      div.dataset.id = it.id;
-      div.innerHTML = `
-        <div class="file-left">
-          <div class="pdf-icon"><i class="fa-solid fa-file-pdf"></i></div>
-          <div class="file-meta">
-            <div class="file-name">${escapeHtml(it.name)}</div>
-            <div class="file-sub">${it.pageCount} pages • ${bytesToSize(it.size)}</div>
-          </div>
-        </div>
-        <div class="file-actions">
-          <div class="drag-handle" title="Drag to reorder"><i class="fa-solid fa-grip-lines"></i></div>
-          <button class="btn btn-ghost remove-btn" title="Remove">Remove</button>
-        </div>
-      `;
-      // remove handler
-      div.querySelector('.remove-btn').addEventListener('click', () => {
-        files = files.filter(x => x.id !== it.id);
-        renderList(); updateButtons();
-      });
-      // drag events
-      div.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', it.id); div.style.opacity = '.6'; });
-      div.addEventListener('dragend', () => div.style.opacity = '');
-      div.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
-      div.addEventListener('drop', e => {
-        e.preventDefault();
-        const fromId = e.dataTransfer.getData('text/plain');
-        const toId = it.id;
-        if(!fromId || fromId === toId) return;
-        const fromIdx = files.findIndex(x => x.id === fromId);
-        const toIdx = files.findIndex(x => x.id === toId);
-        if(fromIdx < 0 || toIdx < 0) return;
-        const [moved] = files.splice(fromIdx, 1);
-        files.splice(toIdx, 0, moved);
-        renderList();
-      });
-
-      fileList.appendChild(div);
-    });
-  }
-
-  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-
-  // ---------- Buttons state ----------
-  function updateButtons(){
-    const has = files.length > 0;
-    mergeBtn.disabled = !has;
-    downloadOriginalsZip.disabled = !has;
-    clearBtn.disabled = !has;
-    if(has) showStatus(files.length + ' files ready', false);
-    else showStatus('', false);
-  }
-
-  clearBtn.addEventListener('click', ()=>{ files = []; renderList(); updateButtons(); resetProgress(); });
-
-  // ---------- Merge logic ----------
-  mergeBtn.addEventListener('click', async () => {
-    if(files.length === 0) return;
-    showStatus('Merging PDFs...', true);
-    setProgress(0);
-    try{
-      // create new PDF
-      const mergedPdf = await PDFLib.PDFDocument.create();
-      let totalPages = files.reduce((s,f)=>(f.pageCount||0)+s, 0);
-      if(totalPages === 0){
-        showStatus('No pages found in selected PDFs', false);
-        return;
-      }
-      let processedPages = 0;
-
-      // iterate files in current order
-      for(let i=0;i<files.length;i++){
-        const item = files[i];
-        if(!item.arrayBuffer){
-          // try to reload if arrayBuffer missing (e.g. failed earlier)
-          try{ item.arrayBuffer = await item.file.arrayBuffer(); } catch(e){ continue; }
+    async function handleFiles(list){
+      const arr = Array.from(list).filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+      if(arr.length === 0) return;
+      showStatus('Reading PDFs...', true);
+      for(const f of arr){
+        const id = uuid();
+        try{
+          const buffer = await f.arrayBuffer();
+          // load pdfjs doc to compute page count (fast)
+          let pdfjsDoc = null;
+          try{
+            pdfjsDoc = await pdfjsLib.getDocument({data: buffer}).promise;
+          } catch(err){
+            console.warn('pdf.js failed to parse', f.name, err);
+            pdfjsDoc = null;
+          }
+          const pageCount = pdfjsDoc ? pdfjsDoc.numPages : 0;
+          files.push({ id, file: f, name: f.name, size: f.size, pageCount, arrayBuffer: buffer, pdfjsDoc, selectedPages: new Set() });
+        } catch(err){
+          console.error('Failed to read file', f.name, err);
         }
-        // load source PDF
-        const src = await PDFLib.PDFDocument.load(item.arrayBuffer, { ignoreEncryption: true });
-        const srcPageCount = src.getPageCount();
-        // copy pages
-        const copied = await mergedPdf.copyPages(src, Array.from({length: srcPageCount}, (_,k)=>k));
-        copied.forEach((p) => mergedPdf.addPage(p));
-        processedPages += srcPageCount;
-        // update progress by pages proportion
-        setProgress((processedPages/totalPages)*100);
-        await new Promise(r=>setTimeout(r, 30)); // allow UI updates
+        renderList();
+        updateButtons();
+        await new Promise(r=>setTimeout(r, 30)); // yield
       }
+      fileInput.value = '';
+      showStatus('', false);
+    }
 
-      const mergedBytes = await mergedPdf.save();
-      triggerDownload(new Blob([mergedBytes], { type: 'application/pdf' }), 'merged_documents.pdf');
-      showStatus('Merged PDF ready ✓', false, 2200);
-    } catch(err){
-      console.error('Merge failed', err);
-      showStatus('Merge failed — check console', false);
-    } finally { setTimeout(()=> resetProgress(), 800); }
-  });
+    // ---------- render file list ----------
+    function renderList(){
+      fileList.innerHTML = '';
+      if(files.length === 0){ fileList.innerHTML = '<div style="color:var(--muted)">No PDFs added yet.</div>'; return;}
+      files.forEach((it, idx) => {
+        const div = document.createElement('div');
+        div.className = 'file-item';
+        div.dataset.id = it.id;
+        div.innerHTML = `
+          <div class="file-head">
+            <div class="file-left">
+              <div class="pdf-icon"><i class="fa-solid fa-file-pdf"></i></div>
+              <div class="file-meta">
+                <div class="file-name">${escapeHtml(it.name)}</div>
+                <div class="file-sub">${it.pageCount} pages • ${bytesToSize(it.size)}</div>
+              </div>
+            </div>
+            <div class="file-actions">
+              <div class="drag-handle" title="Drag to reorder"><i class="fa-solid fa-grip-lines"></i></div>
+              <button class="btn btn-ghost show-pages-btn">${it.pdfjsDoc ? 'Show pages' : 'Unable to preview'}</button>
+              <button class="btn btn-ghost remove-btn">Remove</button>
+            </div>
+          </div>
+          <div class="pages-container" aria-hidden="true">
+            <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
+              <div style="display:flex;gap:8px;align-items:center">
+                <button class="btn btn-ghost select-all">Select all</button>
+                <button class="btn btn-ghost deselect-all">Deselect all</button>
+                <input class="range-input-field" placeholder="e.g. 1-3,5" style="padding:6px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text)">
+                <button class="btn btn-ghost apply-range">Apply</button>
+              </div>
+              <div style="color:var(--muted);font-size:.9rem">Selected: <span class="selected-count">0</span></div>
+            </div>
+            <div class="thumbnails" role="list"></div>
+          </div>
+        `;
+        // append then wire events
+        fileList.appendChild(div);
 
-  // ---------- Download originals as ZIP ----------
-  downloadOriginalsZip.addEventListener('click', async () => {
-    if(files.length === 0) return;
-    showStatus('Preparing ZIP...', true);
-    try{
-      const zip = new JSZip();
-      for(let i=0;i<files.length;i++){
-        const it = files[i];
-        // if arrayBuffer available reuse, else read
-        const arr = it.arrayBuffer || await it.file.arrayBuffer();
-        zip.file(sanitize(it.name), arr);
-      }
-      const blob = await zip.generateAsync({ type: 'blob' }, (meta) => {
-        setProgress(meta.percent);
+        const showBtn = div.querySelector('.show-pages-btn');
+        const removeBtn = div.querySelector('.remove-btn');
+        const pagesContainer = div.querySelector('.pages-container');
+        const thumbnailsDiv = div.querySelector('.thumbnails');
+        const selectAllBtn = div.querySelector('.select-all');
+        const deselectAllBtn = div.querySelector('.deselect-all');
+        const applyRangeBtn = div.querySelector('.apply-range');
+        const rangeField = div.querySelector('.range-input-field');
+        const selectedCountEl = div.querySelector('.selected-count');
+
+        // remove handler
+        removeBtn.addEventListener('click', ()=> {
+          files = files.filter(x => x.id !== it.id);
+          renderList(); updateButtons();
+        });
+
+        // show pages handler (lazy load thumbnails)
+        showBtn.addEventListener('click', async () => {
+          if(!it.pdfjsDoc){ alert('Preview not available for this file.'); return; }
+          if(pagesContainer.style.display === 'block'){ pagesContainer.style.display = 'none'; showBtn.textContent = 'Show pages'; return; }
+          // show and populate thumbnails (if not already)
+          pagesContainer.style.display = 'block';
+          showBtn.textContent = 'Hide pages';
+          if(thumbnailsDiv.childElementCount > 0) { updateSelectedCountDisplay(it, selectedCountEl); return; }
+          // render each page thumbnail with checkbox
+          for(let p=1;p<=it.pdfjsDoc.numPages;p++){
+            const page = await it.pdfjsDoc.getPage(p);
+            const viewport = page.getViewport({ scale: 0.2 }); // small thumbnail
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(viewport.width);
+            canvas.height = Math.round(viewport.height);
+            const ctx = canvas.getContext('2d');
+            await page.render({ canvasContext: ctx, viewport }).promise;
+            const box = document.createElement('div');
+            box.className = 'thumb-box';
+            box.innerHTML = `<label style="display:flex;flex-direction:column;align-items:center;gap:6px"><input type="checkbox" class="page-checkbox" data-page="${p}"> <div style="width:72px;height:96px;display:flex;align-items:center;justify-content:center"></div><div class="thumb-label">Page ${p}</div></label>`;
+            box.querySelector('div').appendChild(canvas);
+            // checkbox handler
+            box.querySelector('.page-checkbox').addEventListener('change', (ev) => {
+              if(ev.target.checked) it.selectedPages.add(p-1); else it.selectedPages.delete(p-1);
+              updateSelectedCountDisplay(it, selectedCountEl);
+            });
+            thumbnailsDiv.appendChild(box);
+            // small pause to keep UI responsive on many pages
+            await new Promise(r=>setTimeout(r, 10));
+          }
+          // if user hasn't selected anything, default to select all pages
+          if(it.selectedPages.size === 0){
+            for(let p=0;p<it.pageCount;p++) it.selectedPages.add(p);
+            // check all checkboxes in UI
+            thumbnailsDiv.querySelectorAll('.page-checkbox').forEach(cb => cb.checked = true);
+          }
+          updateSelectedCountDisplay(it, selectedCountEl);
+        });
+
+        // select all/deselect
+        selectAllBtn.addEventListener('click', ()=> {
+          for(let p=0;p<it.pageCount;p++) it.selectedPages.add(p);
+          thumbnailsDiv.querySelectorAll('.page-checkbox').forEach(cb => cb.checked = true);
+          updateSelectedCountDisplay(it, selectedCountEl);
+        });
+        deselectAllBtn.addEventListener('click', ()=> {
+          it.selectedPages.clear();
+          thumbnailsDiv.querySelectorAll('.page-checkbox').forEach(cb => cb.checked = false);
+          updateSelectedCountDisplay(it, selectedCountEl);
+        });
+
+        // apply range e.g. "1-3,5"
+        applyRangeBtn.addEventListener('click', ()=> {
+          const txt = rangeField.value.trim();
+          if(!txt) return;
+          const sel = parseRangeString(txt, it.pageCount);
+          it.selectedPages.clear();
+          sel.forEach(i => it.selectedPages.add(i));
+          // update checkboxes if rendered
+          thumbnailsDiv.querySelectorAll('.page-checkbox').forEach(cb => {
+            const p = Number(cb.dataset.page);
+            cb.checked = it.selectedPages.has(p-1);
+          });
+          updateSelectedCountDisplay(it, selectedCountEl);
+        });
+
+        // drag & drop handlers for reordering files
+        div.querySelector('.drag-handle').addEventListener('mousedown', ()=> { div.style.cursor = 'grabbing'; });
+        div.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', it.id); div.style.opacity = '.6'; });
+        div.addEventListener('dragend', () => div.style.opacity = '');
+        div.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
+        div.addEventListener('drop', e => {
+          e.preventDefault();
+          const fromId = e.dataTransfer.getData('text/plain');
+          const toId = it.id;
+          if(!fromId || fromId === toId) return;
+          const fromIdx = files.findIndex(x => x.id === fromId);
+          const toIdx = files.findIndex(x => x.id === toId);
+          if(fromIdx < 0 || toIdx < 0) return;
+          const [moved] = files.splice(fromIdx, 1);
+          files.splice(toIdx, 0, moved);
+          renderList();
+        });
       });
-      triggerDownload(blob, 'originals.zip');
-      showStatus('ZIP ready ✓', false, 2000);
-    } catch(err){
-      console.error(err);
-      showStatus('ZIP creation failed', false);
-    } finally { setTimeout(()=> resetProgress(), 700); }
-  });
+    }
 
-  // helper sanitize
-  function sanitize(name){ return name.replace(/[^a-z0-9_\-\.]/gi, '_'); }
+    function updateSelectedCountDisplay(fileObj, el){
+      el.textContent = fileObj.selectedPages.size || 0;
+    }
 
-  // initial
-  renderList();
-  updateButtons();
+    // parse range like "1-3,5" -> zero-based page indices within [0..pageCount-1]
+    function parseRangeString(str, pageCount){
+      const s = str.split(',').map(x => x.trim()).filter(Boolean);
+      const out = new Set();
+      s.forEach(token => {
+        if(token.includes('-')){
+          const [a,b] = token.split('-').map(x=>Number(x.trim()));
+          if(!isNaN(a) && !isNaN(b)){
+            const start = Math.max(1, Math.min(a,b));
+            const end = Math.min(pageCount, Math.max(a,b));
+            for(let p=start;p<=end;p++) out.add(p-1);
+          }
+        } else {
+          const n = Number(token);
+          if(!isNaN(n) && n>=1 && n<=pageCount) out.add(n-1);
+        }
+      });
+      return Array.from(out).sort((a,b)=>a-b);
+    }
 
+    // ---------- update buttons ----------
+    function updateButtons(){
+      const has = files.length > 0;
+      mergeBtn.disabled = !has;
+      downloadOriginalsZip.disabled = !has;
+      clearBtn.disabled = !has;
+      if(has) showStatus(files.length + ' files ready', false);
+      else showStatus('', false);
+    }
+    clearBtn.addEventListener('click', ()=>{ files = []; renderList(); updateButtons(); resetProgress(); });
+
+    // ---------- Merge selected pages logic ----------
+    mergeBtn.addEventListener('click', async () => {
+      // compute total selected pages
+      let totalSelected = 0;
+      files.forEach(f => totalSelected += (f.selectedPages.size || 0));
+      if(totalSelected === 0){
+        // if none explicitly selected, default to all pages across files
+        files.forEach(f => {
+          f.selectedPages = new Set(Array.from({length: f.pageCount}, (_,i)=>i));
+        });
+        totalSelected = files.reduce((s,f)=>s+f.pageCount,0);
+      }
+      if(totalSelected === 0){ alert('No pages to merge.'); return; }
+
+      showStatus('Merging selected pages...', true);
+      setProgress(0);
+
+      try{
+        const mergedPdf = await PDFLib.PDFDocument.create();
+        let processed = 0;
+
+        for(let i=0;i<files.length;i++){
+          const it = files[i];
+          // load source pdf with pdf-lib (use stored arrayBuffer)
+          if(!it.arrayBuffer){ it.arrayBuffer = await it.file.arrayBuffer(); }
+          // load src pdf-lib doc
+          const srcDoc = await PDFLib.PDFDocument.load(it.arrayBuffer, { ignoreEncryption: true });
+          // build list of selected indices for this file (zero-based)
+          const selIndices = Array.from(it.selectedPages).sort((a,b)=>a-b);
+          if(selIndices.length === 0) continue; // skip
+          // copy pages
+          const copied = await mergedPdf.copyPages(srcDoc, selIndices);
+          copied.forEach(p => mergedPdf.addPage(p));
+          processed += selIndices.length;
+          setProgress((processed / totalSelected) * 100);
+          await new Promise(r => setTimeout(r, 30));
+        }
+
+        const bytes = await mergedPdf.save();
+        triggerDownload(new Blob([bytes], { type: 'application/pdf' }), 'merged_selected_pages.pdf');
+        showStatus('Merged PDF ready ✓', false, 2200);
+      } catch(err){
+        console.error('Merge error', err);
+        showStatus('Merge failed — check console', false);
+      } finally {
+        setTimeout(()=> resetProgress(), 800);
+      }
+    });
+
+    // ---------- Download originals ZIP ----------
+    downloadOriginalsZip.addEventListener('click', async () => {
+      if(files.length === 0) return;
+      showStatus('Preparing ZIP...', true);
+      try{
+        const zip = new JSZip();
+        for(let i=0;i<files.length;i++){
+          const it = files[i];
+          const arr = it.arrayBuffer || await it.file.arrayBuffer();
+          zip.file(sanitize(it.name), arr);
+        }
+        const blob = await zip.generateAsync({ type: 'blob' }, (meta)=> setProgress(meta.percent));
+        triggerDownload(blob, 'original_pdfs.zip');
+        showStatus('ZIP ready ✓', false, 1800);
+      } catch(err){
+        console.error(err);
+        showStatus('ZIP failed', false);
+      } finally { setTimeout(()=> resetProgress(), 700); }
+    });
+
+    // ---------- helpers ----------
+    function triggerDownload(blob, name){
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=> URL.revokeObjectURL(a.href), 3000);
+    }
+    function sanitize(name){ return name.replace(/[^a-z0-9_\-\.]/gi, '_'); }
+
+    // initial render
+    renderList();
+    updateButtons();
+
+    // expose some globals for debugging (optional)
+    window._sth_files = files;
+
+  })();
   </script>
 </body>
 </html>
