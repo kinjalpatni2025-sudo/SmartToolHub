@@ -27,12 +27,14 @@ header{display:flex;justify-content:space-between;align-items:center;background:
 .uploader{border:2px dashed var(--border);border-radius:10px;padding:18px;text-align:center;cursor:pointer}
 input[type=file]{display:none}
 .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
-label.small{font-size:.9rem;color:var(--muted)}
+label.small{font-size:.9rem;color:var(--muted);display:block}
 input[type=password],input[type=text]{padding:8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text)}
 .progress{height:10px;background:var(--border);border-radius:999px;margin-top:12px;overflow:hidden}
 .progress-bar{height:100%;width:0;background:var(--accent);transition:width .18s}
 .note{color:var(--muted);font-size:.9rem;margin-top:10px}
 footer{margin-top:24px;padding:12px 0;background:var(--card);border-top:1px solid var(--border);text-align:center;color:var(--muted);font-size:.9rem}
+.links{display:flex;gap:8px;align-items:center;justify-content:center}
+@media(max-width:720px){header{flex-direction:column;align-items:flex-start}.row{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -48,72 +50,308 @@ footer{margin-top:24px;padding:12px 0;background:var(--card);border-top:1px soli
       </a>
     </div>
     <div class="header-actions">
-      <a href="../../index.html" class="btn-header"><i class="fa-solid fa-house"></i> Home</a>
-      <button id="themeBtn" class="btn-header" title="Toggle theme"><i class="fa-solid fa-moon"></i></button>
+      <a href="../../index.html" class="btn-header" title="Home"><i class="fa-solid fa-house"></i></a>
+      <button id="themeBtn" class="btn-header" title="Toggle theme"><i id="themeIcon" class="fa-solid fa-moon"></i></button>
     </div>
   </header>
 
   <main class="container">
     <section class="panel" aria-labelledby="encTitle">
       <h2 id="encTitle">Encrypt a file (AES-GCM)</h2>
-      <label id="dropEncrypt" class="uploader" title="Click or drop file">
+
+      <label id="dropEncrypt" class="uploader" title="Click or drop file to encrypt">
         <div style="font-size:22px;color:var(--accent)">📁 ➜ 🔒</div>
         <div style="font-weight:700;margin-top:8px">Click or drag & drop a file to encrypt</div>
+        <div style="color:var(--muted);margin-top:6px;font-size:.95rem">Supported: any file (PDF recommended). Output is custom encrypted container (.enc).</div>
         <input id="fileInputEnc" type="file" />
       </label>
+
       <div class="row" style="align-items:center">
-        <label class="small">Password</label>
-        <input id="encPwd" type="password" placeholder="Enter password" style="min-width:220px">
-        <label class="small">Confirm</label>
-        <input id="encPwd2" type="password" placeholder="Confirm password">
-        <button id="startEncrypt" class="btn-header" style="background:var(--accent);color:#00131f"><i class="fa-solid fa-lock"></i> Encrypt & Download</button>
+        <div>
+          <label class="small">Password</label>
+          <input id="encPwd" type="password" placeholder="Enter a strong password">
+        </div>
+        <div>
+          <label class="small">Confirm</label>
+          <input id="encPwd2" type="password" placeholder="Confirm password">
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button id="startEncrypt" class="btn-header" style="background:var(--accent);color:#00131f"><i class="fa-solid fa-lock"></i>&nbsp; Encrypt & Download</button>
+        </div>
       </div>
-      <div class="progress"><div class="progress-bar" id="encProgress"></div></div>
+
+      <div class="progress" aria-hidden="true"><div class="progress-bar" id="encProgress"></div></div>
       <div id="encStatus" class="note"></div>
+      <div class="note">Important: Use a strong password. If you lose it, the encrypted file cannot be recovered.</div>
     </section>
 
     <section class="panel" aria-labelledby="decTitle">
       <h2 id="decTitle">Decrypt a file</h2>
+
       <label id="dropDecrypt" class="uploader" title="Click or drop encrypted file">
         <div style="font-size:22px;color:var(--accent)">🔒 ➜ 📁</div>
         <div style="font-weight:700;margin-top:8px">Click or drag & drop a .enc file</div>
+        <div style="color:var(--muted);margin-top:6px;font-size:.95rem">Then enter the password to decrypt and download the original file.</div>
         <input id="fileInputDec" type="file" />
       </label>
+
       <div class="row" style="align-items:center">
-        <label class="small">Password</label>
-        <input id="decPwd" type="password" placeholder="Password" style="min-width:220px">
-        <button id="startDecrypt" class="btn-header" style="background:var(--accent);color:#00131f"><i class="fa-solid fa-unlock"></i> Decrypt & Download</button>
+        <div>
+          <label class="small">Password</label>
+          <input id="decPwd" type="password" placeholder="Password used to encrypt">
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button id="startDecrypt" class="btn-header" style="background:var(--accent);color:#00131f"><i class="fa-solid fa-unlock"></i>&nbsp; Decrypt & Download</button>
+        </div>
       </div>
-      <div class="progress"><div class="progress-bar" id="decProgress"></div></div>
+
+      <div class="progress" aria-hidden="true"><div class="progress-bar" id="decProgress"></div></div>
       <div id="decStatus" class="note"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="howTitle">
+      <h3 id="howTitle">How this works (short)</h3>
+      <pre style="white-space:pre-wrap;color:var(--muted);background:rgba(255,255,255,0.02);padding:10px;border-radius:6px;border:1px solid var(--border);">
+- Derive key from password using PBKDF2 (SHA-256) with random salt (200,000 iterations).
+- Encrypt file bytes using AES-GCM with a random IV.
+- Container format:
+  [MAGIC][VERSION(1)][SALT(16)][IV(12)][NAME_LEN(2)][ORIG_NAME][CIPHERTEXT]
+- All operations happen in your browser (Web Crypto). This is NOT Adobe PDF password protection.
+      </pre>
     </section>
   </main>
 
   <footer class="container">
     <div>© <span id="year"></span> Smarttool Hub</div>
-    <div style="color:var(--muted)">Privacy • Terms • Contact</div>
+    <div class="links">
+      <a href="#" style="color:var(--muted);text-decoration:none">Privacy</a> •
+      <a href="#" style="color:var(--muted);text-decoration:none">Terms</a> •
+      <a href="#" style="color:var(--muted);text-decoration:none">Contact</a>
+    </div>
   </footer>
 
 <script>
-/* (same encryption/decryption JS code from previous version here — unchanged) */
+/* ===========================
+   Client-side AES Locker JS
+   =========================== */
 
-// Theme toggle
+/* Config */
+const PBKDF2_ITERS = 200000;        // iterations (tune for security/performance)
+const SALT_BYTES = 16;              // salt length
+const IV_BYTES = 12;                // AES-GCM nonce length (96 bits)
+const KEY_LENGTH = 256;             // bits
+const MAGIC = new TextEncoder().encode('CSPDFENC'); // signature
+const VERSION = 1;                  // 1 byte
+
+/* Helpers */
+async function deriveKey(password, salt, iters = PBKDF2_ITERS){
+  const enc = new TextEncoder();
+  const pwKey = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey({
+    name: 'PBKDF2',
+    salt: salt,
+    iterations: iters,
+    hash: 'SHA-256'
+  }, pwKey, { name: 'AES-GCM', length: KEY_LENGTH }, false, ['encrypt','decrypt']);
+  return key;
+}
+function randomBytes(len){
+  const arr = new Uint8Array(len);
+  crypto.getRandomValues(arr);
+  return arr;
+}
+function concat(...parts){
+  let total = parts.reduce((s,p) => s + p.length, 0);
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for(const p of parts){ out.set(p, offset); offset += p.length; }
+  return out;
+}
+function uint16ToBytes(n){
+  return new Uint8Array([ (n>>8)&0xff, n&0xff ]);
+}
+function bytesToUint16(b, offset){
+  return (b[offset]<<8) | b[offset+1];
+}
+function arraysEqual(a,b){
+  if(a.length !== b.length) return false;
+  for(let i=0;i<a.length;i++) if(a[i] !== b[i]) return false;
+  return true;
+}
+
+/* Encrypt / Decrypt core */
+async function encryptFileWithPassword(file, password, onProgress=(p)=>{}){
+  const arrayBuffer = await file.arrayBuffer();
+  const salt = randomBytes(SALT_BYTES);
+  const iv = randomBytes(IV_BYTES);
+  const key = await deriveKey(password, salt);
+  const cipherBuffer = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, arrayBuffer);
+  const nameBytes = new TextEncoder().encode(file.name);
+  if(nameBytes.length > 65535) throw new Error('Filename too long');
+  const nameLen = uint16ToBytes(nameBytes.length);
+  const header = concat(MAGIC, new Uint8Array([VERSION]), salt, iv, nameLen, nameBytes);
+  const payload = concat(header, new Uint8Array(cipherBuffer));
+  onProgress(100);
+  return payload; // Uint8Array
+}
+
+async function decryptFileWithPassword(encBytes, password, onProgress=(p)=>{}){
+  if(encBytes.length < MAGIC.length + 1 + SALT_BYTES + IV_BYTES + 2) throw new Error('File too short or invalid format');
+  let offset = 0;
+  const magicPart = encBytes.slice(offset, offset + MAGIC.length); offset += MAGIC.length;
+  if(!arraysEqual(magicPart, MAGIC)) throw new Error('Invalid file signature (not created by this tool)');
+  const ver = encBytes[offset]; offset += 1;
+  if(ver !== VERSION) throw new Error('Unsupported version: ' + ver);
+  const salt = encBytes.slice(offset, offset + SALT_BYTES); offset += SALT_BYTES;
+  const iv = encBytes.slice(offset, offset + IV_BYTES); offset += IV_BYTES;
+  const nameLen = bytesToUint16(encBytes, offset); offset += 2;
+  const nameBytes = encBytes.slice(offset, offset + nameLen); offset += nameLen;
+  const origName = new TextDecoder().decode(nameBytes);
+  const ciphertext = encBytes.slice(offset);
+  const key = await deriveKey(password, salt);
+  let plainBuffer;
+  try {
+    plainBuffer = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ciphertext);
+  } catch(e){
+    throw new Error('Decryption failed (wrong password or corrupted file).');
+  }
+  onProgress(100);
+  return { fileBuffer: new Uint8Array(plainBuffer), originalName: origName };
+}
+
+/* UI wiring */
+document.getElementById('year').textContent = new Date().getFullYear?.() || new Date().getFullYear();
+
+const fileInputEnc = document.getElementById('fileInputEnc');
+const fileInputDec = document.getElementById('fileInputDec');
+const dropEncrypt = document.getElementById('dropEncrypt');
+const dropDecrypt = document.getElementById('dropDecrypt');
+const startEncrypt = document.getElementById('startEncrypt');
+const startDecrypt = document.getElementById('startDecrypt');
+const encPwd = document.getElementById('encPwd');
+const encPwd2 = document.getElementById('encPwd2');
+const decPwd = document.getElementById('decPwd');
+const encProgress = document.getElementById('encProgress');
+const decProgress = document.getElementById('decProgress');
+const encStatus = document.getElementById('encStatus');
+const decStatus = document.getElementById('decStatus');
+
+let encFile = null;
+let decFile = null;
+
+/* Drag & drop */
+dropEncrypt.addEventListener('click', ()=> fileInputEnc.click());
+dropDecrypt.addEventListener('click', ()=> fileInputDec.click());
+
+dropEncrypt.addEventListener('dragover', e=>{ e.preventDefault(); dropEncrypt.style.borderColor = 'var(--accent)'; });
+dropEncrypt.addEventListener('dragleave', e=>{ dropEncrypt.style.borderColor = ''; });
+dropEncrypt.addEventListener('drop', e=>{ e.preventDefault(); dropEncrypt.style.borderColor=''; fileInputEnc.files = e.dataTransfer.files; handleEncFile(fileInputEnc.files[0]); });
+
+dropDecrypt.addEventListener('dragover', e=>{ e.preventDefault(); dropDecrypt.style.borderColor = 'var(--accent)'; });
+dropDecrypt.addEventListener('dragleave', e=>{ dropDecrypt.style.borderColor = ''; });
+dropDecrypt.addEventListener('drop', e=>{ e.preventDefault(); dropDecrypt.style.borderColor=''; fileInputDec.files = e.dataTransfer.files; handleDecFile(fileInputDec.files[0]); });
+
+fileInputEnc.addEventListener('change', e => handleEncFile(e.target.files[0]));
+fileInputDec.addEventListener('change', e => handleDecFile(e.target.files[0]));
+
+function handleEncFile(f){
+  encFile = f || null;
+  encStatus.textContent = f ? `Selected: ${f.name} (${formatBytes(f.size)})` : '';
+  encProgress.style.width = '0%';
+}
+function handleDecFile(f){
+  decFile = f || null;
+  decStatus.textContent = f ? `Selected: ${f.name} (${formatBytes(f.size)})` : '';
+  decProgress.style.width = '0%';
+}
+
+/* Actions */
+startEncrypt.addEventListener('click', async ()=>{
+  encStatus.textContent = '';
+  if(!encFile){ encStatus.textContent = 'Please choose a file to encrypt.'; return; }
+  if(!encPwd.value){ encStatus.textContent = 'Please enter a password.'; return; }
+  if(encPwd.value !== encPwd2.value){ encStatus.textContent = 'Password and confirmation do not match.'; return; }
+  try{
+    encProgress.style.width = '5%';
+    encStatus.textContent = 'Deriving key and encrypting... (this may take a moment)';
+    await new Promise(r=>setTimeout(r,80));
+    const payload = await encryptFileWithPassword(encFile, encPwd.value, (p)=> encProgress.style.width = p + '%');
+    const blob = new Blob([payload], { type: 'application/octet-stream' });
+    const outName = (encFile.name.replace(/\.[^/.]+$/, '')) + '.enc';
+    downloadBlob(blob, outName);
+    encStatus.textContent = `Encrypted and downloaded as ${outName}. Keep password safe.`;
+    encProgress.style.width = '100%';
+  } catch(err){
+    console.error(err);
+    encStatus.textContent = 'Encryption failed: ' + (err.message || err);
+    encProgress.style.width = '0%';
+  }
+});
+
+startDecrypt.addEventListener('click', async ()=>{
+  decStatus.textContent = '';
+  if(!decFile){ decStatus.textContent = 'Please choose an encrypted (.enc) file to decrypt.'; return; }
+  if(!decPwd.value){ decStatus.textContent = 'Please enter the password.'; return; }
+  try{
+    decProgress.style.width = '5%';
+    decStatus.textContent = 'Reading and decrypting...';
+    await new Promise(r=>setTimeout(r,80));
+    const bytes = new Uint8Array(await decFile.arrayBuffer());
+    const result = await decryptFileWithPassword(bytes, decPwd.value, (p)=> decProgress.style.width = p + '%');
+    const { fileBuffer, originalName } = result;
+    const blob = new Blob([fileBuffer], { type: 'application/octet-stream' });
+    downloadBlob(blob, originalName);
+    decStatus.textContent = `Decrypted and downloaded ${originalName}.`;
+    decProgress.style.width = '100%';
+  } catch(err){
+    console.error(err);
+    decStatus.textContent = 'Decryption failed: ' + (err.message || err);
+    decProgress.style.width = '0%';
+  }
+});
+
+/* Utilities */
+function downloadBlob(blob, filename){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=> URL.revokeObjectURL(a.href), 4000);
+}
+function formatBytes(bytes, decimals = 2){
+  if(bytes === 0) return '0 B';
+  const k = 1024, dm = decimals < 0 ? 0 : decimals, sizes = ['B','KB','MB','GB','TB'];
+  const i = Math.floor(Math.log(bytes)/Math.log(k));
+  return parseFloat((bytes / Math.pow(k,i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+/* Theme toggle */
 const themeBtn = document.getElementById('themeBtn');
-if(localStorage.getItem('csl_theme')==='light'){
+const themeIcon = document.getElementById('themeIcon');
+if(localStorage.getItem('csl_theme') === 'light'){
   document.body.classList.add('light');
-  themeBtn.innerHTML='<i class="fa-solid fa-sun"></i>';
+  themeIcon.className = 'fa-solid fa-sun';
 }
 themeBtn.addEventListener('click', ()=>{
   document.body.classList.toggle('light');
   if(document.body.classList.contains('light')){
     localStorage.setItem('csl_theme','light');
-    themeBtn.innerHTML='<i class="fa-solid fa-sun"></i>';
+    themeIcon.className = 'fa-solid fa-sun';
   } else {
     localStorage.removeItem('csl_theme');
-    themeBtn.innerHTML='<i class="fa-solid fa-moon"></i>';
+    themeIcon.className = 'fa-solid fa-moon';
   }
 });
-document.getElementById('year').textContent=new Date().getFullYear();
+
+/* Accessibility: Enter key to trigger */
+[encPwd, encPwd2].forEach(el => el.addEventListener('keyup', (e)=> { if(e.key === 'Enter') startEncrypt.click(); }));
+decPwd.addEventListener('keyup', (e)=> { if(e.key === 'Enter') startDecrypt.click(); });
+
+/* Expose for debugging if needed */
+window._cs_encrypt = encryptFileWithPassword;
+window._cs_decrypt = decryptFileWithPassword;
 </script>
 </body>
 </html>
