@@ -1,80 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Batch Rotate PDF — Per-page angles & Accurate Preview — Smarttool Hub</title>
-  <meta name="description" content="Batch rotate PDFs client-side. Upload multiple PDFs, set per-page rotation angles, re-render accurate rotated thumbnails, and download rotated PDFs or a ZIP. Uses pdf.js + pdf-lib." />
-  <meta name="keywords" content="rotate pdf, batch rotate pdf, rotate pages, per-page rotation, pdf preview, pdf.js, pdf-lib, rotate pdf online" />
-  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <style>
-    :root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8}
-    body.light{--bg:#f6f8fb;--text:#0b1220;--card:#fff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text);transition:.22s}
-    .container{max-width:1200px;margin:0 auto;padding:18px}
-    header{display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:12px;border-bottom:1px solid var(--border)}
-    .brand a{display:flex;gap:12px;align-items:center;text-decoration:none;color:inherit}
-    .brand img{width:46px;height:46px;border-radius:8px}
-    .title{font-weight:700;color:var(--primary)}
-    .tag{font-size:.85rem;color:var(--muted)}
-    .header-actions{display:flex;gap:8px;align-items:center}
-    .btn-header{border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;color:var(--text);cursor:pointer;display:flex;gap:8px;align-items:center;text-decoration:none;font-weight:600}
-    main{padding:18px 0}
-    h1{margin:6px 0 8px;color:var(--primary)}
-    .meta{color:var(--muted);margin-bottom:12px}
-    .uploader{min-height:120px;border-radius:12px;border:2px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;background:var(--card);cursor:pointer}
-    .uploader:hover{border-color:var(--primary)}
-    input[type=file]{display:none}
-    .queue{margin-top:18px;display:flex;flex-direction:column;gap:12px}
-    .file-card{background:var(--card);border:1px solid var(--border);padding:12px;border-radius:10px;display:flex;gap:12px;flex-direction:column}
-    .file-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .file-info{display:flex;gap:12px;align-items:center}
-    .file-meta{display:flex;flex-direction:column}
-    .file-name{font-weight:700}
-    .file-sub{color:var(--muted);font-size:.9rem}
-    .file-body{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start}
-    .thumbs{display:flex;gap:8px;flex-wrap:wrap;max-height:220px;overflow:auto;padding:6px;border-radius:8px}
-    .thumb{width:120px;background:rgba(255,255,255,0.02);padding:6px;border-radius:6px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;align-items:center;gap:6px}
-    .thumb canvas{width:100%;height:auto;border-radius:4px;background:#fff}
-    .thumb .label{font-size:.9rem;color:var(--muted);text-align:center}
-    .rotate-controls{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-    .rotate-controls input{width:68px;padding:6px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text)}
-    .small{padding:8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text)}
-    .actions{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
-    .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
-    .btn-primary{background:var(--primary);color:#00131f}
-    .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
-    .progress{height:12px;background:var(--border);border-radius:999px;overflow:hidden;margin-top:12px}
-    .progress-bar{height:100%;width:0;background:var(--primary);transition:width .22s}
-    .status{color:var(--muted);display:flex;align-items:center;gap:8px}
-    .spinner{width:18px;height:18px;border-radius:50%;border:3px solid rgba(255,255,255,0.08);border-top-color:var(--primary);animation:spin .9s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    footer{margin-top:24px;padding:12px 0;background:var(--card);border-top:1px solid var(--border)}
-    @media(max-width:980px){ .file-body{flex-direction:column} .thumb{width:28%} }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Batch Rotate PDF — Per-page angles, Reorder, Export Settings & Preview — Smarttool Hub</title>
+<meta name="description" content="Batch rotate PDFs client-side. Upload multiple PDFs, set per-page rotation angles, drag to reorder pages, accurate preview modal, and export with configurable settings (vector/raster, JPEG/PNG, quality)." />
+<meta name="keywords" content="rotate pdf, batch rotate pdf, rotate pages, reorder pdf pages, preview pdf, export settings, pdf.js, pdf-lib" />
+<link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+/* --- Theme / Layout --- */
+:root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8}
+body.light{--bg:#f6f8fb;--text:#0b1220;--card:#fff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text);transition:.22s}
+.container{max-width:1200px;margin:0 auto;padding:18px}
+header{display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:12px;border-bottom:1px solid var(--border)}
+.brand a{display:flex;gap:12px;align-items:center;text-decoration:none;color:inherit}
+.brand img{width:46px;height:46px;border-radius:8px}
+.title{font-weight:700;color:var(--primary)}
+.tag{font-size:.85rem;color:var(--muted)}
+.header-actions{display:flex;gap:8px;align-items:center}
+.btn-header{border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;color:var(--text);cursor:pointer;display:flex;gap:8px;align-items:center;text-decoration:none;font-weight:600}
+
+/* --- Main UI --- */
+main{padding:18px 0}
+h1{margin:6px 0 8px;color:var(--primary)}
+.meta{color:var(--muted);margin-bottom:12px}
+.uploader{min-height:120px;border-radius:12px;border:2px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;background:var(--card);cursor:pointer}
+.uploader:hover{border-color:var(--primary)}
+input[type=file]{display:none}
+.queue{margin-top:18px;display:flex;flex-direction:column;gap:12px}
+.file-card{background:var(--card);border:1px solid var(--border);padding:12px;border-radius:10px;display:flex;gap:12px;flex-direction:column}
+.file-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.file-info{display:flex;gap:12px;align-items:center}
+.file-meta{display:flex;flex-direction:column}
+.file-name{font-weight:700}
+.file-sub{color:var(--muted);font-size:.9rem}
+.file-body{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;max-height:320px;overflow:auto;padding:6px;border-radius:8px}
+.thumb{width:120px;background:rgba(255,255,255,0.02);padding:6px;border-radius:6px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;align-items:center;gap:6px;cursor:grab;position:relative}
+.thumb.dragging{opacity:.45}
+.thumb canvas{width:100%;height:auto;border-radius:4px;background:#fff}
+.thumb .label{font-size:.9rem;color:var(--muted);text-align:center}
+.rotate-controls{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.rotate-controls input{width:68px;padding:6px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text)}
+.small{padding:8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text)}
+.actions{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
+.btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+.btn-primary{background:var(--primary);color:#00131f}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+.progress{height:12px;background:var(--border);border-radius:999px;overflow:hidden;margin-top:12px}
+.progress-bar{height:100%;width:0;background:var(--primary);transition:width .22s}
+.status{color:var(--muted);display:flex;align-items:center;gap:8px}
+.spinner{width:18px;height:18px;border-radius:50%;border:3px solid rgba(255,255,255,0.08);border-top-color:var(--primary);animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* --- Export settings modal & preview modal --- */
+.modal{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:9999}
+.modal .card{width:92%;max-width:980px;background:var(--card);padding:16px;border-radius:12px;border:1px solid var(--border);display:flex;gap:12px;color:var(--text)}
+.modal .left{flex:1;overflow:auto}
+.modal .right{width:320px}
+.field{margin-bottom:10px}
+.row{display:flex;gap:8px;align-items:center}
+.preview-canvas{width:100%;height:auto;background:#fff;border-radius:6px}
+
+/* reorder handle */
+.reorder-handle{position:absolute;right:6px;top:6px;background:rgba(0,0,0,0.25);padding:6px;border-radius:6px;color:var(--muted);cursor:grab}
+
+footer{margin-top:24px;padding:12px 0;background:var(--card);border-top:1px solid var(--border)}
+@media(max-width:980px){ .file-body{flex-direction:column} .thumb{width:28%} .modal .card{flex-direction:column} .modal .right{width:100%} }
+</style>
 </head>
 <body>
   <header class="container">
     <div class="brand">
       <a href="../../index.html" title="Smarttool Hub home">
         <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub logo">
-        <div>
-          <div class="title">Smarttool Hub</div>
-          <div class="tag">Batch Rotate PDFs — Client-side</div>
-        </div>
+        <div><div class="title">Smarttool Hub</div><div class="tag">Batch Rotate — Reorder & Export Settings</div></div>
       </a>
     </div>
     <div class="header-actions">
       <a href="../../index.html" class="btn-header"><i class="fa-solid fa-house"></i> Home</a>
       <button id="themeToggle" class="btn-header" title="Toggle theme"><i class="fa-solid fa-moon"></i></button>
+      <button id="openExportSettings" class="btn-header" title="Export settings"><i class="fa-solid fa-gear"></i></button>
     </div>
   </header>
 
   <main class="container">
-    <h1>Batch Rotate PDFs — per-page rotation & accurate preview</h1>
-    <p class="meta">Upload multiple PDFs, open each file's thumbnails, set per-page rotation (0 / 90 / 180 / 270), optionally re-render accurate rotated thumbnails, then process the queue and download rotated PDFs (vector when possible; raster fallback) or a ZIP of all rotated files.</p>
+    <h1>Batch Rotate PDFs — Reorder pages, Per-page angles, Accurate Preview & Export Settings</h1>
+    <p class="meta">Upload multiple PDFs, reorder pages (drag thumbnails), set per-page rotation (0/90/180/270), re-render accurate rotated thumbnails if you want, preview pages in a modal, and export using configurable settings (vector-first, raster fallback, JPEG/PNG options).</p>
 
     <label class="uploader" id="uploader">
       <div style="font-size:30px;color:var(--primary)"><i class="fa-solid fa-file-pdf"></i></div>
@@ -88,7 +103,7 @@
     <div class="queue" id="queue"></div>
 
     <div class="actions">
-      <button id="processBtn" class="btn btn-primary" disabled><i class="fa-solid fa-spinner"></i> Process queue & download ZIP</button>
+      <button id="processBtn" class="btn btn-primary" disabled><i class="fa-solid fa-file-zipper"></i> Process queue & download ZIP</button>
       <button id="processSingleBtn" class="btn btn-ghost" disabled><i class="fa-solid fa-file-arrow-down"></i> Process & download individually</button>
       <button id="clearBtn" class="btn btn-ghost" disabled><i class="fa-solid fa-trash-can"></i> Clear all</button>
       <div class="status" id="status"></div>
@@ -97,9 +112,9 @@
     <section style="margin-top:18px;color:var(--muted)">
       <h3 style="color:var(--primary)">Notes</h3>
       <ul>
-        <li>Accurate preview re-render uses <strong>pdf.js</strong> and rotation is applied when rendering (slower for many pages).</li>
-        <li>Final output tries to preserve vectors/text using <strong>pdf-lib</strong> page-copy + rotation. If that fails (encrypted PDFs or incompatible), the tool falls back to rasterizing pages and embedding images (visual output preserved, text becomes image).</li>
-        <li>For per-page rotation angles only multiples of <strong>90°</strong> are supported (0, 90, 180, 270).</li>
+        <li>Drag thumbnails to reorder pages inside a file before exporting.</li>
+        <li>Set per-page rotation via inputs or quick buttons (90° increments only).</li>
+        <li>Use Export Settings (gear icon) to control render scale, raster/vector preference, image format, quality and max width.</li>
       </ul>
     </section>
   </main>
@@ -109,426 +124,585 @@
     <div style="color:var(--muted)">Privacy • Terms • Contact</div>
   </footer>
 
-  <!-- FAQ JSON-LD -->
-  <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can I rotate different pages by different angles?","acceptedAnswer":{"@type":"Answer","text":"Yes — for each uploaded PDF you can set a rotation angle (0,90,180,270) per page."}},{"@type":"Question","name":"Will text remain selectable after rotate?","acceptedAnswer":{"@type":"Answer","text":"If pdf-lib can copy pages and set rotation the output remains vector and text stays selectable. If not, the tool falls back to raster-based output where pages become images."}}]}
-  </script>
+  <!-- Export Settings Modal -->
+  <div id="exportModal" class="modal" aria-hidden="true">
+    <div class="card">
+      <div class="left">
+        <h3 style="color:var(--primary)">Export Settings</h3>
+        <div class="field">
+          <label>Strategy</label>
+          <div class="row">
+            <select id="strategySelect" class="small" title="Vector-first preserves text if possible">
+              <option value="auto">Auto (vector-first, fallback raster)</option>
+              <option value="vector">Vector-only (try pdf-lib copy)</option>
+              <option value="raster">Raster-only (force image embedding)</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Image format (raster result)</label>
+          <div class="row">
+            <select id="imgFormat" class="small"><option value="jpeg">JPEG</option><option value="png">PNG</option></select>
+          </div>
+        </div>
+        <div class="field">
+          <label>JPEG quality (if JPEG)</label>
+          <div class="row">
+            <input id="jpegQuality" type="range" min="0.1" max="1" step="0.05" value="0.75">
+            <span id="jpegQualityLabel" style="margin-left:8px;color:var(--muted)">0.75</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Render scale (preview & raster export)</label>
+          <div class="row">
+            <select id="renderScale" class="small"><option>1.0</option><option selected>1.5</option><option>2.0</option></select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Max width (px) — downscale rendered pages to this width (0 = no downscale)</label>
+          <div class="row"><input id="maxWidth" type="number" class="small" min="0" value="0"></div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button id="saveExportSettings" class="btn btn-primary">Save & Close</button>
+          <button id="closeExportSettings" class="btn btn-ghost">Close</button>
+        </div>
+      </div>
+      <div class="right">
+        <h4 style="color:var(--primary)">Preview</h4>
+        <div id="settingPreview" style="border:1px solid var(--border);padding:8px;border-radius:8px;color:var(--muted)">Settings are saved to localStorage and used when exporting.</div>
+      </div>
+    </div>
+  </div>
 
-  <!-- libs -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-  <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';</script>
-  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- Accurate Preview Modal -->
+  <div id="previewModal" class="modal" aria-hidden="true">
+    <div class="card">
+      <div class="left" id="previewLeft">
+        <h3 style="color:var(--primary)" id="previewTitle">Preview</h3>
+        <canvas id="previewCanvas" class="preview-canvas"></canvas>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button id="prevPage" class="btn btn-ghost small">Prev</button>
+          <button id="nextPage" class="btn btn-ghost small">Next</button>
+          <span style="margin-left:auto;color:var(--muted)"><span id="previewPageInfo">0/0</span></span>
+        </div>
+      </div>
+      <div class="right">
+        <h4 style="color:var(--primary)">Actions</h4>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button id="previewRotateLeft" class="btn btn-ghost small">Rotate Left</button>
+          <button id="previewRotateRight" class="btn btn-ghost small">Rotate Right</button>
+          <button id="previewClose" class="btn btn-primary small">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <script>
-  (function(){
-    // ---------- theme + year ----------
-    const themeBtn = document.getElementById('themeToggle');
-    if(localStorage.getItem('sth_theme') === 'light'){ document.body.classList.add('light'); themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>'; }
-    themeBtn.addEventListener('click', ()=> {
-      document.body.classList.toggle('light');
-      if(document.body.classList.contains('light')){ themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>'; localStorage.setItem('sth_theme','light'); }
-      else { themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); }
-    });
-    document.getElementById('year').textContent = new Date().getFullYear();
+<!-- JSON-LD FAQ (SEO) -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can I reorder pages inside a PDF?","acceptedAnswer":{"@type":"Answer","text":"Yes — drag thumbnails inside a file to reorder pages before exporting."}},{"@type":"Question","name":"Can I preserve text after rotation?","acceptedAnswer":{"@type":"Answer","text":"The tool attempts vector rotation (preserving selectable text) using pdf-lib. If that fails it falls back to raster images — you'll get correct visuals but text becomes an image."}}]}
+</script>
 
-    // ---------- DOM refs ----------
-    const uploader = document.getElementById('uploader');
-    const fileInput = document.getElementById('fileInput');
-    const queueEl = document.getElementById('queue');
-    const processBtn = document.getElementById('processBtn');
-    const processSingleBtn = document.getElementById('processSingleBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const statusEl = document.getElementById('status');
-    const progressBar = document.getElementById('progressBar');
+<!-- libs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';</script>
+<script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
-    // ---------- state ----------
-    // queueFiles: array of { id, file, arrayBuffer, pdfjsDoc, pageCount, pages:[{rotation}], ready }
-    let queueFiles = [];
+<script>
+/* =========================
+   Batch Rotate - All features combined
+   - drag-to-reorder thumbnails
+   - export settings modal (stored to localStorage)
+   - accurate preview modal (in-page)
+   - vector-first export with raster fallback
+   ========================= */
 
-    // ---------- helpers ----------
-    function uuid(){ return Math.random().toString(36).slice(2,9); }
-    function showStatus(txt, busy=false, hideMs=0){
-      statusEl.textContent = txt || '';
-      if(busy) statusEl.insertAdjacentHTML('afterbegin','<span class="spinner" aria-hidden="true"></span>');
-      if(hideMs) setTimeout(()=> statusEl.textContent = '', hideMs);
+(async function(){
+  // ---------- Theme + year ----------
+  const themeBtn = document.getElementById('themeToggle');
+  if(localStorage.getItem('sth_theme') === 'light'){ document.body.classList.add('light'); themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>'; }
+  themeBtn.addEventListener('click', ()=> {
+    document.body.classList.toggle('light');
+    if(document.body.classList.contains('light')){ themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>'; localStorage.setItem('sth_theme','light'); }
+    else { themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); }
+  });
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // ---------- DOM refs ----------
+  const uploader = document.getElementById('uploader');
+  const fileInput = document.getElementById('fileInput');
+  const queueEl = document.getElementById('queue');
+  const processBtn = document.getElementById('processBtn');
+  const processSingleBtn = document.getElementById('processSingleBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const statusEl = document.getElementById('status');
+  const progressBar = document.getElementById('progressBar');
+
+  const exportModal = document.getElementById('exportModal'), openExportSettings = document.getElementById('openExportSettings');
+  const strategySelect = document.getElementById('strategySelect'), imgFormat = document.getElementById('imgFormat'), jpegQuality = document.getElementById('jpegQuality'), jpegQualityLabel = document.getElementById('jpegQualityLabel'), renderScaleSelect = document.getElementById('renderScale'), maxWidthInput = document.getElementById('maxWidth');
+  const saveExportSettings = document.getElementById('saveExportSettings'), closeExportSettings = document.getElementById('closeExportSettings'), settingPreview = document.getElementById('settingPreview');
+
+  const previewModal = document.getElementById('previewModal'), previewCanvas = document.getElementById('previewCanvas'), previewTitle = document.getElementById('previewTitle'), previewPageInfo = document.getElementById('previewPageInfo');
+  const prevPageBtn = document.getElementById('prevPage'), nextPageBtn = document.getElementById('nextPage'), previewRotateLeft = document.getElementById('previewRotateLeft'), previewRotateRight = document.getElementById('previewRotateRight'), previewClose = document.getElementById('previewClose');
+
+  // ---------- state ----------
+  // queueFiles: array of { id, file, arrayBuffer, pdfjsDoc, pageCount, pages:[{rotation}], ready, name }
+  let queueFiles = [];
+  // preview modal state
+  let previewState = { stub: null, pageIndex: 0 };
+
+  // ---------- export settings (persisted) ----------
+  const defaultSettings = { strategy:'auto', imgFormat:'jpeg', jpegQuality:0.75, renderScale:1.5, maxWidth:0 };
+  let exportSettings = Object.assign({}, defaultSettings, JSON.parse(localStorage.getItem('sth_export_settings') || "{}"));
+  // apply to controls
+  strategySelect.value = exportSettings.strategy || 'auto';
+  imgFormat.value = exportSettings.imgFormat || 'jpeg';
+  jpegQuality.value = exportSettings.jpegQuality || 0.75;
+  jpegQualityLabel.textContent = (exportSettings.jpegQuality || 0.75);
+  renderScaleSelect.value = (exportSettings.renderScale || 1.5);
+  maxWidthInput.value = (exportSettings.maxWidth || 0);
+
+  function saveExportSettingsToStorage(){
+    exportSettings.strategy = strategySelect.value;
+    exportSettings.imgFormat = imgFormat.value;
+    exportSettings.jpegQuality = Number(jpegQuality.value);
+    exportSettings.renderScale = Number(renderScaleSelect.value);
+    exportSettings.maxWidth = Number(maxWidthInput.value) || 0;
+    localStorage.setItem('sth_export_settings', JSON.stringify(exportSettings));
+    updateSettingPreview();
+  }
+  function updateSettingPreview(){
+    settingPreview.textContent = `Strategy: ${exportSettings.strategy} • Format: ${exportSettings.imgFormat} • Quality: ${exportSettings.jpegQuality} • Scale: ${exportSettings.renderScale} • Max width: ${exportSettings.maxWidth || 'none'}`;
+  }
+  updateSettingPreview();
+
+  jpegQuality.addEventListener('input', ()=> { jpegQualityLabel.textContent = jpegQuality.value; });
+
+  // ---------- helpers ----------
+  function uuid(){ return Math.random().toString(36).slice(2,9); }
+  function showStatus(txt, busy=false, hideMs=0){
+    statusEl.textContent = txt || '';
+    if(busy) statusEl.insertAdjacentHTML('afterbegin','<span class="spinner" aria-hidden="true"></span>');
+    if(hideMs) setTimeout(()=> statusEl.textContent = '', hideMs);
+  }
+  function setProgress(p){ progressBar.style.width = Math.min(100,Math.max(0,Math.round(p))) + '%'; }
+  function resetProgress(){ progressBar.style.width = '0%'; }
+  function sanitize(name){ return name.replace(/[^a-z0-9_\-\.]/gi, '_'); }
+  function triggerDownload(blob, filename){
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=> URL.revokeObjectURL(a.href), 3000);
+  }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+  // ---------- file input & drop ----------
+  uploader.addEventListener('click', ()=> fileInput.click());
+  uploader.addEventListener('dragover', e => { e.preventDefault(); uploader.style.borderColor = 'var(--primary)'; });
+  uploader.addEventListener('dragleave', e => { uploader.style.borderColor = ''; });
+  uploader.addEventListener('drop', e => { e.preventDefault(); uploader.style.borderColor = ''; handleFiles(e.dataTransfer.files); });
+  fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+  async function handleFiles(fileList){
+    const arr = Array.from(fileList).filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+    if(arr.length === 0) return;
+    showStatus('Adding files...', true);
+    for(const f of arr){
+      const id = uuid();
+      const stub = { id, file: f, arrayBuffer: null, pdfjsDoc: null, pageCount: 0, pages: [], ready: false, name: f.name };
+      queueFiles.push(stub);
+      renderQueue();
+      await loadFile(stub);
     }
-    function setProgress(p){ progressBar.style.width = Math.min(100,Math.max(0,Math.round(p))) + '%'; }
-    function resetProgress(){ progressBar.style.width = '0%'; }
-    function sanitize(name){ return name.replace(/[^a-z0-9_\-\.]/gi, '_'); }
-    function triggerDownload(blob, filename){
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(()=> URL.revokeObjectURL(a.href), 3000);
-    }
+    updateControls();
+    showStatus('Files added', false, 900);
+  }
 
-    // ---------- file input & drop ----------
-    uploader.addEventListener('click', ()=> fileInput.click());
-    uploader.addEventListener('dragover', e => { e.preventDefault(); uploader.style.borderColor = 'var(--primary)'; });
-    uploader.addEventListener('dragleave', e => { uploader.style.borderColor = ''; });
-    uploader.addEventListener('drop', e => { e.preventDefault(); uploader.style.borderColor = ''; handleFiles(e.dataTransfer.files); });
-    fileInput.addEventListener('change', e => handleFiles(e.target.files));
-
-    async function handleFiles(fileList){
-      const arr = Array.from(fileList).filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
-      if(arr.length === 0) return;
-      showStatus('Adding files...', true);
-      for(const f of arr){
-        const id = uuid();
-        const stub = { id, file: f, arrayBuffer: null, pdfjsDoc: null, pageCount: 0, pages: [], ready: false, name: f.name };
-        queueFiles.push(stub);
-        renderQueue();
-        await loadFile(stub); // load sequentially (keeps UI responsive)
+  // load single file, try pdf.js and password prompt (simple)
+  async function loadFile(stub){
+    try{
+      const buffer = await stub.file.arrayBuffer();
+      let pdfjsDoc = null;
+      try{ pdfjsDoc = await pdfjsLib.getDocument({ data: buffer }).promise; }
+      catch(err){
+        if(err && (err.name === 'PasswordException' || /password/i.test(String(err.message || err)))){
+          const pw = prompt('PDF "' + stub.name + '" is password protected. Enter password (client-side):', '');
+          if(pw === null){ stub.ready = false; renderQueue(); return; }
+          pdfjsDoc = await pdfjsLib.getDocument({ data: buffer, password: pw }).promise;
+        } else { console.warn('pdf.js load error', err); stub.ready = false; renderQueue(); return; }
       }
-      updateControls();
-      showStatus('Files added', false, 900);
+      stub.arrayBuffer = buffer;
+      stub.pdfjsDoc = pdfjsDoc;
+      stub.pageCount = pdfjsDoc.numPages;
+      stub.pages = Array.from({length: stub.pageCount}, ()=> ({ rotation:0 }));
+      stub.ready = true;
+      renderQueue();
+    } catch(err){
+      console.error('Failed load', err);
+      stub.ready = false;
+      renderQueue();
     }
+  }
 
-    async function loadFile(stub){
-      try{
-        const buffer = await stub.file.arrayBuffer();
-        // try pdf.js load, handle password detection via prompt (simple)
-        let pdfjsDoc = null;
-        try{
-          pdfjsDoc = await pdfjsLib.getDocument({ data: buffer }).promise;
-        } catch(err){
-          if(err && (err.name === 'PasswordException' || /password/i.test(String(err.message || err)))){
-            const pw = prompt('PDF "' + stub.name + '" is password-protected. Enter password (client-side):', '');
-            if(pw === null){ stub.ready = false; renderQueue(); return; }
-            pdfjsDoc = await pdfjsLib.getDocument({ data: buffer, password: pw }).promise;
-          } else {
-            console.warn('pdf.js load error', err);
-            stub.ready = false; renderQueue(); return;
-          }
-        }
-        stub.arrayBuffer = buffer;
-        stub.pdfjsDoc = pdfjsDoc;
-        stub.pageCount = pdfjsDoc.numPages;
-        stub.pages = Array.from({length: stub.pageCount}, ()=> ({ rotation: 0 }));
-        stub.ready = true;
-        renderQueue();
-      } catch(err){
-        console.error('Failed load', err);
-        stub.ready = false;
-        renderQueue();
-      }
-    }
-
-    // ---------- render queue UI ----------
-    function renderQueue(){
-      queueEl.innerHTML = '';
-      if(queueFiles.length === 0){ queueEl.innerHTML = '<div style="color:var(--muted)">No files in queue.</div>'; return; }
-      queueFiles.forEach((st, idx) => {
-        const fc = document.createElement('div');
-        fc.className = 'file-card';
-        fc.dataset.id = st.id;
-        fc.innerHTML = `
-          <div class="file-head">
-            <div class="file-info">
-              <div style="font-size:20px;color:var(--primary)"><i class="fa-solid fa-file-pdf"></i></div>
-              <div class="file-meta">
-                <div class="file-name">${escapeHtml(st.name)}</div>
-                <div class="file-sub">${st.ready ? (st.pageCount + ' pages') : 'Loading or failed to parse'}</div>
-              </div>
-            </div>
-            <div>
-              <button class="btn btn-ghost btn-preview small" ${st.ready ? '' : 'disabled'}>Accurate preview</button>
-              <button class="btn btn-ghost btn-remove small">Remove</button>
+  // ---------- queue UI rendering (incl. drag-to-reorder) ----------
+  function renderQueue(){
+    queueEl.innerHTML = '';
+    if(queueFiles.length === 0){ queueEl.innerHTML = '<div style="color:var(--muted)">No files in queue.</div>'; return; }
+    queueFiles.forEach(st => {
+      const fc = document.createElement('div'); fc.className = 'file-card'; fc.dataset.id = st.id;
+      fc.innerHTML = `
+        <div class="file-head">
+          <div class="file-info">
+            <div style="font-size:20px;color:var(--primary)"><i class="fa-solid fa-file-pdf"></i></div>
+            <div class="file-meta">
+              <div class="file-name">${escapeHtml(st.name)}</div>
+              <div class="file-sub">${st.ready ? (st.pageCount + ' pages') : 'Loading or failed to parse'}</div>
             </div>
           </div>
-          <div class="file-body">
-            <div style="flex:1">
-              <div class="thumbs"></div>
-            </div>
-            <div style="width:280px;display:flex;flex-direction:column;gap:8px;align-items:flex-end">
-              <div style="width:100%;">
-                <div style="display:flex;align-items:center;justify-content:space-between">
-                  <div style="color:var(--muted)">Per-page rotation (0/90/180/270)</div>
-                  <div style="color:var(--muted)">${st.ready ? ('Pages: '+st.pageCount) : ''}</div>
-                </div>
-                <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
-                  <button class="btn btn-ghost quick-apply small" data-angle="0" ${st.ready? '' : 'disabled'}>0°</button>
-                  <button class="btn btn-ghost quick-apply small" data-angle="90" ${st.ready? '' : 'disabled'}>90°</button>
-                  <button class="btn btn-ghost quick-apply small" data-angle="180" ${st.ready? '' : 'disabled'}>180°</button>
-                  <button class="btn btn-ghost quick-apply small" data-angle="270" ${st.ready? '' : 'disabled'}>270°</button>
-                </div>
+          <div>
+            <button class="btn btn-ghost btn-preview small" ${st.ready ? '' : 'disabled'}>Preview</button>
+            <button class="btn btn-ghost btn-remove small">Remove</button>
+          </div>
+        </div>
+        <div class="file-body">
+          <div style="flex:1"><div class="thumbs"></div></div>
+          <div style="width:280px;display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+            <div style="width:100%;">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div style="color:var(--muted)">Per-page rotation (0/90/180/270)</div>
+                <div style="color:var(--muted)">${st.ready ? ('Pages: '+st.pageCount) : ''}</div>
               </div>
-              <div style="width:100%;display:flex;gap:8px;flex-direction:column">
-                <label style="color:var(--muted)">Render preview rotated thumbnails?</label>
-                <button class="btn btn-ghost render-rotated small" ${st.ready? '' : 'disabled'}>Re-render rotated thumbnails</button>
-                <div style="display:flex;gap:8px;align-items:center;justify-content:flex-end">
-                  <button class="btn btn-primary process-single small" ${st.ready? '' : 'disabled'}>Process file</button>
-                </div>
+              <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn btn-ghost quick-apply small" data-angle="0" ${st.ready? '' : 'disabled'}>0°</button>
+                <button class="btn btn-ghost quick-apply small" data-angle="90" ${st.ready? '' : 'disabled'}>90°</button>
+                <button class="btn btn-ghost quick-apply small" data-angle="180" ${st.ready? '' : 'disabled'}>180°</button>
+                <button class="btn btn-ghost quick-apply small" data-angle="270" ${st.ready? '' : 'disabled'}>270°</button>
+              </div>
+            </div>
+            <div style="width:100%;display:flex;flex-direction:column;gap:6px">
+              <button class="btn btn-ghost render-rotated small" ${st.ready? '' : 'disabled'}>Re-render rotated thumbs</button>
+              <div style="display:flex;gap:8px;align-items:center;justify-content:flex-end">
+                <button class="btn btn-primary process-single small" ${st.ready? '' : 'disabled'}>Process file</button>
               </div>
             </div>
           </div>
-        `;
-        queueEl.appendChild(fc);
+        </div>`;
+      queueEl.appendChild(fc);
 
-        // fill thumbs container (initial unrotated thumbnails)
-        const thumbs = fc.querySelector('.thumbs');
-        if(st.ready){
-          // render lightweight thumbnails (scale small) without rotation
-          for(let p=1;p<=st.pageCount;p++){
-            const box = document.createElement('div');
-            box.className = 'thumb';
-            box.innerHTML = `<canvas></canvas><div class="label">Page ${p}</div><div style="margin-top:4px"><input class="angle-input small" data-page="${p-1}" value="${st.pages[p-1].rotation}" title="Enter 0/90/180/270"></div>`;
-            thumbs.appendChild(box);
-            // render page thumbnail
-            (async function(canvasEl, pdfjsDoc, pageNum){
-              try{
-                const page = await pdfjsDoc.getPage(pageNum);
-                const vp = page.getViewport({ scale: 0.14 });
-                canvasEl.width = Math.round(vp.width); canvasEl.height = Math.round(vp.height);
-                await page.render({ canvasContext: canvasEl.getContext('2d'), viewport: vp }).promise;
-              } catch(err){
-                console.warn('thumb err', err);
-              }
-            })(box.querySelector('canvas'), st.pdfjsDoc, p);
-          }
-        } else {
-          thumbs.innerHTML = '<div style="color:var(--muted)">Unable to show thumbnails</div>';
-        }
-
-        // attach handlers
-        fc.querySelector('.btn-remove').addEventListener('click', ()=> {
-          queueFiles = queueFiles.filter(x => x.id !== st.id);
-          renderQueue(); updateControls();
-        });
-        fc.querySelectorAll('.quick-apply').forEach(b => b.addEventListener('click', ()=> {
-          const angle = Number(b.dataset.angle) || 0;
-          if(!st.ready) return;
-          for(let i=0;i<st.pageCount;i++) st.pages[i].rotation = angle;
-          // update input boxes in thumbs
-          fc.querySelectorAll('.angle-input').forEach(inp => inp.value = angle);
-          showStatus('Applied ' + angle + '° to all pages of ' + st.name, false, 1400);
-        }));
-        // per-page angle input change
-        fc.querySelectorAll('.angle-input').forEach(input => {
-          input.addEventListener('change', (ev) => {
-            const pageIndex = Number(ev.target.dataset.page);
-            const v = Number(ev.target.value) || 0;
-            const normalized = [0,90,180,270].includes(v) ? v : 0;
-            ev.target.value = normalized;
-            st.pages[pageIndex].rotation = normalized;
-          });
-        });
-        // accurate preview re-render: re-render thumbnails with rotation applied
-        fc.querySelector('.render-rotated').addEventListener('click', async () => {
-          if(!st.ready) return;
-          showStatus('Re-rendering rotated thumbnails for ' + st.name + ' (this may take a while)...', true);
-          const canvases = fc.querySelectorAll('.thumb canvas');
-          for(let p=0;p<st.pageCount;p++){
-            const c = canvases[p];
-            // render with pdf.js using rotation
+      const thumbs = fc.querySelector('.thumbs');
+      if(st.ready){
+        // render lightweight thumbnails without rotation first
+        for(let p=1;p<=st.pageCount;p++){
+          const box = document.createElement('div');
+          box.className = 'thumb';
+          box.draggable = true;
+          box.dataset.page = p-1;
+          box.innerHTML = `<div class="reorder-handle" title="Drag to reorder"><i class="fa-solid fa-grip-lines"></i></div><canvas></canvas><div class="label">Page ${p}</div><div style="margin-top:4px"><input class="angle-input small" data-page="${p-1}" value="${st.pages[p-1].rotation}" title="Enter 0/90/180/270"></div>`;
+          thumbs.appendChild(box);
+          // render thumb
+          (async function(canvasEl, pdfjsDoc, pageNum){
             try{
-              const page = await st.pdfjsDoc.getPage(p+1);
-              const vp = page.getViewport({ scale: 0.14, rotation: st.pages[p].rotation || 0 });
-              c.width = Math.round(vp.width); c.height = Math.round(vp.height);
-              await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
-            } catch(err){
-              console.warn('render rotated thumb failed', err);
-            }
-            // small yield for UI
-            await new Promise(r=>setTimeout(r, 12));
-          }
-          showStatus('Rotated thumbnails updated for ' + st.name, false, 1200);
-        });
-        // process single file
-        fc.querySelector('.process-single').addEventListener('click', async () => {
-          await processSingleFile(st);
-        });
-        // accurate preview button - opens a modal showing pages (not implemented full modal here to keep code readable)
-        fc.querySelector('.btn-preview').addEventListener('click', async () => {
-          // quick re-render all pages in a larger new window canvas - simple approach: open new tab with thumbnails page
-          await openPreviewWindow(st);
+              const page = await pdfjsDoc.getPage(pageNum);
+              const vp = page.getViewport({ scale: 0.14 });
+              canvasEl.width = Math.round(vp.width); canvasEl.height = Math.round(vp.height);
+              await page.render({ canvasContext: canvasEl.getContext('2d'), viewport: vp }).promise;
+            } catch(err){ console.warn('thumb err', err); }
+          })(box.querySelector('canvas'), st.pdfjsDoc, p);
+
+          // drag handlers for reordering
+          box.addEventListener('dragstart', (e) => {
+            box.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', JSON.stringify({ stubId: st.id, page: Number(box.dataset.page) }));
+            e.dataTransfer.effectAllowed = 'move';
+          });
+          box.addEventListener('dragend', ()=> box.classList.remove('dragging'));
+          box.addEventListener('dragover', (e)=> { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
+          box.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const payload = JSON.parse(e.dataTransfer.getData('text/plain'));
+            if(!payload || payload.stubId !== st.id) return;
+            const fromPage = payload.page;
+            const toPage = Number(box.dataset.page);
+            if(fromPage === toPage) return;
+            // reorder stub.pages and also reorder thumbnails DOM accordingly
+            const pagesArr = st.pages.splice(fromPage, 1);
+            st.pages.splice(toPage, 0, pagesArr[0]);
+            // rebuild thumbs DOM for accurate indices
+            renderQueue();
+          });
+
+        }
+      } else {
+        thumbs.innerHTML = '<div style="color:var(--muted)">Unable to show thumbnails</div>';
+      }
+
+      // attach handlers (buttons, inputs)
+      fc.querySelector('.btn-remove').addEventListener('click', ()=> {
+        queueFiles = queueFiles.filter(x => x.id !== st.id);
+        renderQueue(); updateControls();
+      });
+      fc.querySelectorAll('.quick-apply').forEach(b => b.addEventListener('click', ()=> {
+        const angle = Number(b.dataset.angle) || 0;
+        if(!st.ready) return;
+        for(let i=0;i<st.pageCount;i++) st.pages[i].rotation = angle;
+        // update input boxes in thumbs
+        fc.querySelectorAll('.angle-input').forEach(inp => inp.value = angle);
+        showStatus('Applied ' + angle + '° to all pages of ' + st.name, false, 1400);
+      }));
+      fc.querySelectorAll('.angle-input').forEach(input => {
+        input.addEventListener('change', (ev) => {
+          const pageIndex = Number(ev.target.dataset.page);
+          const v = Number(ev.target.value) || 0;
+          const normalized = [0,90,180,270].includes(v) ? v : 0;
+          ev.target.value = normalized;
+          st.pages[pageIndex].rotation = normalized;
         });
       });
-    }
-
-    function escapeHtml(s){ return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-
-    // ---------- controls ----------
-    function updateControls(){
-      const readyCount = queueFiles.filter(x=>x.ready).length;
-      processBtn.disabled = readyCount === 0;
-      processSingleBtn.disabled = readyCount === 0;
-      clearBtn.disabled = queueFiles.length === 0;
-    }
-    clearBtn.addEventListener('click', ()=> { queueFiles = []; renderQueue(); updateControls(); resetProgress(); showStatus('', false); });
-
-    // ---------- preview helper (opens a new window with rotated previews) ----------
-    async function openPreviewWindow(stub){
-      if(!stub.ready) return;
-      const w = window.open('', '_blank', 'noopener,noreferrer');
-      w.document.title = 'Preview - ' + stub.name;
-      const wrapper = w.document.createElement('div');
-      wrapper.style.fontFamily = 'Arial,system-ui';
-      wrapper.style.background = '#111827'; wrapper.style.color = '#f8fafc';
-      wrapper.style.padding = '16px';
-      wrapper.innerHTML = `<h2 style="color:#22d3ee">${escapeHtml(stub.name)}</h2><div style="display:flex;flex-wrap:wrap;gap:12px" id="pv"></div>`;
-      w.document.body.appendChild(wrapper);
-      const pv = w.document.getElementById('pv');
-      for(let p=0;p<stub.pageCount;p++){
-        const canvas = w.document.createElement('canvas');
-        canvas.style.border = '1px solid rgba(255,255,255,0.06)';
-        const lbl = w.document.createElement('div');
-        lbl.textContent = 'Page ' + (p+1)+ ' (' + (stub.pages[p].rotation||0) + '°)';
-        const box = w.document.createElement('div');
-        box.style.width='220px'; box.style.display='flex'; box.style.flexDirection='column'; box.style.alignItems='center';
-        box.appendChild(canvas); box.appendChild(lbl);
-        pv.appendChild(box);
-        // render with rotation
-        try{
-          const page = await stub.pdfjsDoc.getPage(p+1);
-          const vp = page.getViewport({ scale: 0.9, rotation: stub.pages[p].rotation || 0 });
-          canvas.width = Math.round(vp.width); canvas.height = Math.round(vp.height);
-          await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
-        } catch(err){
-          console.warn('preview page render failed', err);
-        }
-      }
-    }
-
-    // ---------- processing logic ----------
-    // processSingleFile: process one file and download (vector if possible; fallback to raster)
-    async function processSingleFile(stub){
-      showStatus('Processing: ' + stub.name, true);
-      setProgress(0);
-      try{
-        const resultBlob = await processFileApplyRotation(stub);
-        triggerDownload(resultBlob, sanitize(stub.name).replace(/\.[^/.]+$/, '') + '_rotated.pdf');
-        showStatus('Processed: ' + stub.name, false, 1600);
-      } catch(err){
-        console.error('process single failed', err);
-        showStatus('Processing failed for ' + stub.name, false);
-      } finally { resetProgress(); }
-    }
-
-    // processQueue: produce zip with all processed files
-    processBtn.addEventListener('click', async () => {
-      if(queueFiles.length === 0) return;
-      showStatus('Processing queue...', true);
-      setProgress(0);
-      try{
-        const zip = new JSZip();
-        const toProcess = queueFiles.filter(x=>x.ready);
-        for(let i=0;i<toProcess.length;i++){
-          const st = toProcess[i];
-          setProgress((i / toProcess.length) * 100);
-          showStatus('Processing: ' + st.name, true);
+      fc.querySelector('.render-rotated').addEventListener('click', async () => {
+        if(!st.ready) return;
+        showStatus('Re-rendering rotated thumbnails for ' + st.name + ' ...', true);
+        const canvases = fc.querySelectorAll('.thumb canvas');
+        for(let p=0;p<st.pageCount;p++){
+          const c = canvases[p];
           try{
-            const blob = await processFileApplyRotation(st, (i+1)/toProcess.length);
-            zip.file(sanitize(st.name).replace(/\.[^/.]+$/, '') + '_rotated.pdf', await blob.arrayBuffer());
-          } catch(err){
-            console.error('file processing error', err);
-            // continue with others
-          }
-          await new Promise(r=>setTimeout(r, 60));
+            const page = await st.pdfjsDoc.getPage(p+1);
+            const vp = page.getViewport({ scale: 0.14, rotation: st.pages[p].rotation || 0 });
+            c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+            await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+          } catch(err){ console.warn('render rotated thumb failed', err); }
+          await new Promise(r=>setTimeout(r, 8));
         }
-        setProgress(90);
-        const zblob = await zip.generateAsync({ type: 'blob' }, meta => setProgress(90 + Math.round(meta.percent/10)));
-        triggerDownload(zblob, 'rotated_pdfs.zip');
-        showStatus('Queue processed — download ready', false, 2000);
-      } catch(err){
-        console.error('queue processing failed', err);
-        showStatus('Queue processing failed — see console', false);
-      } finally { resetProgress(); }
-    });
+        showStatus('Rotated thumbnails updated for ' + st.name, false, 1200);
+      });
+      fc.querySelector('.process-single').addEventListener('click', async () => { await processSingleFile(st); });
+      fc.querySelector('.btn-preview').addEventListener('click', async () => { await openPreviewModal(st); });
 
-    // process individually (download each file individually rather than zip)
-    processSingleBtn.addEventListener('click', async () => {
+    });
+    updateControls();
+  }
+
+  // ---------- controls ----------
+  function updateControls(){
+    const readyCount = queueFiles.filter(x=>x.ready).length;
+    processBtn.disabled = readyCount === 0;
+    processSingleBtn.disabled = readyCount === 0;
+    clearBtn.disabled = queueFiles.length === 0;
+  }
+  clearBtn.addEventListener('click', ()=> { queueFiles = []; renderQueue(); updateControls(); resetProgress(); showStatus('', false); });
+
+  // ---------- export settings modal wiring ----------
+  openExportSettings.addEventListener('click', ()=> {
+    exportModal.style.display = 'flex'; exportModal.removeAttribute('aria-hidden');
+  });
+  closeExportSettings.addEventListener('click', ()=> {
+    exportModal.style.display = 'none'; exportModal.setAttribute('aria-hidden','true');
+  });
+  saveExportSettings.addEventListener('click', ()=> {
+    saveExportSettingsToStorage();
+    exportModal.style.display = 'none'; exportModal.setAttribute('aria-hidden','true');
+    showStatus('Export settings saved', false, 1200);
+  });
+
+  // ---------- preview modal: open & navigation & rotate apply ----------
+  async function openPreviewModal(stub){
+    if(!stub.ready) return;
+    previewState.stub = stub; previewState.pageIndex = 0;
+    previewModal.style.display = 'flex'; previewModal.removeAttribute('aria-hidden');
+    await renderPreviewPage();
+  }
+  previewClose.addEventListener('click', ()=> { previewModal.style.display = 'none'; previewModal.setAttribute('aria-hidden','true'); previewState.stub=null; });
+  prevPageBtn.addEventListener('click', ()=> { if(previewState.pageIndex>0){ previewState.pageIndex--; renderPreviewPage(); } });
+  nextPageBtn.addEventListener('click', ()=> { if(previewState.stub && previewState.pageIndex < previewState.stub.pageCount-1){ previewState.pageIndex++; renderPreviewPage(); } });
+  previewRotateLeft.addEventListener('click', ()=> { if(!previewState.stub) return; const i = previewState.pageIndex; previewState.stub.pages[i].rotation = ((previewState.stub.pages[i].rotation||0) - 90 + 360) % 360; renderPreviewPage(); });
+  previewRotateRight.addEventListener('click', ()=> { if(!previewState.stub) return; const i = previewState.pageIndex; previewState.stub.pages[i].rotation = ((previewState.stub.pages[i].rotation||0) + 90) % 360; renderPreviewPage(); });
+
+  async function renderPreviewPage(){
+    const stub = previewState.stub; if(!stub) return;
+    const idx = previewState.pageIndex;
+    previewTitle.textContent = `${stub.name} — Page ${idx+1}`;
+    previewPageInfo.textContent = `${idx+1}/${stub.pageCount}`;
+    const page = await stub.pdfjsDoc.getPage(idx+1);
+    const rot = stub.pages[idx].rotation || 0;
+    const scale = Number(renderScaleSelect.value) || 1.5;
+    const vp = page.getViewport({ scale, rotation: rot });
+    previewCanvas.width = Math.round(vp.width); previewCanvas.height = Math.round(vp.height);
+    const ctx = previewCanvas.getContext('2d'); ctx.clearRect(0,0,previewCanvas.width, previewCanvas.height);
+    await page.render({ canvasContext: ctx, viewport: vp }).promise;
+  }
+
+  // ---------- processing functions ----------
+  async function processSingleFile(stub){
+    showStatus('Processing: ' + stub.name, true);
+    setProgress(0);
+    try{
+      saveExportSettingsToStorage(); // ensure exported settings used
+      const blob = await processFileApplyRotation(stub, 0); // progressBase=0 for single
+      triggerDownload(blob, sanitize(stub.name).replace(/\.[^/.]+$/, '') + '_rotated.pdf');
+      showStatus('Processed: ' + stub.name, false, 1600);
+    } catch(err){
+      console.error('process single failed', err);
+      showStatus('Processing failed for ' + stub.name, false);
+    } finally { resetProgress(); }
+  }
+
+  processBtn.addEventListener('click', async () => {
+    if(queueFiles.length === 0) return;
+    saveExportSettingsToStorage();
+    showStatus('Processing queue...', true);
+    setProgress(0);
+    try{
+      const zip = new JSZip();
       const toProcess = queueFiles.filter(x=>x.ready);
       for(let i=0;i<toProcess.length;i++){
         const st = toProcess[i];
-        await processSingleFile(st);
-        await new Promise(r=>setTimeout(r, 400));
-      }
-      showStatus('All files processed', false, 1600);
-    });
-
-    // core function: produce rotated PDF Blob for a single stub
-    // strategy:
-    // 1) try vector copy: load pdf-lib from stub.arrayBuffer, copy pages, set rotation using page.setRotation()
-    //    - this preserves text/selectability
-    // 2) if that fails, fallback to raster: render each page with pdf.js, rotate canvas, embed into new pdf as image
-    async function processFileApplyRotation(stub, progressBase = 0){
-      // progressBase is optional to help queue progress; we will call setProgress inside
-      try{
-        // Attempt pdf-lib vector copy
+        setProgress((i/ toProcess.length) * 100);
+        showStatus('Processing: ' + st.name, true);
         try{
-          const src = await PDFLib.PDFDocument.load(stub.arrayBuffer, { ignoreEncryption: true });
-          const out = await PDFLib.PDFDocument.create();
-          const total = src.getPageCount();
-          for(let i=0;i<total;i++){
-            const [copied] = await out.copyPages(src, [i]);
-            out.addPage(copied);
-            const deg = stub.pages[i].rotation || 0;
-            if(deg % 360 !== 0) copied.setRotation(PDFLib.degrees(deg));
-            // progress update relative to file
-            setProgress(progressBase*100 + Math.round(((i+1)/total) * (100*(1 - progressBase))));
-            await new Promise(r=>setTimeout(r, 10));
-          }
-          const bytes = await out.save();
-          return new Blob([bytes], { type: 'application/pdf' });
+          const blob = await processFileApplyRotation(st, i / toProcess.length);
+          zip.file(sanitize(st.name).replace(/\.[^/.]+$/, '') + '_rotated.pdf', await blob.arrayBuffer());
         } catch(err){
-          console.warn('pdf-lib copy failed, falling back to raster for', stub.name, err);
-          // fallback to raster
+          console.error('process file error', err);
         }
-        // Raster fallback
+        await new Promise(r=>setTimeout(r, 60));
+      }
+      setProgress(90);
+      const zblob = await zip.generateAsync({ type: 'blob' }, meta => setProgress(90 + Math.round(meta.percent/10)));
+      triggerDownload(zblob, 'rotated_pdfs.zip');
+      showStatus('Queue processed — download ready', false, 2000);
+    } catch(err){
+      console.error('queue processing failed', err);
+      showStatus('Queue processing failed — see console', false);
+    } finally { resetProgress(); }
+  });
+
+  processSingleBtn.addEventListener('click', async () => {
+    const toProcess = queueFiles.filter(x=>x.ready);
+    for(let i=0;i<toProcess.length;i++){
+      await processSingleFile(toProcess[i]);
+      await new Promise(r=>setTimeout(r, 400));
+    }
+    showStatus('All files processed', false, 1600);
+  });
+
+  // Core: process one file and return Blob
+  // Strategy uses exportSettings: vector-first | raster-only | vector-only
+  async function processFileApplyRotation(stub, progressBase = 0){
+    // progressBase helps to combine progress inside queue
+    const settings = exportSettings;
+    // apply current modal controls before run
+    settings.strategy = strategySelect.value;
+    settings.imgFormat = imgFormat.value;
+    settings.jpegQuality = Number(jpegQuality.value);
+    settings.renderScale = Number(renderScaleSelect.value);
+    settings.maxWidth = Number(maxWidthInput.value) || 0;
+    localStorage.setItem('sth_export_settings', JSON.stringify(settings));
+
+    // Helper: update file progress scaled into global progress
+    function fileProgress(pct){ setProgress(progressBase*100 + Math.round(pct * (100*(1 - progressBase))/100)); }
+
+    // 1) If strategy allows vector-first or vector-only, try pdf-lib copyPages and setRotation — best output (keeps text)
+    if(settings.strategy === 'vector' || settings.strategy === 'auto'){
+      try{
+        fileProgress(5);
+        const src = await PDFLib.PDFDocument.load(stub.arrayBuffer, { ignoreEncryption: true });
         const out = await PDFLib.PDFDocument.create();
-        const total = stub.pageCount;
-        for(let p=0;p<total;p++){
-          const rotation = stub.pages[p].rotation || 0;
-          const page = await stub.pdfjsDoc.getPage(p+1);
-          // choose scale reasonably (1.5 for decent quality) — could be user option
-          const viewport = page.getViewport({ scale: 1.5, rotation: 0 }); // render without rotation
-          const canvas = document.createElement('canvas');
-          canvas.width = Math.round(viewport.width);
-          canvas.height = Math.round(viewport.height);
-          const ctx = canvas.getContext('2d');
-          ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);
-          await page.render({ canvasContext: ctx, viewport }).promise;
-          // rotate canvas as needed
-          const final = document.createElement('canvas');
-          if(rotation === 90 || rotation === 270){ final.width = canvas.height; final.height = canvas.width; }
-          else { final.width = canvas.width; final.height = canvas.height; }
-          const fctx = final.getContext('2d');
-          fctx.save();
-          if(rotation === 90){ fctx.translate(final.width,0); fctx.rotate(Math.PI/2); }
-          else if(rotation === 180){ fctx.translate(final.width,final.height); fctx.rotate(Math.PI); }
-          else if(rotation === 270){ fctx.translate(0, final.height); fctx.rotate(-Math.PI/2); }
-          fctx.drawImage(canvas,0,0);
-          fctx.restore();
-          // toBlob and embed PNG
-          const blob = await new Promise(res => final.toBlob(res, 'image/png'));
-          const arr = await blob.arrayBuffer();
-          const img = await out.embedPng(arr);
-          const { width, height } = img.scale(1);
-          const pageObj = out.addPage([width,height]);
-          pageObj.drawImage(img, { x:0, y:0, width, height });
-          setProgress(progressBase*100 + Math.round(((p+1)/total) * (100*(1 - progressBase))));
-          await new Promise(r=>setTimeout(r, 10));
+        const total = src.getPageCount();
+        for(let i=0;i<total;i++){
+          const [copied] = await out.copyPages(src, [i]);
+          out.addPage(copied);
+          const deg = stub.pages[i].rotation || 0;
+          if(deg % 360 !== 0) copied.setRotation(PDFLib.degrees(deg));
+          fileProgress(Math.round(((i+1)/total) * 80));
+          await new Promise(r=>setTimeout(r, 6));
         }
         const bytes = await out.save();
-        return new Blob([bytes], { type: 'application/pdf' });
+        fileProgress(100);
+        // if strategy was 'vector' we return whatever we got (even if not compressed). If 'auto' this is considered success.
+        if(settings.strategy === 'vector' || settings.strategy === 'auto'){
+          return new Blob([bytes], { type: 'application/pdf' });
+        }
       } catch(err){
-        console.error('processFileApplyRotation error', err);
-        throw err;
+        console.warn('Vector processing failed (pdf-lib).', err);
+        if(settings.strategy === 'vector'){
+          // If vector-only requested and failed, propagate error
+          throw new Error('Vector processing failed: ' + (err && err.message));
+        }
+        // else continue to raster fallback
       }
     }
 
-    // expose state for debugging
-    window._batch_queue = () => queueFiles;
+    // 2) Raster fallback (or raster-only) — render pages, apply rotation in canvas, embed images into PDF
+    try{
+      const out = await PDFLib.PDFDocument.create();
+      const total = stub.pageCount;
+      for(let i=0;i<total;i++){
+        fileProgress(Math.round((i/total) * 10));
+        const rotation = stub.pages[i].rotation || 0;
+        const page = await stub.pdfjsDoc.getPage(i+1);
+        // render with settings.renderScale
+        const vp = page.getViewport({ scale: settings.renderScale });
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(vp.width); canvas.height = Math.round(vp.height);
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+        await page.render({ canvasContext: ctx, viewport: vp }).promise;
+        // optional downscale to maxWidth
+        let targetCanvas = canvas;
+        if(settings.maxWidth > 0 && canvas.width > settings.maxWidth){
+          const scale = settings.maxWidth / canvas.width;
+          const tmp = document.createElement('canvas');
+          tmp.width = Math.round(canvas.width * scale); tmp.height = Math.round(canvas.height * scale);
+          tmp.getContext('2d').drawImage(canvas, 0,0, canvas.width, canvas.height, 0,0, tmp.width, tmp.height);
+          targetCanvas = tmp;
+        }
+        // rotate if needed by drawing to final canvas
+        let finalCanvas = targetCanvas;
+        if(rotation % 360 !== 0){
+          const fc = document.createElement('canvas');
+          if(rotation === 90 || rotation === 270){ fc.width = targetCanvas.height; fc.height = targetCanvas.width; }
+          else { fc.width = targetCanvas.width; fc.height = targetCanvas.height; }
+          const fctx = fc.getContext('2d'); fctx.save();
+          if(rotation === 90){ fctx.translate(fc.width, 0); fctx.rotate(Math.PI/2); }
+          else if(rotation === 180){ fctx.translate(fc.width, fc.height); fctx.rotate(Math.PI); }
+          else if(rotation === 270){ fctx.translate(0, fc.height); fctx.rotate(-Math.PI/2); }
+          fctx.drawImage(targetCanvas, 0, 0);
+          fctx.restore();
+          finalCanvas = fc;
+        }
+        // convert to blob (JPEG or PNG)
+        const mime = (settings.imgFormat === 'png') ? 'image/png' : 'image/jpeg';
+        const blob = await new Promise(res => finalCanvas.toBlob(res, mime, settings.jpegQuality));
+        const arr = await blob.arrayBuffer();
+        const img = (mime === 'image/png') ? await out.embedPng(arr) : await out.embedJpg(arr);
+        const { width, height } = img.scale(1);
+        const pageObj = out.addPage([width, height]);
+        pageObj.drawImage(img, { x:0, y:0, width, height });
+        fileProgress(Math.round(10 + ((i+1)/total) * 90));
+        await new Promise(r=>setTimeout(r, 10));
+      }
+      const bytes = await out.save();
+      fileProgress(100);
+      return new Blob([bytes], { type: 'application/pdf' });
+    } catch(err){
+      console.error('Raster fallback failed', err);
+      throw err;
+    }
+  }
 
-    // initial render
-    renderQueue();
-    updateControls();
-  })();
-  </script>
+  // expose debug helper
+  window._batch_queue = () => queueFiles;
+  // initial render (empty)
+  renderQueue();
+
+  // Save settings to exportSettings variable on close (so proceed button uses them)
+  saveExportSettings.addEventListener('click', ()=> {
+    exportSettings.strategy = strategySelect.value;
+    exportSettings.imgFormat = imgFormat.value;
+    exportSettings.jpegQuality = Number(jpegQuality.value);
+    exportSettings.renderScale = Number(renderScaleSelect.value);
+    exportSettings.maxWidth = Number(maxWidthInput.value) || 0;
+    localStorage.setItem('sth_export_settings', JSON.stringify(exportSettings));
+    updateSettingPreview();
+  });
+
+})();
+</script>
 </body>
 </html>
