@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Unlock PDF — Smarttool Hub</title>
+<meta name="description" content="Unlock password-protected PDFs in your browser. Enter the password to decrypt and save a new unlocked PDF. 100% client-side.">
+<meta name="keywords" content="unlock pdf, remove password pdf, pdf unlock tool, decrypt pdf, open protected pdf online">
+<link rel="icon" href="https://img.icons8.com/fluency/48/unlock.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+:root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8}
+body.light{--bg:#f6f8fb;--text:#0b1220;--card:#fff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text);transition:.22s}
+.container{max-width:1100px;margin:0 auto;padding:18px}
+header{display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:12px;border-bottom:1px solid var(--border)}
+.brand a{display:flex;gap:12px;align-items:center;text-decoration:none;color:inherit}
+.brand img{width:46px;height:46px;border-radius:8px}
+.title{font-weight:700;color:var(--primary)}
+.tag{font-size:.85rem;color:var(--muted)}
+.header-actions{display:flex;gap:8px;align-items:center}
+.btn-header{border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;color:var(--text);cursor:pointer;display:flex;gap:8px;align-items:center;text-decoration:none;font-weight:600}
+main{padding:18px 0}
+h1{margin:6px 0 8px;color:var(--primary)}
+.meta{color:var(--muted);margin-bottom:12px}
+.uploader{min-height:110px;border-radius:12px;border:2px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;background:var(--card);cursor:pointer}
+.uploader:hover{border-color:var(--primary)}
+input[type=file]{display:none}
+.controls{margin-top:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.controls input{padding:8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text)}
+.progress{height:12px;background:var(--border);border-radius:999px;overflow:hidden;margin-top:12px}
+.progress-bar{height:100%;width:0;background:var(--primary);transition:width .2s}
+.actions{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
+.btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+.btn-primary{background:var(--primary);color:#00131f}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+.status{color:var(--muted);display:flex;align-items:center;gap:8px}
+.pages{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;max-height:350px;overflow:auto;padding:6px}
+.page-card{width:120px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.page-card canvas{width:100%;height:auto;background:#fff;border-radius:6px}
+footer{margin-top:24px;padding:12px 0;background:var(--card);border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+<header class="container">
+  <div class="brand">
+    <a href="../../index.html" title="Smarttool Hub home">
+      <img src="https://img.icons8.com/fluency/48/unlock.png" alt="Smarttool Hub logo">
+      <div>
+        <div class="title">Smarttool Hub</div>
+        <div class="tag">Fast • Private • Client-side</div>
+      </div>
+    </a>
+  </div>
+  <div class="header-actions">
+    <a href="../../index.html" class="btn-header"><i class="fa-solid fa-house"></i> Home</a>
+    <button id="themeToggle" class="btn-header" title="Toggle theme"><i class="fa-solid fa-moon"></i></button>
+  </div>
+</header>
+
+<main class="container">
+  <h1>Unlock PDF</h1>
+  <p class="meta">Upload a password-protected PDF, enter the password, and save a new unlocked PDF. All in your browser — no upload.</p>
+
+  <label class="uploader" id="uploader">
+    <div style="font-size:28px;color:var(--primary)"><i class="fa-solid fa-file-pdf"></i></div>
+    <div style="margin-top:8px;font-weight:700">Click or drag & drop a PDF</div>
+    <input type="file" id="fileInput" accept="application/pdf">
+  </label>
+
+  <div class="controls">
+    <label>Password: <input id="pdfPassword" type="password" placeholder="Enter PDF password"></label>
+    <button id="unlockBtn" class="btn btn-primary" disabled><i class="fa-solid fa-unlock"></i> Unlock</button>
+  </div>
+
+  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+  <div class="status" id="status"></div>
+  <div class="pages" id="pages"></div>
+</main>
+
+<footer class="container">
+  <div>© <span id="year"></span> Smarttool Hub</div>
+  <div style="color:var(--muted)">Privacy • Terms • Contact</div>
+</footer>
+
+<!-- libs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script>pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';</script>
+<script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+
+<script>
+(function(){
+  const themeBtn=document.getElementById('themeToggle');
+  if(localStorage.getItem('sth_theme')==='light'){document.body.classList.add('light');themeBtn.innerHTML='<i class="fa-solid fa-sun"></i>';}
+  themeBtn.addEventListener('click',()=>{document.body.classList.toggle('light');if(document.body.classList.contains('light')){themeBtn.innerHTML='<i class="fa-solid fa-sun"></i>';localStorage.setItem('sth_theme','light');}else{themeBtn.innerHTML='<i class="fa-solid fa-moon"></i>';localStorage.removeItem('sth_theme');}});
+  document.getElementById('year').textContent=new Date().getFullYear();
+
+  const fileInput=document.getElementById('fileInput');
+  const uploader=document.getElementById('uploader');
+  const unlockBtn=document.getElementById('unlockBtn');
+  const pwInput=document.getElementById('pdfPassword');
+  const statusEl=document.getElementById('status');
+  const progress=document.getElementById('progressBar');
+  const pagesDiv=document.getElementById('pages');
+  let loadedPDF=null, fileName=null;
+
+  uploader.addEventListener('click',()=>fileInput.click());
+  uploader.addEventListener('dragover',e=>{e.preventDefault();});
+  uploader.addEventListener('drop',e=>{e.preventDefault();handleFile(e.dataTransfer.files[0]);});
+  fileInput.addEventListener('change',e=>handleFile(e.target.files[0]));
+
+  function handleFile(file){
+    if(!file)return;
+    fileName=file.name;
+    loadedPDF=file;
+    unlockBtn.disabled=false;
+    statusEl.textContent=`Selected: ${file.name}`;
+  }
+
+  unlockBtn.addEventListener('click',()=>{if(loadedPDF)unlockPDF();});
+
+  async function unlockPDF(){
+    statusEl.textContent='Unlocking...';progress.style.width='0%';pagesDiv.innerHTML='';
+    try{
+      const buffer=await loadedPDF.arrayBuffer();
+      let pdfDoc;
+      try{
+        pdfDoc=await pdfjsLib.getDocument({data:buffer,password:pwInput.value}).promise;
+      }catch(err){
+        statusEl.textContent='Wrong password or cannot open PDF.';return;
+      }
+      const out=await PDFLib.PDFDocument.create();
+      const src=await PDFLib.PDFDocument.load(buffer,{ignoreEncryption:true,password:pwInput.value});
+      const total=src.getPageCount();
+      for(let i=0;i<total;i++){
+        const [pg]=await out.copyPages(src,[i]);
+        out.addPage(pg);
+        const p=await pdfDoc.getPage(i+1);
+        const viewport=p.getViewport({scale:0.15});
+        const canvas=document.createElement('canvas');
+        canvas.width=viewport.width;canvas.height=viewport.height;
+        await p.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+        const card=document.createElement('div');card.className='page-card';
+        card.innerHTML=`<canvas></canvas><div>Page ${i+1}</div>`;
+        const inner=card.querySelector('canvas');inner.width=canvas.width;inner.height=canvas.height;inner.getContext('2d').drawImage(canvas,0,0);
+        pagesDiv.appendChild(card);
+        progress.style.width=((i+1)/total*100)+'%';
+        await new Promise(r=>setTimeout(r,20));
+      }
+      const bytes=await out.save();
+      const blob=new Blob([bytes],{type:'application/pdf'});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download=fileName.replace(/\.pdf$/i,'')+'_unlocked.pdf';
+      a.click();
+      statusEl.textContent='Unlocked PDF ready ✓';
+      setTimeout(()=>{progress.style.width='0%';},1500);
+    }catch(err){
+      console.error(err);
+      statusEl.textContent='Unlock failed.';
+    }
+  }
+})();
+</script>
+</body>
+</html>
