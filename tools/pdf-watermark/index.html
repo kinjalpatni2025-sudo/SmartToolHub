@@ -27,11 +27,14 @@
     *{box-sizing:border-box}
     body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
     .container{max-width:1100px;margin:18px auto;padding:16px}
-    header{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+    header,footer{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
     .brand{display:flex;align-items:center;gap:12px}
     .brand img{width:46px;height:46px;border-radius:10px}
+    .brand .title{display:flex;flex-direction:column}
+    .brand .title strong{color:var(--primary);font-size:1.1rem}
+    .brand .title span{font-size:0.85rem;color:var(--muted)}
     .controls{display:flex;gap:8px;align-items:center}
-    .btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;color:var(--text);cursor:pointer}
+    .btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;color:var(--text);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
     .btn:hover{border-color:var(--primary)}
     main{display:grid;grid-template-columns:360px 1fr;gap:14px;margin-top:16px}
     .panel{background:var(--card);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
@@ -56,26 +59,28 @@
     .preview-canvas{max-width:100%;border:1px solid rgba(255,255,255,0.03);border-radius:8px}
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:40}
     .modal .box{background:var(--card);padding:12px;border-radius:10px;max-width:95%;max-height:95%;overflow:auto}
-    footer{margin-top:18px;padding:12px;border-radius:10px;background:var(--card);text-align:center;border:1px solid rgba(255,255,255,0.03)}
     @media (max-width:980px){main{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- HEADER (logo + title + home + theme) -->
     <header>
       <div class="brand">
         <a href="../../index.html" title="Smarttool Hub"><img src="../../logo.png" alt="logo"></a>
-        <div>
-          <div style="font-weight:700;color:var(--primary)">PDF Watermark & Export</div>
-          <div class="small">Client-side PDF watermarking & page image export</div>
+        <div class="title">
+          <strong>Smarttool Hub</strong>
+          <span>Fast • Private • 100% Client-side</span>
         </div>
       </div>
+
       <div class="controls">
-        <a class="btn" href="../../index.html" title="Home"><img src="../../home-icon.png" alt="Home" style="width:18px;height:18px;vertical-align:middle;margin-right:6px">Home</a>
-        <button id="themeToggle" class="btn" title="Toggle theme">Toggle</button>
+        <a class="btn" href="../../index.html" title="Home"><img src="../../home-icon.png" alt="Home" style="width:18px;height:18px"> Home</a>
+        <button id="themeToggle" class="btn" title="Toggle theme">🌙</button>
       </div>
     </header>
 
+    <!-- MAIN TOOL AREA -->
     <main>
       <aside class="panel">
         <div id="dropzone" class="dropzone" tabindex="0">
@@ -106,7 +111,7 @@
           <label>Scale (resolution multiplier)</label>
           <input id="scale" type="number" min="0.5" max="4" step="0.1" value="1">
 
-          <div style="display:flex;gap:8px" class="actions-row">
+          <div class="actions-row">
             <button id="convertSelected" class="btn">Convert Selected</button>
             <button id="downloadZip" class="btn" disabled>Download ZIP</button>
           </div>
@@ -127,6 +132,7 @@
       </section>
     </main>
 
+    <!-- PREVIEW MODAL -->
     <div id="modal" class="modal" role="dialog" aria-hidden="true">
       <div class="box">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -137,138 +143,173 @@
       </div>
     </div>
 
-    <footer>© <span id="year"></span> Smarttool Hub — Client-side only</footer>
+    <!-- FOOTER (mirrors header branding) -->
+    <footer>
+      <div class="brand">
+        <a href="../../index.html" title="Smarttool Hub"><img src="../../logo.png" alt="logo"></a>
+        <div class="title">
+          <strong>Smarttool Hub</strong>
+          <span>Fast • Private • 100% Client-side</span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <a class="btn" href="../../index.html" title="Home"><img src="../../home-icon.png" alt="Home" style="width:18px;height:18px"> Home</a>
+        <button id="themeToggleFooter" class="btn" title="Toggle theme">🌙</button>
+      </div>
+    </footer>
   </div>
 
   <!-- Libraries (CDN) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.172/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.11.0/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
 
   <script>
-    // --- Theme toggle / persist ---
-    const themeToggle=document.getElementById('themeToggle');
-    if(localStorage.getItem('sth_theme')==='light'){document.body.classList.add('light');themeToggle.textContent='Light';}
-    else themeToggle.textContent='Dark';
-    themeToggle.onclick=()=>{
-      document.body.classList.toggle('light');
-      if(document.body.classList.contains('light')){localStorage.setItem('sth_theme','light');themeToggle.textContent='Light'}
-      else{localStorage.removeItem('sth_theme');themeToggle.textContent='Dark'}
+    // Theme toggle (header + footer sync)
+    const themeToggle = document.getElementById('themeToggle');
+    const themeToggleFooter = document.getElementById('themeToggleFooter');
+    function applyTheme() {
+      if (localStorage.getItem('sth_theme') === 'light') {
+        document.body.classList.add('light');
+        themeToggle.textContent = '☀️';
+        themeToggleFooter.textContent = '☀️';
+      } else {
+        document.body.classList.remove('light');
+        themeToggle.textContent = '🌙';
+        themeToggleFooter.textContent = '🌙';
+      }
     }
+    applyTheme();
+    const toggleHandler = () => {
+      if (document.body.classList.contains('light')) localStorage.removeItem('sth_theme');
+      else localStorage.setItem('sth_theme', 'light');
+      applyTheme();
+    };
+    themeToggle.addEventListener('click', toggleHandler);
+    themeToggleFooter.addEventListener('click', toggleHandler);
 
-    // --- Elements ---
-    const fileInput=document.getElementById('fileInput');
-    const dropzone=document.getElementById('dropzone');
-    const thumbsEl=document.getElementById('thumbs');
-    const previewArea=document.getElementById('previewArea');
-    const modal=document.getElementById('modal');
-    const modalContent=document.getElementById('modalContent');
-    const closeModal=document.getElementById('closeModal');
-    const progressBar=document.getElementById('progressBar');
-    const statusEl=document.getElementById('status');
-    const convertBtn=document.getElementById('convertSelected');
-    const downloadZipBtn=document.getElementById('downloadZip');
-    const selectAllCheckbox=document.getElementById('selectAll');
-    const clearBtn=document.getElementById('clearBtn');
+    // Elements
+    const fileInput = document.getElementById('fileInput');
+    const dropzone = document.getElementById('dropzone');
+    const thumbsEl = document.getElementById('thumbs');
+    const previewArea = document.getElementById('previewArea');
+    const modal = document.getElementById('modal');
+    const modalContent = document.getElementById('modalContent');
+    const closeModal = document.getElementById('closeModal');
+    const progressBar = document.getElementById('progressBar');
+    const statusEl = document.getElementById('status');
+    const convertBtn = document.getElementById('convertSelected');
+    const downloadZipBtn = document.getElementById('downloadZip');
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const clearBtn = document.getElementById('clearBtn');
 
-    let pdfDoc=null; // pdf.js doc
-    let pages=[]; // {pageNumber, canvas (thumbnail), pageObj}
-    let generatedFiles=[]; // {name, blob}
+    let pdfDoc = null;
+    let pages = [];
+    let generatedFiles = [];
 
-    // configure pdf.js worker
+    // pdf.js worker
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.172/pdf.worker.min.js';
 
-    function setStatus(text){statusEl.textContent=text}
-    function setProgress(p){progressBar.style.width=p+'%'}
+    function setStatus(text) { statusEl.textContent = text; }
+    function setProgress(p) { progressBar.style.width = p + '%'; }
 
-    // Drag & drop
-    dropzone.addEventListener('click',()=>fileInput.click());
-    dropzone.addEventListener('dragover',e=>{e.preventDefault();dropzone.style.borderColor='var(--primary)'});
-    dropzone.addEventListener('dragleave',e=>{dropzone.style.borderColor=''});
-    dropzone.addEventListener('drop',async e=>{e.preventDefault();dropzone.style.borderColor='';const f=e.dataTransfer.files[0];if(f)await loadPDF(f)});
-    fileInput.addEventListener('change',async e=>{if(e.target.files[0])await loadPDF(e.target.files[0])});
+    // Drag & drop + upload
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.style.borderColor = 'var(--primary)'; });
+    dropzone.addEventListener('dragleave', () => { dropzone.style.borderColor = ''; });
+    dropzone.addEventListener('drop', async e => { e.preventDefault(); dropzone.style.borderColor = ''; if (e.dataTransfer.files[0]) await loadPDF(e.dataTransfer.files[0]); });
+    fileInput.addEventListener('change', async e => { if (e.target.files[0]) await loadPDF(e.target.files[0]); });
 
-    async function loadPDF(file){
-      try{
+    async function loadPDF(file) {
+      try {
         setStatus('Loading PDF...');
-        const arrayBuffer=await file.arrayBuffer();
-        pdfDoc=await pdfjsLib.getDocument({data:arrayBuffer}).promise;
-        pages=[];generatedFiles=[];thumbsEl.innerHTML='';previewArea.innerHTML='Loaded: '+file.name+' — '+pdfDoc.numPages+' pages';
+        const arrayBuffer = await file.arrayBuffer();
+        pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        pages = []; generatedFiles = []; thumbsEl.innerHTML = ''; previewArea.innerHTML = 'Loaded: ' + file.name + ' — ' + pdfDoc.numPages + ' pages';
 
-        for(let p=1;p<=pdfDoc.numPages;p++){
-          const page=await pdfDoc.getPage(p);
-          const viewport=page.getViewport({scale:0.2});
-          const canvas=document.createElement('canvas');
-          const context=canvas.getContext('2d');
-          canvas.width=viewport.width;canvas.height=viewport.height;
-          await page.render({canvasContext:context,viewport}).promise;
+        for (let p = 1; p <= pdfDoc.numPages; p++) {
+          const page = await pdfDoc.getPage(p);
+          const viewport = page.getViewport({ scale: 0.22 });
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          canvas.width = viewport.width; canvas.height = viewport.height;
+          await page.render({ canvasContext: context, viewport }).promise;
 
-          const wrapper=document.createElement('div');wrapper.className='thumb';
-          canvas.className='thumb-canvas';
-          const meta=document.createElement('div');meta.className='meta';
-          meta.innerHTML=`<h4>Page ${p}</h4><p class="small">${Math.round(viewport.width)}×${Math.round(viewport.height)}</p>`;
-          const actions=document.createElement('div');actions.className='actions';
+          const wrapper = document.createElement('div'); wrapper.className = 'thumb';
+          const meta = document.createElement('div'); meta.className = 'meta';
+          meta.innerHTML = `<h4>Page ${p}</h4><p class="small">${Math.round(viewport.width)}×${Math.round(viewport.height)}</p>`;
+          const actions = document.createElement('div'); actions.className = 'actions';
 
-          const chk=document.createElement('input');chk.type='checkbox';chk.dataset.page=p;chk.checked=false;chk.title='Select page';
-          const previewBtn=document.createElement('button');previewBtn.className='btn';previewBtn.textContent='Preview';
-          const downloadBtn=document.createElement('button');downloadBtn.className='btn';downloadBtn.textContent='Download';
+          const chk = document.createElement('input'); chk.type = 'checkbox'; chk.dataset.page = p; chk.checked = false; chk.title = 'Select page';
+          const previewBtn = document.createElement('button'); previewBtn.className = 'btn'; previewBtn.textContent = 'Preview';
+          const downloadBtn = document.createElement('button'); downloadBtn.className = 'btn'; downloadBtn.textContent = 'Download';
 
-          previewBtn.onclick=()=>openModal(p);
-          downloadBtn.onclick=()=>convertSingle(p);
+          previewBtn.onclick = () => openModal(p);
+          downloadBtn.onclick = () => convertSingle(p);
 
-          actions.appendChild(chk);actions.appendChild(previewBtn);actions.appendChild(downloadBtn);
-
-          wrapper.appendChild(canvas);wrapper.appendChild(meta);wrapper.appendChild(actions);
+          actions.appendChild(chk); actions.appendChild(previewBtn); actions.appendChild(downloadBtn);
+          wrapper.appendChild(canvas); wrapper.appendChild(meta); wrapper.appendChild(actions);
           thumbsEl.appendChild(wrapper);
 
-          pages.push({pageNumber:p,canvas,pageObj:page});
+          pages.push({ pageNumber: p, canvas, pageObj: page });
         }
 
-        setStatus('PDF loaded — '+pdfDoc.numPages+' pages');
+        setStatus('PDF loaded — ' + pdfDoc.numPages + ' pages');
         setProgress(0);
-      }catch(err){console.error(err);setStatus('Failed to load PDF');alert('Error reading PDF: '+err.message)}
+      } catch (err) {
+        console.error(err); setStatus('Failed to load PDF'); alert('Error reading PDF: ' + err.message);
+      }
     }
 
-    selectAllCheckbox.addEventListener('change',()=>{
-      const checked=selectAllCheckbox.checked;thumbsEl.querySelectorAll('input[type=checkbox]').forEach(c=>c.checked=checked);
+    selectAllCheckbox.addEventListener('change', () => {
+      const checked = selectAllCheckbox.checked;
+      thumbsEl.querySelectorAll('input[type=checkbox]').forEach(c => c.checked = checked);
     });
 
-    clearBtn.addEventListener('click',()=>{pdfDoc=null;pages=[];thumbsEl.innerHTML='';previewArea.innerHTML='No page selected';generatedFiles=[];downloadZipBtn.disabled=true;setStatus('Cleared')});
+    clearBtn.addEventListener('click', () => {
+      pdfDoc = null; pages = []; thumbsEl.innerHTML = ''; previewArea.innerHTML = 'No page selected'; generatedFiles = []; downloadZipBtn.disabled = true; setStatus('Cleared');
+    });
 
-    function getSelectedPages(){return Array.from(thumbsEl.querySelectorAll('input[type=checkbox]')).filter(c=>c.checked).map(c=>Number(c.dataset.page));}
-
-    // Modal
-    function openModal(pageNumber){modal.style.display='flex';modal.setAttribute('aria-hidden','false');modalContent.innerHTML='';
-      renderToCanvas(pageNumber,Math.max(1,Number(document.getElementById('scale').value))).then(canvas=>{modalContent.appendChild(canvas)}).catch(e=>{modalContent.textContent='Preview failed: '+e.message});
+    function getSelectedPages() {
+      return Array.from(thumbsEl.querySelectorAll('input[type=checkbox]')).filter(c => c.checked).map(c => Number(c.dataset.page));
     }
-    closeModal.onclick=()=>{modal.style.display='none';modal.setAttribute('aria-hidden','true');modalContent.innerHTML=''}
-    
-    // Render page to a new canvas with requested scale and watermark (if any)
-    async function renderToCanvas(pageNumber,scale,options={}){
-      if(!pdfDoc)throw new Error('No PDF loaded');
-      const page=await pdfDoc.getPage(pageNumber);
-      const viewport=page.getViewport({scale});
-      const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d');
-      canvas.width=viewport.width;canvas.height=viewport.height;
-      await page.render({canvasContext:ctx,viewport}).promise;
 
-      // watermark (text) overlay if provided
-      const text = options.text || (document.getElementById('watermarkText')?.value || '').trim();
-      if(text){
+    // Modal preview
+    function openModal(pageNumber) {
+      modal.style.display = 'flex'; modal.setAttribute('aria-hidden', 'false'); modalContent.innerHTML = '';
+      renderToCanvas(pageNumber, Math.max(1, Number(document.getElementById('scale').value))).then(canvas => {
+        // add zoom / full width fit
+        canvas.className = 'preview-canvas';
+        modalContent.appendChild(canvas);
+      }).catch(e => { modalContent.textContent = 'Preview failed: ' + e.message; });
+    }
+    closeModal.onclick = () => { modal.style.display = 'none'; modal.setAttribute('aria-hidden', 'true'); modalContent.innerHTML = ''; };
+
+    // Render page to canvas with watermark overlay
+    async function renderToCanvas(pageNumber, scale, options = {}) {
+      if (!pdfDoc) throw new Error('No PDF loaded');
+      const page = await pdfDoc.getPage(pageNumber);
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
+      canvas.width = viewport.width; canvas.height = viewport.height;
+      await page.render({ canvasContext: ctx, viewport }).promise;
+
+      // text watermark from input (repeated tiled)
+      const text = (options.text || document.getElementById('watermarkText')?.value || '').trim();
+      if (text) {
         ctx.save();
         ctx.globalAlpha = options.opacity ?? 0.18;
-        ctx.fillStyle = options.color || (document.body.classList.contains('light') ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.25)');
+        ctx.fillStyle = (document.body.classList.contains('light') ? 'rgba(0,0,0,0.18)' : 'rgba(255,255,255,0.18)');
         const fontSize = Math.max(14, Math.floor(canvas.width / 20));
-        ctx.font = fontSize + "px sans-serif";
-        ctx.translate(canvas.width/2, canvas.height/2);
+        ctx.font = fontSize + 'px sans-serif';
+        ctx.translate(canvas.width / 2, canvas.height / 2);
         ctx.rotate(-0.45);
         ctx.textAlign = 'center';
-        // draw repeated watermark for stronger stamp
         const stepX = Math.floor(canvas.width / 2.8);
         const stepY = Math.floor(canvas.height / 2.8);
-        for(let y = -canvas.height; y < canvas.height*2; y += stepY){
-          for(let x = -canvas.width; x < canvas.width*2; x += stepX){
+        for (let y = -canvas.height; y < canvas.height * 2; y += stepY) {
+          for (let x = -canvas.width; x < canvas.width * 2; x += stepX) {
             ctx.fillText(text, x, y);
           }
         }
@@ -279,70 +320,75 @@
     }
 
     // Convert single page and trigger download
-    async function convertSingle(pageNumber){
-      try{
-        setStatus('Rendering page '+pageNumber+'...');
-        const scale=Number(document.getElementById('scale').value)||1;
-        const format=document.getElementById('format').value;
-        const quality=Number(document.getElementById('quality').value)||0.9;
-        const canvas=await renderToCanvas(pageNumber,scale,{text:document.getElementById('watermarkText')?.value});
-        const mime = format==='png'?'image/png':'image/jpeg';
+    async function convertSingle(pageNumber) {
+      try {
+        setStatus('Rendering page ' + pageNumber + '...');
+        const scale = Number(document.getElementById('scale').value) || 1;
+        const format = document.getElementById('format').value;
+        const quality = Number(document.getElementById('quality').value) || 0.9;
+        const canvas = await renderToCanvas(pageNumber, scale, { text: document.getElementById('watermarkText')?.value });
+        const mime = format === 'png' ? 'image/png' : 'image/jpeg';
         let blob;
-        if(mime==='image/png'){
-          const dataURL=canvas.toDataURL(mime);
-          blob=dataURItoBlob(dataURL);
+        if (mime === 'image/png') {
+          const dataURL = canvas.toDataURL(mime);
+          blob = dataURItoBlob(dataURL);
         } else {
-          const dataURL=canvas.toDataURL(mime,quality);
-          blob=dataURItoBlob(dataURL);
+          const dataURL = canvas.toDataURL(mime, quality);
+          blob = dataURItoBlob(dataURL);
         }
-        saveAs(blob,'page-'+pageNumber+'.'+(format==='png'?'png':'jpg'));
-        setStatus('Downloaded page '+pageNumber);
-      }catch(e){console.error(e);setStatus('Failed to render page: '+e.message)}
+        saveAs(blob, 'page-' + pageNumber + '.' + (format === 'png' ? 'png' : 'jpg'));
+        setStatus('Downloaded page ' + pageNumber);
+      } catch (e) { console.error(e); setStatus('Failed to render page: ' + e.message); }
     }
 
-    // Convert selected pages in bulk and make ZIP
-    convertBtn.addEventListener('click',async ()=>{
-      const selected=getSelectedPages();
-      if(selected.length===0){alert('Please select at least one page');return}
-      generatedFiles=[];downloadZipBtn.disabled=true;setStatus('Converting '+selected.length+' pages...');
-      for(let i=0;i<selected.length;i++){
-        const p=selected[i];
-        setProgress(Math.round((i/selected.length)*100));
-        setStatus('Rendering page '+p+' ('+(i+1)+'/'+selected.length+')');
-        try{
-          const canvas=await renderToCanvas(p,Number(document.getElementById('scale').value),{text:document.getElementById('watermarkText')?.value});
-          const format=document.getElementById('format').value;const quality=Number(document.getElementById('quality').value)||0.9;
+    // Bulk convert -> zip
+    convertBtn.addEventListener('click', async () => {
+      const selected = getSelectedPages();
+      if (selected.length === 0) { alert('Please select at least one page'); return; }
+      generatedFiles = []; downloadZipBtn.disabled = true; setStatus('Converting ' + selected.length + ' pages...');
+      for (let i = 0; i < selected.length; i++) {
+        const p = selected[i];
+        setProgress(Math.round((i / selected.length) * 100));
+        setStatus('Rendering page ' + p + ' (' + (i + 1) + '/' + selected.length + ')');
+        try {
+          const canvas = await renderToCanvas(p, Number(document.getElementById('scale').value), { text: document.getElementById('watermarkText')?.value });
+          const format = document.getElementById('format').value; const quality = Number(document.getElementById('quality').value) || 0.9;
           let blob;
-          if(format==='png'){const d=canvas.toDataURL('image/png');blob=dataURItoBlob(d);}
-          else {const d=canvas.toDataURL('image/jpeg',quality);blob=dataURItoBlob(d)}
-          generatedFiles.push({name:'page-'+p+'.'+(format==='png'?'png':'jpg'),blob});
-        }catch(err){console.warn('page failed',p,err);}
+          if (format === 'png') { const d = canvas.toDataURL('image/png'); blob = dataURItoBlob(d); }
+          else { const d = canvas.toDataURL('image/jpeg', quality); blob = dataURItoBlob(d); }
+          generatedFiles.push({ name: 'page-' + p + '.' + (format === 'png' ? 'png' : 'jpg'), blob });
+        } catch (err) { console.warn('page failed', p, err); }
       }
-      setProgress(100);setStatus('Packaging ZIP...');
-      const zip=new JSZip();
-      generatedFiles.forEach(f=>zip.file(f.name,f.blob));
-      const content=await zip.generateAsync({type:'blob'},(meta)=>{setProgress(Math.round(meta.percent));setStatus('Zipping '+Math.round(meta.percent)+'%')});
-      saveAs(content,'pages.zip');downloadZipBtn.disabled=false;setStatus('Done');
+      setProgress(100); setStatus('Packaging ZIP...');
+      const zip = new JSZip();
+      generatedFiles.forEach(f => zip.file(f.name, f.blob));
+      const content = await zip.generateAsync({ type: 'blob' }, (meta) => { setProgress(Math.round(meta.percent)); setStatus('Zipping ' + Math.round(meta.percent) + '%'); });
+      saveAs(content, 'pages.zip'); downloadZipBtn.disabled = false; setStatus('Done');
     });
 
-    downloadZipBtn.addEventListener('click',()=>{
-      if(generatedFiles.length===0){alert('No generated files available. Use Convert Selected first.');return}
-      (async ()=>{
-        setStatus('Preparing ZIP...');setProgress(0);
-        const zip=new JSZip();generatedFiles.forEach(f=>zip.file(f.name,f.blob));
-        const content=await zip.generateAsync({type:'blob'},(meta)=>{setProgress(Math.round(meta.percent))});
-        saveAs(content,'pages.zip');setStatus('ZIP downloaded');
+    downloadZipBtn.addEventListener('click', () => {
+      if (generatedFiles.length === 0) { alert('No generated files available. Use Convert Selected first.'); return; }
+      (async () => {
+        setStatus('Preparing ZIP...'); setProgress(0);
+        const zip = new JSZip(); generatedFiles.forEach(f => zip.file(f.name, f.blob));
+        const content = await zip.generateAsync({ type: 'blob' }, (meta) => { setProgress(Math.round(meta.percent)); });
+        saveAs(content, 'pages.zip'); setStatus('ZIP downloaded');
       })();
     });
 
-    // helper: dataURI -> blob
-    function dataURItoBlob(dataURI){const byteString=atob(dataURI.split(',')[1]);const mimeString=dataURI.split(',')[0].split(':')[1].split(';')[0];const ab=new ArrayBuffer(byteString.length);const ia=new Uint8Array(ab);for(let i=0;i<byteString.length;i++)ia[i]=byteString.charCodeAt(i);return new Blob([ab],{type:mimeString});}
+    // helper
+    function dataURItoBlob(dataURI) {
+      const byteString = atob(dataURI.split(',')[1]);
+      const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+      const ab = new ArrayBuffer(byteString.length); const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+      return new Blob([ab], { type: mimeString });
+    }
 
-    // set year
-    document.getElementById('year').textContent=new Date().getFullYear();
+    // accessibility
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal.click(); });
 
-    // Accessibility: keyboard close modal
-    window.addEventListener('keydown',(e)=>{if(e.key==='Escape')closeModal.click()});
+    // set year in footer branding? if you still want a copyright line later, we can add it.
   </script>
 </body>
 </html>
