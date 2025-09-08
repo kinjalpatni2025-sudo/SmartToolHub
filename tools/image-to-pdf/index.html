@@ -4,33 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Image to PDF Converter — Smarttool Hub</title>
-  <meta name="description" content="Convert many images into a single PDF in your browser. Sequential processing, optional downscale, progress bar. 100% client-side." />
-  <meta name="keywords" content="image to pdf, jpg to pdf, png to pdf, convert images to pdf, bulk image to pdf" />
+  <meta name="description" content="Convert images to a single PDF. Choose page size (A4, A3, Letter), orientation, margin and preserve original image size when possible. Client-side and private." />
+  <meta name="keywords" content="image to pdf, jpg to pdf, png to pdf, a4 image to pdf, image to pdf original size" />
   <link rel="icon" href="../../img/icons8-48-toolbox.png" />
-  <!-- FAQ JSON-LD -->
-  <script type="application/ld+json">
-  {
-    "@context":"https://schema.org",
-    "@type":"FAQPage",
-    "mainEntity":[
-      {"@type":"Question","name":"Can I convert unlimited images to PDF?","acceptedAnswer":{"@type":"Answer","text":"The tool processes images sequentially to handle large batches; practical limits depend on your device. For huge batches, server-side conversion is recommended."}},
-      {"@type":"Question","name":"Does my data leave my device?","acceptedAnswer":{"@type":"Answer","text":"No — conversion is client-side in your browser; nothing is uploaded."}}
-    ]
-  }
-  </script>
-
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
-
-  <!-- pdf-lib & jszip (CDNs) -->
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
   <style>
-    :root{
-      --bg:#0b1220; --text:#eaf2ff; --card:#182335; --border:#2a3b55; --primary:#22d3ee; --muted:#9fb3c8;
-    }
-    body.light{ --bg:#f6f8fb; --text:#0b1220; --card:#ffffff; --border:#e6eefc; --primary:#0b74ff; --muted:#556677; }
+    :root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8}
+    body.light{--bg:#f6f8fb;--text:#0b1220;--card:#fff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
     *{box-sizing:border-box}
     body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);transition:.2s}
     .container{max-width:1100px;margin:0 auto;padding:18px}
@@ -46,7 +29,7 @@
     .lead{margin:0 0 12px;color:var(--muted)}
     .uploader{border:2px dashed var(--border);padding:22px;border-radius:12px;background:var(--card);text-align:center;cursor:pointer}
     .uploader.drag{border-color:var(--primary);box-shadow:0 8px 24px rgba(0,0,0,.28)}
-    .controls{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+    .controls{display:flex;gap:12px;align-items:center;margin-top:12px;flex-wrap:wrap}
     .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
     .btn-primary{background:var(--primary);color:#00131f}
     .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
@@ -65,21 +48,22 @@
     .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;max-width:1100px;margin:0 auto}
     .footer-links{display:flex;gap:14px;flex-wrap:wrap}
     .footer-links a{color:var(--primary);text-decoration:none;font-weight:600}
-    .settings{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-    .settings label{font-size:.9rem;color:var(--muted)}
-    input[type="range"]{width:180px}
-    @media (max-width:720px){ .preview-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))} .header-actions{align-self:flex-end} .footer-inner{flex-direction:column;align-items:flex-start} }
+    .form-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .field{display:flex;flex-direction:column}
+    label{font-size:.85rem;color:var(--muted);margin-bottom:6px}
+    select,input[type="number"]{padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text)}
+    input[type="checkbox"]{transform:scale(1.15)}
+    @media (max-width:720px){ .preview-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))} .header-actions{align-self:flex-end} .footer-inner{flex-direction:column;align-items:flex-start} .form-row{flex-direction:column;align-items:flex-start} }
   </style>
 </head>
 <body>
-  <!-- Header -->
   <header>
     <div class="brand">
       <a href="../../index.html" style="display:inline-flex;align-items:center;gap:12px;text-decoration:none;color:inherit">
         <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub logo">
         <div>
           <div class="title">Smarttool Hub</div>
-          <div class="tag">Image → PDF (Large Batches)</div>
+          <div class="tag">Image → PDF</div>
         </div>
       </a>
     </div>
@@ -89,26 +73,60 @@
     </div>
   </header>
 
-  <!-- Main -->
   <main class="container" role="main">
-    <h1>Image to PDF Converter — Large Batches</h1>
-    <p class="lead">Convert many images into a single PDF. This version processes images *sequentially* and frees memory as it goes so it can handle large batches (subject to your device limits).</p>
+    <h1>Image to PDF Converter — Original Size & Page Options</h1>
+    <p class="lead">Convert images to a PDF. Choose page size, orientation and margins. Images will be placed at original size (in points) if they fit — otherwise scaled to printable area.</p>
 
     <div id="uploader" class="uploader" tabindex="0" aria-label="Drop images or click to select">
       <div style="font-size:1.05rem"><i class="fa-solid fa-image" style="color:var(--primary)"></i> Click or drag & drop images here</div>
-      <div class="small" style="margin-top:8px">Supported: JPEG, PNG, WebP. Processed sequentially. Use the "Max dimension" setting to downscale huge images for safety.</div>
+      <div class="small" style="margin-top:8px">Supported: JPEG, PNG, WebP. Files are processed sequentially for large batches.</div>
       <input id="fileInput" type="file" accept="image/*" multiple style="display:none">
     </div>
 
     <div class="controls" id="controls" style="display:none">
-      <div class="settings">
-        <label class="small">Max dimension (px): <span id="maxDimLabel">2500</span></label>
-        <input id="maxDim" type="range" min="800" max="4000" value="2500" step="100" />
+      <div class="form-row">
+        <div class="field">
+          <label for="pageSize">Page size</label>
+          <select id="pageSize">
+            <option value="A4">A4 (210 × 297 mm)</option>
+            <option value="A3">A3 (297 × 420 mm)</option>
+            <option value="Letter">Letter (8.5 × 11 in)</option>
+            <option value="Legal">Legal (8.5 × 14 in)</option>
+            <option value="Custom">Custom (mm)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="orientation">Orientation</label>
+          <select id="orientation">
+            <option value="portrait">Portrait</option>
+            <option value="landscape">Landscape</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="marginMm">Margin (mm)</label>
+          <input id="marginMm" type="number" min="0" max="100" value="10" />
+        </div>
+
+        <div class="field" id="customSizeFields" style="display:none">
+          <label>Custom size (mm)</label>
+          <div style="display:flex;gap:8px">
+            <input id="customW" type="number" placeholder="width mm" style="width:110px" />
+            <input id="customH" type="number" placeholder="height mm" style="width:110px" />
+          </div>
+        </div>
+
+        <div class="field" style="display:flex;align-items:center;gap:8px">
+          <label style="margin-bottom:0"><input id="preserveOriginal" type="checkbox" checked /> Keep original image size (if it fits)</label>
+        </div>
       </div>
 
-      <button id="clearAll" class="btn btn-ghost">Clear All</button>
-      <button id="convertBtn" class="btn btn-primary"><span id="convertLabel">Convert to PDF</span> <span id="convertSpinner" style="margin-left:8px;display:none" class="spinner" aria-hidden="true"></span></button>
-      <button id="downloadZipBtn" class="btn btn-ghost" disabled>Download Originals (ZIP)</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+        <button id="clearAll" class="btn btn-ghost">Clear All</button>
+        <button id="convertBtn" class="btn btn-primary"><span id="convertLabel">Convert to PDF</span> <span id="convertSpinner" style="margin-left:8px;display:none" class="spinner" aria-hidden="true"></span></button>
+        <button id="downloadZipBtn" class="btn btn-ghost" disabled>Download Originals (ZIP)</button>
+      </div>
     </div>
 
     <div id="progressBarWrap" class="progress" aria-hidden="true"><div id="progressBar" class="progress-bar"></div></div>
@@ -116,16 +134,15 @@
     <div class="preview-grid" id="previewGrid" aria-live="polite"></div>
 
     <section style="margin-top:16px;color:var(--muted)">
-      <h2 style="color:var(--primary);margin:10px 0">Notes & Tips</h2>
+      <h2 style="color:var(--primary);margin:10px 0">How sizing works</h2>
       <ul>
-        <li>Processing is done one image at a time to reduce peak memory usage.</li>
-        <li>If your device runs out of memory, try lowering the Max dimension or split into smaller batches.</li>
-        <li>For thousands of large images, a server-side conversion is recommended.</li>
+        <li>Images are measured in pixels; we convert pixels → PDF points assuming <strong>96 DPI</strong> (so 1 px → 0.75 pt). That yields realistic physical sizes on PDF pages.</li>
+        <li>If "Keep original image size" is checked AND the image (in points) fits within the page printable area (page minus margins), the original size is used. Otherwise the image is proportionally scaled down to fit.</li>
+        <li>Printed physical dimensions depend on the PDF viewer/printer DPI, but using 96 DPI → 72 pts/in gives good real-world sizing.</li>
       </ul>
     </section>
   </main>
 
-  <!-- Footer with links back to main site pages -->
   <footer>
     <div class="footer-inner">
       <div>© <span id="year"></span> Smarttool Hub</div>
@@ -140,29 +157,26 @@
   </footer>
 
   <script>
-  // ---------- Theme / helpers ----------
+  // ---------- Theme init ----------
   (function(){
     const btn = document.getElementById('themeToggle');
     if(localStorage.getItem('sth_theme') === 'light'){ document.body.classList.add('light'); btn.innerHTML = '<i class="fa-solid fa-sun"></i>'; }
-    btn.addEventListener('click', function(){
-      document.body.classList.toggle('light');
-      if(document.body.classList.contains('light')){ btn.innerHTML = '<i class="fa-solid fa-sun"></i>'; localStorage.setItem('sth_theme','light'); }
-      else{ btn.innerHTML = '<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); }
-    });
+    btn.addEventListener('click', function(){ document.body.classList.toggle('light'); if(document.body.classList.contains('light')){ btn.innerHTML = '<i class=\"fa-solid fa-sun\"></i>'; localStorage.setItem('sth_theme','light'); } else { btn.innerHTML = '<i class=\"fa-solid fa-moon\"></i>'; localStorage.removeItem('sth_theme'); } });
     document.getElementById('year').textContent = new Date().getFullYear();
   })();
 
-  // ---------- Small utilities ----------
-  function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
-  function downloadBlob(blob, filename){
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(()=> URL.revokeObjectURL(a.href), 1500);
-  }
+  // ---------- Helpers ----------
+  function sleep(ms){ return new Promise(res=>setTimeout(res,ms)); }
+  function downloadBlob(blob, filename){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500); }
+  function mmToPoints(mm){ return mm * 72 / 25.4; } // 1 inch = 25.4 mm ; 1 in = 72 pts
+
+  // PDF page sizes in points (portrait)
+  const PAGE_SIZES = {
+    'A4': {w: mmToPoints(210), h: mmToPoints(297)},
+    'A3': {w: mmToPoints(297), h: mmToPoints(420)},
+    'Letter': {w: 612, h: 792}, // 8.5 x 11 in * 72
+    'Legal': {w: 612, h: 1008}  // 8.5 x 14 in * 72
+  };
 
   // ---------- Elements ----------
   const uploader = document.getElementById('uploader');
@@ -176,37 +190,55 @@
   const progressWrap = document.getElementById('progressBarWrap');
   const progressBar = document.getElementById('progressBar');
   const downloadZipBtn = document.getElementById('downloadZipBtn');
-  const maxDimRange = document.getElementById('maxDim');
-  const maxDimLabel = document.getElementById('maxDimLabel');
+  const pageSizeSel = document.getElementById('pageSize');
+  const orientationSel = document.getElementById('orientation');
+  const marginMmInput = document.getElementById('marginMm');
+  const preserveOriginalChk = document.getElementById('preserveOriginal');
+  const customSizeFields = document.getElementById('customSizeFields');
+  const customW = document.getElementById('customW');
+  const customH = document.getElementById('customH');
 
-  // ---------- State ----------
-  let files = [];     // File objects in chosen order
-  let thumbs = [];    // low-res data URLs for lightweight preview
+  // state
+  let files = []; // File objects
+  let thumbs = []; // preview dataURLs (small)
+  // Default: A4 portrait, 10mm margin
+  function getSelectedPageSize(){
+    const sizeKey = pageSizeSel.value;
+    let w,h;
+    if(sizeKey === 'Custom'){
+      const mmW = parseFloat(customW.value || 210);
+      const mmH = parseFloat(customH.value || 297);
+      w = mmToPoints(mmW); h = mmToPoints(mmH);
+    } else {
+      const base = PAGE_SIZES[sizeKey] || PAGE_SIZES['A4'];
+      w = base.w; h = base.h;
+    }
+    const orient = orientationSel.value;
+    if(orient === 'landscape') return {w: Math.max(w,h), h: Math.min(w,h)};
+    return {w,h};
+  }
 
-  maxDimRange.addEventListener('input', ()=>{ maxDimLabel.textContent = maxDimRange.value; });
+  // show custom fields only when needed
+  pageSizeSel.addEventListener('change', ()=>{ customSizeFields.style.display = (pageSizeSel.value === 'Custom' ? 'block' : 'none'); });
 
-  // Click or drop handlers
+  // click / drop
   uploader.addEventListener('click', ()=> fileInput.click());
   fileInput.addEventListener('change', e=> handleFileList(e.target.files));
   uploader.addEventListener('dragover', e=>{ e.preventDefault(); uploader.classList.add('drag'); });
-  uploader.addEventListener('dragleave', e=>{ uploader.classList.remove('drag'); });
+  uploader.addEventListener('dragleave', ()=>{ uploader.classList.remove('drag'); });
   uploader.addEventListener('drop', e=>{ e.preventDefault(); uploader.classList.remove('drag'); if(e.dataTransfer && e.dataTransfer.files) handleFileList(e.dataTransfer.files); });
 
   function handleFileList(fileList){
-    const arr = Array.from(fileList).filter(f=>f.type && f.type.startsWith('image/'));
+    const arr = Array.from(fileList).filter(f => f.type && f.type.startsWith('image/'));
     if(arr.length === 0) return;
     files = files.concat(arr);
-    Promise.all(arr.map(f => makeThumbnailDataURL(f, 240))).then(results => {
-      thumbs = thumbs.concat(results);
-      renderPreviews();
-      controls.style.display = 'flex';
-      downloadZipBtn.disabled = files.length===0;
-    });
+    Promise.all(arr.map(f => makeThumbnailDataURL(f, 240))).then(results => { thumbs = thumbs.concat(results); renderPreviews(); controls.style.display = 'flex'; downloadZipBtn.disabled = files.length === 0; });
     fileInput.value = '';
   }
 
+  // create small thumbnail for preview
   function makeThumbnailDataURL(file, maxSide){
-    return new Promise((res, rej)=>{
+    return new Promise((res, rej) => {
       const img = new Image();
       const url = URL.createObjectURL(file);
       img.onload = () => {
@@ -217,7 +249,7 @@
         c.width = cw; c.height = ch;
         const ctx = c.getContext('2d');
         ctx.drawImage(img,0,0,sw,sh,0,0,cw,ch);
-        const dataUrl = c.toDataURL('image/jpeg', 0.75);
+        const dataUrl = c.toDataURL('image/jpeg', 0.7);
         URL.revokeObjectURL(url);
         res(dataUrl);
       };
@@ -234,24 +266,21 @@
       const rm = document.createElement('button'); rm.className='remove'; rm.title='Remove'; rm.innerHTML='&times;';
       rm.addEventListener('click', ()=> { files.splice(i,1); thumbs.splice(i,1); renderPreviews(); if(files.length===0) controls.style.display='none'; });
       const img = document.createElement('img'); img.src = thumbs[i] || '';
-      const meta = document.createElement('div'); meta.className = 'meta'; meta.textContent = f.name;
+      const meta = document.createElement('div'); meta.className='meta'; meta.textContent = f.name;
       const singleBtn = document.createElement('button'); singleBtn.className = 'btn btn-ghost'; singleBtn.style.marginTop='6px'; singleBtn.textContent = 'Download Single PDF';
       singleBtn.addEventListener('click', ()=> convertSingleImageToPdf(i));
-      card.appendChild(dragHandle);
-      card.appendChild(rm);
-      card.appendChild(img);
-      card.appendChild(meta);
-      card.appendChild(singleBtn);
+      card.appendChild(dragHandle); card.appendChild(rm); card.appendChild(img); card.appendChild(meta); card.appendChild(singleBtn);
       previewGrid.appendChild(card);
     });
     attachDragReorder(previewGrid, (from, to) => {
       if(from === to) return;
-      const f = files.splice(from,1)[0]; files.splice(to,0,f);
+      const item = files.splice(from,1)[0]; files.splice(to,0,item);
       const t = thumbs.splice(from,1)[0]; thumbs.splice(to,0,t);
       renderPreviews();
     });
   }
 
+  // drag reorder (pointer events)
   function attachDragReorder(container, onReorder){
     let dragItem = null, startIndex = -1;
     container.addEventListener('pointerdown', e=>{
@@ -289,50 +318,107 @@
 
   clearAllBtn.addEventListener('click', ()=>{ files=[]; thumbs=[]; renderPreviews(); controls.style.display='none'; downloadZipBtn.disabled=true; });
 
-  // Convert one image -> single PDF
+  // Convert single image -> pdf (single page)
   async function convertSingleImageToPdf(index){
     const f = files[index];
     if(!f) return;
     setBusySingle(true);
     try {
       const pdfDoc = await PDFLib.PDFDocument.create();
-      const result = await imageFileToEmbed(f);
-      const embedded = await embedArrayBufferIntoPdf(pdfDoc, result.arrayBuffer);
-      const page = pdfDoc.addPage([result.width, result.height]);
-      page.drawImage(embedded, { x:0, y:0, width: result.width, height: result.height });
+      const pageSize = getSelectedPageSize();
+      const marginMm = parseFloat(marginMmInput.value || 10);
+      const marginPts = mmToPoints(marginMm);
+      const contentW = pageSize.w - 2*marginPts;
+      const contentH = pageSize.h - 2*marginPts;
+
+      // get image bytes + dims (pixels)
+      const embedData = await imageFileToArrayBufferAndDims(f, parseInt(marginMmInput.value || 10));
+      // convert px -> pts (assuming 96 DPI): pts = px * 72/96 = px * 0.75
+      const imgPtsW = embedData.pxW * 0.75;
+      const imgPtsH = embedData.pxH * 0.75;
+
+      // compute scale
+      let scale = 1;
+      if(preserveOriginalChk.checked){
+        // keep original size if fits, otherwise scale down to fit
+        scale = Math.min(1, contentW / imgPtsW, contentH / imgPtsH);
+      } else {
+        // always scale to fit within content area (no upscale)
+        scale = Math.min(1, contentW / imgPtsW, contentH / imgPtsH);
+      }
+
+      const drawW = Math.round(imgPtsW * scale);
+      const drawH = Math.round(imgPtsH * scale);
+
+      // embed image into pdf
+      const embedded = await embedArrayBufferIntoPdf(pdfDoc, embedData.arrayBuffer);
+      const page = pdfDoc.addPage([pageSize.w, pageSize.h]);
+      // center within printable area
+      const x = marginPts + Math.round((contentW - drawW) / 2);
+      const y = marginPts + Math.round((contentH - drawH) / 2);
+      page.drawImage(embedded, { x, y, width: drawW, height: drawH });
+
       const pdfBytes = await pdfDoc.save();
       downloadBlob(new Blob([pdfBytes], { type: 'application/pdf' }), f.name.replace(/\.[^/.]+$/, '') + '.pdf');
-    } catch (err) {
-      alert('Conversion error: ' + (err && err.message ? err.message : err));
+    } catch (err){
+      console.error(err);
+      alert('Error: ' + (err && err.message ? err.message : err));
     } finally {
       setBusySingle(false);
     }
   }
 
-  // Convert all images -> single PDF sequentially
-  convertBtn.addEventListener('click', async ()=>{
+  // Convert all images sequentially into one PDF with chosen page size/orientation/margin
+  convertBtn.addEventListener('click', async (ev)=>{
+    ev.preventDefault();
     if(files.length === 0) return alert('No images selected.');
     setBusy(true);
     progressWrap.style.display = 'block';
     progressBar.style.width = '0%';
     try {
       const pdfDoc = await PDFLib.PDFDocument.create();
-      const maxDim = parseInt(maxDimRange.value || '2500', 10);
+      const pageSize = getSelectedPageSize();
+      const marginMm = parseFloat(marginMmInput.value || 10);
+      const marginPts = mmToPoints(marginMm);
+      const contentW = pageSize.w - 2*marginPts;
+      const contentH = pageSize.h - 2*marginPts;
+
       for(let i=0;i<files.length;i++){
         const f = files[i];
-        const result = await imageFileToEmbed(f, maxDim);
-        const embedded = await embedArrayBufferIntoPdf(pdfDoc, result.arrayBuffer);
-        const page = pdfDoc.addPage([result.width, result.height]);
-        page.drawImage(embedded, { x:0, y:0, width: result.width, height: result.height });
-        if(result.release) try{ result.release(); }catch(e){}
+        // create arrayBuffer + dims (pixels) and optionally downscale inside imageFileToArrayBufferAndDims
+        const embedData = await imageFileToArrayBufferAndDims(f); // returns { arrayBuffer, pxW, pxH }
+        const imgPtsW = embedData.pxW * 0.75;
+        const imgPtsH = embedData.pxH * 0.75;
+
+        // Scaling decision
+        let scale;
+        if(preserveOriginalChk.checked){
+          scale = Math.min(1, contentW / imgPtsW, contentH / imgPtsH);
+        } else {
+          // always fit into content area
+          scale = Math.min(1, contentW / imgPtsW, contentH / imgPtsH);
+        }
+        const drawW = Math.round(imgPtsW * scale);
+        const drawH = Math.round(imgPtsH * scale);
+
+        const embedded = await embedArrayBufferIntoPdf(pdfDoc, embedData.arrayBuffer);
+        const page = pdfDoc.addPage([pageSize.w, pageSize.h]);
+        const x = marginPts + Math.round((contentW - drawW) / 2);
+        const y = marginPts + Math.round((contentH - drawH) / 2);
+        page.drawImage(embedded, { x, y, width: drawW, height: drawH });
+
+        // cleanup helpers (release canvas memory if any)
+        if(embedData.release) try{ embedData.release(); }catch(e){}
+
         progressBar.style.width = Math.round(((i+1)/files.length)*100) + '%';
-        await sleep(30);
+        await sleep(30); // yield
       }
+
       const pdfBytes = await pdfDoc.save();
       downloadBlob(new Blob([pdfBytes], { type: 'application/pdf' }), 'images-to-pdf.pdf');
     } catch (err){
       console.error(err);
-      alert('Error converting images: ' + (err && err.message ? err.message : err));
+      alert('Conversion failed: ' + (err && err.message ? err.message : err));
     } finally {
       setBusy(false);
       progressBar.style.width = '0%';
@@ -354,88 +440,57 @@
       progressBar.style.width = Math.round((done/files.length)*100) + '%';
       await sleep(20);
     }
-    const blob = await zip.generateAsync({ type:'blob' }, meta => {
-      progressBar.style.width = Math.round(meta.percent) + '%';
-    });
+    const blob = await zip.generateAsync({ type:'blob' }, meta => { progressBar.style.width = Math.round(meta.percent) + '%'; });
     progressBar.style.width = '0%';
     progressWrap.style.display = 'none';
     downloadBlob(blob, 'original-images.zip');
   });
 
-  // helper: create thumbnail and image-to-arrayBuffer conversion
-  function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
-  async function makeThumbnailDataURL(file, maxSide){
-    return new Promise((res, rej)=>{
-      const img = new Image();
-      const url = URL.createObjectURL(file);
-      img.onload = () => {
-        let sw = img.naturalWidth, sh = img.naturalHeight;
-        const scale = Math.min(1, maxSide / Math.max(sw, sh));
-        const cw = Math.round(sw * scale), ch = Math.round(sh * scale);
-        const c = document.createElement('canvas');
-        c.width = cw; c.height = ch;
-        const ctx = c.getContext('2d');
-        ctx.drawImage(img,0,0,sw,sh,0,0,cw,ch);
-        const dataUrl = c.toDataURL('image/jpeg', 0.75);
-        URL.revokeObjectURL(url);
-        res(dataUrl);
-      };
-      img.onerror = (e)=> { URL.revokeObjectURL(url); rej(e); };
-      img.src = url;
-    });
-  }
-
-  // imageFileToEmbed: returns arrayBuffer + width + height
-  async function imageFileToEmbed(file, maxDim=0){
-    try {
-      const url = URL.createObjectURL(file);
-      let bitmap = null;
-      try { bitmap = await createImageBitmap(file); } catch(e){ bitmap = null; }
-      let sw, sh;
-      if(bitmap){ sw = bitmap.width; sh = bitmap.height; }
-      else { const img = await loadImageFromBlob(file); sw = img.naturalWidth; sh = img.naturalHeight; }
-      let scale = 1;
-      if(maxDim>0){
-        const longest = Math.max(sw, sh);
-        if(longest > maxDim) scale = maxDim / longest;
-      }
-      const targetW = Math.max(1, Math.round(sw * scale));
-      const targetH = Math.max(1, Math.round(sh * scale));
+  // imageFileToArrayBufferAndDims: draw onto canvas to ensure we have PNG/JPEG bytes sized to original pixels (no upscaling).
+  // returns { arrayBuffer, pxW, pxH, release }
+  async function imageFileToArrayBufferAndDims(file){
+    // We'll draw the image into canvas at its native pixel size (or optionally downscale earlier in pipeline if you'd like)
+    // Use createImageBitmap when available for speed
+    let bitmap = null;
+    try { bitmap = await createImageBitmap(file); } catch(e){ bitmap = null; }
+    if(bitmap){
+      const pxW = bitmap.width, pxH = bitmap.height;
+      // draw into canvas at native resolution to create PNG bytes
       const canvas = document.createElement('canvas');
-      canvas.width = targetW; canvas.height = targetH;
+      canvas.width = pxW; canvas.height = pxH;
       const ctx = canvas.getContext('2d');
-      if(bitmap){ ctx.drawImage(bitmap, 0, 0, sw, sh, 0, 0, targetW, targetH); try{ bitmap.close && bitmap.close(); }catch(e){} }
-      else { const img = await loadImageFromBlob(file); ctx.drawImage(img, 0, 0, sw, sh, 0, 0, targetW, targetH); }
-      const pngBlob = await new Promise(res=>canvas.toBlob(res, 'image/png'));
-      const arr = await pngBlob.arrayBuffer();
-      URL.revokeObjectURL(url);
-      try{ canvas.width = canvas.height = 0; }catch(e){}
-      return { arrayBuffer: arr, width: targetW, height: targetH, release: ()=>{} };
-    } catch(err){
-      // fallback
-      const dataUrl = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
+      ctx.drawImage(bitmap, 0, 0);
+      // free bitmap if possible
+      try { bitmap.close && bitmap.close(); } catch(e){}
+      // toBlob -> arrayBuffer
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+      const arr = await blob.arrayBuffer();
+      // small release helper
+      const release = ()=>{ try{ canvas.width=canvas.height=0; }catch(e){} };
+      return { arrayBuffer: arr, pxW, pxH, release };
+    } else {
+      // fallback using Image + FileReader dataURL
+      const dataUrl = await new Promise((res, rej)=>{ const r = new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
       const img = await loadImageFromDataURL(dataUrl);
-      const sw = img.naturalWidth, sh = img.naturalHeight;
-      const scale = (maxDim>0) ? Math.min(1, maxDim/Math.max(sw,sh)) : 1;
-      const targetW = Math.round(sw * scale), targetH = Math.round(sh * scale);
-      const canvas = document.createElement('canvas'); canvas.width = targetW; canvas.height = targetH;
-      const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, sw, sh, 0, 0, targetW, targetH);
-      const pngBlob = await new Promise(res=>canvas.toBlob(res, 'image/png'));
-      const arr = await pngBlob.arrayBuffer();
-      try{ canvas.width = canvas.height = 0; }catch(e){}
-      return { arrayBuffer: arr, width: targetW, height: targetH, release: ()=>{} };
+      const pxW = img.naturalWidth, pxH = img.naturalHeight;
+      const canvas = document.createElement('canvas');
+      canvas.width = pxW; canvas.height = pxH;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+      const arr = await blob.arrayBuffer();
+      return { arrayBuffer: arr, pxW, pxH, release: ()=>{ try{ canvas.width=canvas.height=0; }catch(e){} } };
     }
   }
 
-  function loadImageFromBlob(blob){
-    return new Promise((res, rej)=>{
-      const url = URL.createObjectURL(blob);
-      const img = new Image();
-      img.onload = ()=> { URL.revokeObjectURL(url); res(img); };
-      img.onerror = (e)=> { URL.revokeObjectURL(url); rej(e); };
-      img.src = url;
-    });
+  // helper embed based on PNG/JPG detection
+  async function embedArrayBufferIntoPdf(pdfDoc, arrBuf){
+    const bytes = new Uint8Array(arrBuf);
+    const isPng = bytes[0]===0x89 && bytes[1]===0x50 && bytes[2]===0x4E && bytes[3]===0x47;
+    if(isPng) return await pdfDoc.embedPng(arrBuf);
+    else return await pdfDoc.embedJpg(arrBuf);
   }
+
   function loadImageFromDataURL(dataUrl){
     return new Promise((res, rej)=>{
       const img = new Image();
@@ -445,13 +500,7 @@
     });
   }
 
-  async function embedArrayBufferIntoPdf(pdfDoc, arrBuf){
-    const bytes = new Uint8Array(arrBuf);
-    const isPng = bytes[0]===0x89 && bytes[1]===0x50 && bytes[2]===0x4E && bytes[3]===0x47;
-    if(isPng) return await pdfDoc.embedPng(arrBuf);
-    else return await pdfDoc.embedJpg(arrBuf);
-  }
-
+  // busy helpers
   function setBusy(on){
     if(on){
       convertLabel.textContent = 'Converting...';
@@ -467,42 +516,9 @@
       downloadZipBtn.disabled = files.length === 0;
     }
   }
-  function setBusySingle(on){ if(on){ convertBtn.disabled = true; } else { convertBtn.disabled = false; } }
+  function setBusySingle(on){ if(on) convertBtn.disabled = true; else convertBtn.disabled = false; }
 
-  // Hook convert action
-  convertBtn.addEventListener('click', (ev)=>{ ev.preventDefault(); if(files.length===0) return alert('No images selected.'); convertAllSequential(); });
-
-  async function convertAllSequential(){
-    if(files.length === 0) return;
-    setBusy(true);
-    progressWrap.style.display = 'block';
-    progressBar.style.width = '0%';
-    try {
-      const pdfDoc = await PDFLib.PDFDocument.create();
-      const maxDim = parseInt(maxDimRange.value || '2500', 10);
-      for(let i=0;i<files.length;i++){
-        const f = files[i];
-        const result = await imageFileToEmbed(f, maxDim);
-        const embedded = await embedArrayBufferIntoPdf(pdfDoc, result.arrayBuffer);
-        const page = pdfDoc.addPage([result.width, result.height]);
-        page.drawImage(embedded, { x:0, y:0, width: result.width, height: result.height });
-        if(result.release) try{ result.release(); }catch(e){}
-        progressBar.style.width = Math.round(((i+1)/files.length)*100) + '%';
-        await sleep(30);
-      }
-      const pdfBytes = await pdfDoc.save();
-      downloadBlob(new Blob([pdfBytes], { type: 'application/pdf' }), 'images-to-pdf.pdf');
-    } catch (err){
-      console.error(err);
-      alert('Error converting images: ' + (err && err.message ? err.message : err));
-    } finally {
-      setBusy(false);
-      progressBar.style.width = '0%';
-      progressWrap.style.display = 'none';
-    }
-  }
-
-  // end script
+  // end
   </script>
 </body>
 </html>
