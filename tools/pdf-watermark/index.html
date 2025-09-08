@@ -6,6 +6,7 @@
   <title>PDF Watermark — Smarttool Hub</title>
   <meta name="description" content="Add text or logo watermarks to PDFs in the browser. Convert PDF pages to images (PNG/JPG), preview, and download single or bulk images — all client-side." />
   <meta name="keywords" content="pdf watermark, watermark pdf, pdf to image, pdf to jpg, pdf to png, client-side, jszip, pdf.js" />
+  <!-- Favicon (uses your landing page favicon) -->
   <link rel="icon" href="../../favicon.png" />
 
   <!-- FAQ JSON-LD -->
@@ -59,12 +60,12 @@
     .preview-canvas{max-width:100%;border:1px solid rgba(255,255,255,0.03);border-radius:8px}
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:40}
     .modal .box{background:var(--card);padding:12px;border-radius:10px;max-width:95%;max-height:95%;overflow:auto}
-    @media (max-width:980px){main{grid-template-columns:1fr}}
+    @media (max-width:980px){main{grid-template-columns:1fr}} 
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- HEADER (logo + title + home + theme) -->
+    <!-- Header (uses ../../logo.png and ../../home-icon.png) -->
     <header>
       <div class="brand">
         <a href="../../index.html" title="Smarttool Hub"><img src="../../logo.png" alt="logo"></a>
@@ -73,14 +74,13 @@
           <span>Fast • Private • 100% Client-side</span>
         </div>
       </div>
-
       <div class="controls">
         <a class="btn" href="../../index.html" title="Home"><img src="../../home-icon.png" alt="Home" style="width:18px;height:18px"> Home</a>
         <button id="themeToggle" class="btn" title="Toggle theme">🌙</button>
       </div>
     </header>
 
-    <!-- MAIN TOOL AREA -->
+    <!-- Main UI -->
     <main>
       <aside class="panel">
         <div id="dropzone" class="dropzone" tabindex="0">
@@ -96,6 +96,14 @@
         </div>
 
         <div class="options">
+          <label>Watermark options</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="useSiteLogo"> Use site logo as watermark</label>
+            <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="useUploadedLogo"> Use uploaded logo</label>
+          </div>
+          <label>Upload logo (PNG/JPG) — used if 'Use uploaded logo' checked</label>
+          <input id="logoInput" type="file" accept="image/*">
+
           <label>Watermark text (optional)</label>
           <input id="watermarkText" type="text" placeholder="e.g. Confidential — ACME Ltd.">
 
@@ -111,7 +119,10 @@
           <label>Scale (resolution multiplier)</label>
           <input id="scale" type="number" min="0.5" max="4" step="0.1" value="1">
 
-          <div class="actions-row">
+          <label>Logo opacity (0 - 1)</label>
+          <input id="logoOpacity" type="number" min="0" max="1" step="0.05" value="0.3">
+
+          <div style="display:flex;gap:8px" class="actions-row">
             <button id="convertSelected" class="btn">Convert Selected</button>
             <button id="downloadZip" class="btn" disabled>Download ZIP</button>
           </div>
@@ -132,7 +143,7 @@
       </section>
     </main>
 
-    <!-- PREVIEW MODAL -->
+    <!-- Modal for large preview -->
     <div id="modal" class="modal" role="dialog" aria-hidden="true">
       <div class="box">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -143,7 +154,7 @@
       </div>
     </div>
 
-    <!-- FOOTER (mirrors header branding) -->
+    <!-- Footer (mirrors header branding) -->
     <footer>
       <div class="brand">
         <a href="../../index.html" title="Smarttool Hub"><img src="../../logo.png" alt="logo"></a>
@@ -152,9 +163,8 @@
           <span>Fast • Private • 100% Client-side</span>
         </div>
       </div>
-
       <div class="controls">
-        <a class="btn" href="../../index.html" title="Home"><img src="../../home-icon.png" alt="Home" style="width:18px;height:18px"> Home</a>
+        <a class="btn" href="../../index.html"><img src="../../home-icon.png" alt="Home" style="width:18px;height:18px"> Home</a>
         <button id="themeToggleFooter" class="btn" title="Toggle theme">🌙</button>
       </div>
     </footer>
@@ -166,11 +176,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
   <script>
-    // Theme toggle (header + footer sync)
+    // --- Theme toggle / persist ---
     const themeToggle = document.getElementById('themeToggle');
     const themeToggleFooter = document.getElementById('themeToggleFooter');
-    function applyTheme() {
-      if (localStorage.getItem('sth_theme') === 'light') {
+    function applyTheme(){
+      if(localStorage.getItem('sth_theme')==='light'){
         document.body.classList.add('light');
         themeToggle.textContent = '☀️';
         themeToggleFooter.textContent = '☀️';
@@ -181,15 +191,14 @@
       }
     }
     applyTheme();
-    const toggleHandler = () => {
-      if (document.body.classList.contains('light')) localStorage.removeItem('sth_theme');
-      else localStorage.setItem('sth_theme', 'light');
+    themeToggle.onclick = () => {
+      if(document.body.classList.contains('light')) localStorage.removeItem('sth_theme');
+      else localStorage.setItem('sth_theme','light');
       applyTheme();
     };
-    themeToggle.addEventListener('click', toggleHandler);
-    themeToggleFooter.addEventListener('click', toggleHandler);
+    themeToggleFooter.onclick = themeToggle.onclick;
 
-    // Elements
+    // --- Elements ---
     const fileInput = document.getElementById('fileInput');
     const dropzone = document.getElementById('dropzone');
     const thumbsEl = document.getElementById('thumbs');
@@ -204,39 +213,69 @@
     const selectAllCheckbox = document.getElementById('selectAll');
     const clearBtn = document.getElementById('clearBtn');
 
-    let pdfDoc = null;
-    let pages = [];
-    let generatedFiles = [];
+    const useSiteLogo = document.getElementById('useSiteLogo');
+    const useUploadedLogo = document.getElementById('useUploadedLogo');
+    const logoInput = document.getElementById('logoInput');
+    const logoOpacityInput = document.getElementById('logoOpacity');
 
-    // pdf.js worker
+    let pdfDoc = null;
+    let pages = []; // {pageNumber, canvas, pageObj}
+    let generatedFiles = [];
+    let uploadedLogoImage = null;
+    let siteLogoImage = null;
+
+    // Load the site logo into an Image object for watermarking (if available)
+    (function loadSiteLogo(){
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = '../../logo.png';
+      img.onload = () => { siteLogoImage = img; };
+      img.onerror = () => { /* ignore if not found */ };
+    })();
+
+    // When user uploads an image logo, store it
+    logoInput.addEventListener('change', (e) => {
+      const f = e.target.files && e.target.files[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => { uploadedLogoImage = img; status('Logo uploaded'); };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(f);
+    });
+
+    // configure pdf.js worker
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.172/pdf.worker.min.js';
 
-    function setStatus(text) { statusEl.textContent = text; }
-    function setProgress(p) { progressBar.style.width = p + '%'; }
+    function status(text){ statusEl.textContent = text; }
+    function setProgress(p){ progressBar.style.width = p + '%'; }
 
-    // Drag & drop + upload
+    // Drag & drop handlers
     dropzone.addEventListener('click', () => fileInput.click());
     dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.style.borderColor = 'var(--primary)'; });
-    dropzone.addEventListener('dragleave', () => { dropzone.style.borderColor = ''; });
-    dropzone.addEventListener('drop', async e => { e.preventDefault(); dropzone.style.borderColor = ''; if (e.dataTransfer.files[0]) await loadPDF(e.dataTransfer.files[0]); });
-    fileInput.addEventListener('change', async e => { if (e.target.files[0]) await loadPDF(e.target.files[0]); });
+    dropzone.addEventListener('dragleave', e => { dropzone.style.borderColor = ''; });
+    dropzone.addEventListener('drop', async e => { e.preventDefault(); dropzone.style.borderColor = ''; const f = e.dataTransfer.files[0]; if(f) await loadPDF(f); });
+    fileInput.addEventListener('change', async e => { if(e.target.files[0]) await loadPDF(e.target.files[0]); });
 
-    async function loadPDF(file) {
-      try {
-        setStatus('Loading PDF...');
+    async function loadPDF(file){
+      try{
+        status('Loading PDF...');
         const arrayBuffer = await file.arrayBuffer();
-        pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        pdfDoc = await pdfjsLib.getDocument({data:arrayBuffer}).promise;
         pages = []; generatedFiles = []; thumbsEl.innerHTML = ''; previewArea.innerHTML = 'Loaded: ' + file.name + ' — ' + pdfDoc.numPages + ' pages';
 
-        for (let p = 1; p <= pdfDoc.numPages; p++) {
+        for(let p=1;p<=pdfDoc.numPages;p++){
           const page = await pdfDoc.getPage(p);
-          const viewport = page.getViewport({ scale: 0.22 });
+          const viewport = page.getViewport({scale:0.22});
           const canvas = document.createElement('canvas');
-          const context = canvas.getContext('2d');
+          const ctx = canvas.getContext('2d');
           canvas.width = viewport.width; canvas.height = viewport.height;
-          await page.render({ canvasContext: context, viewport }).promise;
+          await page.render({canvasContext:ctx,viewport}).promise;
 
           const wrapper = document.createElement('div'); wrapper.className = 'thumb';
+          canvas.className = 'thumb-canvas';
           const meta = document.createElement('div'); meta.className = 'meta';
           meta.innerHTML = `<h4>Page ${p}</h4><p class="small">${Math.round(viewport.width)}×${Math.round(viewport.height)}</p>`;
           const actions = document.createElement('div'); actions.className = 'actions';
@@ -249,17 +288,16 @@
           downloadBtn.onclick = () => convertSingle(p);
 
           actions.appendChild(chk); actions.appendChild(previewBtn); actions.appendChild(downloadBtn);
+
           wrapper.appendChild(canvas); wrapper.appendChild(meta); wrapper.appendChild(actions);
           thumbsEl.appendChild(wrapper);
 
-          pages.push({ pageNumber: p, canvas, pageObj: page });
+          pages.push({pageNumber:p,canvas,pageObj:page});
         }
 
-        setStatus('PDF loaded — ' + pdfDoc.numPages + ' pages');
+        status('PDF loaded — ' + pdfDoc.numPages + ' pages');
         setProgress(0);
-      } catch (err) {
-        console.error(err); setStatus('Failed to load PDF'); alert('Error reading PDF: ' + err.message);
-      }
+      } catch(err){ console.error(err); status('Failed to load PDF'); alert('Error reading PDF: ' + (err.message||err)); }
     }
 
     selectAllCheckbox.addEventListener('change', () => {
@@ -268,49 +306,76 @@
     });
 
     clearBtn.addEventListener('click', () => {
-      pdfDoc = null; pages = []; thumbsEl.innerHTML = ''; previewArea.innerHTML = 'No page selected'; generatedFiles = []; downloadZipBtn.disabled = true; setStatus('Cleared');
+      pdfDoc = null; pages = []; thumbsEl.innerHTML = ''; previewArea.innerHTML = 'No page selected'; generatedFiles = []; downloadZipBtn.disabled = true; status('Cleared');
     });
 
-    function getSelectedPages() {
-      return Array.from(thumbsEl.querySelectorAll('input[type=checkbox]')).filter(c => c.checked).map(c => Number(c.dataset.page));
-    }
+    function getSelectedPages(){ return Array.from(thumbsEl.querySelectorAll('input[type=checkbox]')).filter(c=>c.checked).map(c=>Number(c.dataset.page)); }
 
-    // Modal preview
-    function openModal(pageNumber) {
-      modal.style.display = 'flex'; modal.setAttribute('aria-hidden', 'false'); modalContent.innerHTML = '';
+    // Modal
+    function openModal(pageNumber){
+      modal.style.display = 'flex'; modal.setAttribute('aria-hidden','false'); modalContent.innerHTML = '';
       renderToCanvas(pageNumber, Math.max(1, Number(document.getElementById('scale').value))).then(canvas => {
-        // add zoom / full width fit
-        canvas.className = 'preview-canvas';
-        modalContent.appendChild(canvas);
+        // scale down for viewing if too large
+        const maxW = Math.min(canvas.width, 1200);
+        const maxH = Math.min(canvas.height, 900);
+        const wrap = document.createElement('div');
+        wrap.style.maxWidth = maxW + 'px';
+        wrap.style.maxHeight = maxH + 'px';
+        wrap.appendChild(canvas);
+        modalContent.appendChild(wrap);
       }).catch(e => { modalContent.textContent = 'Preview failed: ' + e.message; });
     }
-    closeModal.onclick = () => { modal.style.display = 'none'; modal.setAttribute('aria-hidden', 'true'); modalContent.innerHTML = ''; };
+    closeModal.onclick = () => { modal.style.display = 'none'; modal.setAttribute('aria-hidden','true'); modalContent.innerHTML = ''; };
 
-    // Render page to canvas with watermark overlay
-    async function renderToCanvas(pageNumber, scale, options = {}) {
-      if (!pdfDoc) throw new Error('No PDF loaded');
+    // Core: render page to canvas at given scale and apply watermark (text/logo)
+    async function renderToCanvas(pageNumber, scale, opts = {}){
+      if(!pdfDoc) throw new Error('No PDF loaded');
       const page = await pdfDoc.getPage(pageNumber);
-      const viewport = page.getViewport({ scale });
+      const viewport = page.getViewport({scale});
       const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
-      canvas.width = viewport.width; canvas.height = viewport.height;
-      await page.render({ canvasContext: ctx, viewport }).promise;
+      canvas.width = Math.round(viewport.width); canvas.height = Math.round(viewport.height);
+      await page.render({canvasContext:ctx,viewport}).promise;
 
-      // text watermark from input (repeated tiled)
-      const text = (options.text || document.getElementById('watermarkText')?.value || '').trim();
-      if (text) {
+      // --- apply text watermark if present ---
+      const text = (opts.text !== undefined) ? opts.text : (document.getElementById('watermarkText')?.value || '').trim();
+      if(text){
         ctx.save();
-        ctx.globalAlpha = options.opacity ?? 0.18;
-        ctx.fillStyle = (document.body.classList.contains('light') ? 'rgba(0,0,0,0.18)' : 'rgba(255,255,255,0.18)');
+        ctx.globalAlpha = 0.14;
+        ctx.fillStyle = document.body.classList.contains('light') ? 'rgba(0,0,0,0.18)' : 'rgba(255,255,255,0.18)';
         const fontSize = Math.max(14, Math.floor(canvas.width / 20));
-        ctx.font = fontSize + 'px sans-serif';
-        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.font = fontSize + "px sans-serif";
+        ctx.translate(canvas.width/2, canvas.height/2);
         ctx.rotate(-0.45);
         ctx.textAlign = 'center';
         const stepX = Math.floor(canvas.width / 2.8);
         const stepY = Math.floor(canvas.height / 2.8);
-        for (let y = -canvas.height; y < canvas.height * 2; y += stepY) {
-          for (let x = -canvas.width; x < canvas.width * 2; x += stepX) {
+        for(let y = -canvas.height; y < canvas.height*2; y += stepY){
+          for(let x = -canvas.width; x < canvas.width*2; x += stepX){
             ctx.fillText(text, x, y);
+          }
+        }
+        ctx.restore();
+      }
+
+      // --- apply logo watermark if selected ---
+      const useSite = useSiteLogo.checked && siteLogoImage;
+      const useUploaded = useUploadedLogo.checked && uploadedLogoImage;
+      const logoImg = useUploaded ? uploadedLogoImage : (useSite ? siteLogoImage : null);
+
+      if(logoImg){
+        // Draw tiled logos across page (scaled) with chosen opacity
+        const opacity = Number(logoOpacityInput.value) || 0.3;
+        const tileScale = Math.min(1, Math.max(0.05, canvas.width / (logoImg.width * 8))); // auto scale by page/size
+        const drawW = Math.max(40, Math.floor(logoImg.width * tileScale));
+        const drawH = Math.max(24, Math.floor(logoImg.height * tileScale));
+        ctx.save();
+        ctx.globalAlpha = opacity;
+        // center tiling
+        const stepX = Math.floor(drawW * 3.0);
+        const stepY = Math.floor(drawH * 3.0);
+        for(let y = -drawH*2; y < canvas.height + drawH*2; y += stepY){
+          for(let x = -drawW*2; x < canvas.width + drawW*2; x += stepX){
+            ctx.drawImage(logoImg, x, y, drawW, drawH);
           }
         }
         ctx.restore();
@@ -319,76 +384,76 @@
       return canvas;
     }
 
-    // Convert single page and trigger download
-    async function convertSingle(pageNumber) {
-      try {
-        setStatus('Rendering page ' + pageNumber + '...');
+    // Convert single page and download
+    async function convertSingle(pageNumber){
+      try{
+        status('Rendering page ' + pageNumber + '...');
         const scale = Number(document.getElementById('scale').value) || 1;
         const format = document.getElementById('format').value;
         const quality = Number(document.getElementById('quality').value) || 0.9;
-        const canvas = await renderToCanvas(pageNumber, scale, { text: document.getElementById('watermarkText')?.value });
-        const mime = format === 'png' ? 'image/png' : 'image/jpeg';
+        const canvas = await renderToCanvas(pageNumber, scale);
+        const mime = (format === 'png') ? 'image/png' : 'image/jpeg';
         let blob;
-        if (mime === 'image/png') {
-          const dataURL = canvas.toDataURL(mime);
-          blob = dataURItoBlob(dataURL);
+        if(mime === 'image/png'){
+          blob = dataURItoBlob(canvas.toDataURL(mime));
         } else {
-          const dataURL = canvas.toDataURL(mime, quality);
-          blob = dataURItoBlob(dataURL);
+          blob = dataURItoBlob(canvas.toDataURL(mime, quality));
         }
         saveAs(blob, 'page-' + pageNumber + '.' + (format === 'png' ? 'png' : 'jpg'));
-        setStatus('Downloaded page ' + pageNumber);
-      } catch (e) { console.error(e); setStatus('Failed to render page: ' + e.message); }
+        status('Downloaded page ' + pageNumber);
+      } catch(e){ console.error(e); status('Failed to render page: ' + (e.message||e)); }
     }
 
-    // Bulk convert -> zip
+    // Bulk convert selected pages → ZIP
     convertBtn.addEventListener('click', async () => {
       const selected = getSelectedPages();
-      if (selected.length === 0) { alert('Please select at least one page'); return; }
-      generatedFiles = []; downloadZipBtn.disabled = true; setStatus('Converting ' + selected.length + ' pages...');
-      for (let i = 0; i < selected.length; i++) {
+      if(selected.length === 0){ alert('Please select at least one page'); return; }
+      generatedFiles = []; downloadZipBtn.disabled = true; status('Converting ' + selected.length + ' pages...');
+      for(let i=0;i<selected.length;i++){
         const p = selected[i];
-        setProgress(Math.round((i / selected.length) * 100));
-        setStatus('Rendering page ' + p + ' (' + (i + 1) + '/' + selected.length + ')');
-        try {
-          const canvas = await renderToCanvas(p, Number(document.getElementById('scale').value), { text: document.getElementById('watermarkText')?.value });
-          const format = document.getElementById('format').value; const quality = Number(document.getElementById('quality').value) || 0.9;
-          let blob;
-          if (format === 'png') { const d = canvas.toDataURL('image/png'); blob = dataURItoBlob(d); }
-          else { const d = canvas.toDataURL('image/jpeg', quality); blob = dataURItoBlob(d); }
+        setProgress(Math.round((i/selected.length)*100));
+        status('Rendering page ' + p + ' (' + (i+1) + '/' + selected.length + ')');
+        try{
+          const canvas = await renderToCanvas(p, Number(document.getElementById('scale').value));
+          const format = document.getElementById('format').value;
+          const quality = Number(document.getElementById('quality').value) || 0.9;
+          const dataURL = (format === 'png') ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', quality);
+          const blob = dataURItoBlob(dataURL);
           generatedFiles.push({ name: 'page-' + p + '.' + (format === 'png' ? 'png' : 'jpg'), blob });
-        } catch (err) { console.warn('page failed', p, err); }
+        } catch(err){ console.warn('page failed', p, err); }
       }
-      setProgress(100); setStatus('Packaging ZIP...');
+      setProgress(100); status('Packaging ZIP...');
       const zip = new JSZip();
       generatedFiles.forEach(f => zip.file(f.name, f.blob));
-      const content = await zip.generateAsync({ type: 'blob' }, (meta) => { setProgress(Math.round(meta.percent)); setStatus('Zipping ' + Math.round(meta.percent) + '%'); });
-      saveAs(content, 'pages.zip'); downloadZipBtn.disabled = false; setStatus('Done');
+      const content = await zip.generateAsync({ type: 'blob' }, (meta) => { setProgress(Math.round(meta.percent)); status('Zipping ' + Math.round(meta.percent) + '%'); });
+      saveAs(content, 'pages.zip'); downloadZipBtn.disabled = false; status('Done');
     });
 
-    downloadZipBtn.addEventListener('click', () => {
-      if (generatedFiles.length === 0) { alert('No generated files available. Use Convert Selected first.'); return; }
-      (async () => {
-        setStatus('Preparing ZIP...'); setProgress(0);
-        const zip = new JSZip(); generatedFiles.forEach(f => zip.file(f.name, f.blob));
-        const content = await zip.generateAsync({ type: 'blob' }, (meta) => { setProgress(Math.round(meta.percent)); });
-        saveAs(content, 'pages.zip'); setStatus('ZIP downloaded');
-      })();
+    downloadZipBtn.addEventListener('click', async () => {
+      if(generatedFiles.length === 0){ alert('No generated files available. Use Convert Selected first.'); return; }
+      status('Preparing ZIP...'); setProgress(0);
+      const zip = new JSZip(); generatedFiles.forEach(f => zip.file(f.name, f.blob));
+      const content = await zip.generateAsync({ type: 'blob' }, (meta) => { setProgress(Math.round(meta.percent)); });
+      saveAs(content, 'pages.zip'); status('ZIP downloaded');
     });
 
-    // helper
-    function dataURItoBlob(dataURI) {
-      const byteString = atob(dataURI.split(',')[1]);
-      const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-      const ab = new ArrayBuffer(byteString.length); const ia = new Uint8Array(ab);
-      for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
-      return new Blob([ab], { type: mimeString });
-    }
+    // helper: dataURI -> blob
+    function dataURItoBlob(dataURI){ const byteString = atob(dataURI.split(',')[1]); const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]; const ab = new ArrayBuffer(byteString.length); const ia = new Uint8Array(ab); for(let i=0;i<byteString.length;i++) ia[i] = byteString.charCodeAt(i); return new Blob([ab], { type: mimeString }); }
 
-    // accessibility
-    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal.click(); });
+    // set year in footer (small enhancement)
+    (function setYear(){ const y = new Date().getFullYear(); const el = document.querySelector('footer .title span'); if(el) el.textContent += ' — ' + y; })();
 
-    // set year in footer branding? if you still want a copyright line later, we can add it.
+    // Accessibility: close modal on Esc
+    window.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeModal.click(); });
+
+    // small helper to expose FileSaver & JSZip via CDN usage (FileSaver included via CDN)
+    // Add FileSaver CDN now (to keep script section compact we add dynamically)
+    (function addFileSaver(){
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js';
+      document.head.appendChild(s);
+    })();
+
   </script>
 </body>
 </html>
