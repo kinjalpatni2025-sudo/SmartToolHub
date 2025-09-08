@@ -4,84 +4,82 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Image to PDF Converter — Smarttool Hub</title>
-  <meta name="description" content="Convert images (JPG, PNG, WebP) to a single PDF online — reorder images, preview thumbnails, and download. 100% client-side, private and fast." />
-  <meta name="keywords" content="image to pdf, jpg to pdf, png to pdf, convert images to pdf, online image to pdf converter" />
-  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png" />
+  <meta name="description" content="Convert many images into a single PDF in your browser. Sequential processing, optional downscale, progress bar. 100% client-side." />
+  <meta name="keywords" content="image to pdf, jpg to pdf, png to pdf, convert images to pdf, bulk image to pdf" />
+  <link rel="icon" href="../../img/icons8-48-toolbox.png" />
   <!-- FAQ JSON-LD -->
   <script type="application/ld+json">
   {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type":"Question",
-        "name":"Can I convert multiple images to one PDF?",
-        "acceptedAnswer":{"@type":"Answer","text":"Yes — upload multiple images, reorder them and export a single PDF with all pages."}
-      },
-      {
-        "@type":"Question",
-        "name":"Are my images uploaded to a server?",
-        "acceptedAnswer":{"@type":"Answer","text":"No — all conversion happens in your browser (client-side)."}
-      }
+    "@context":"https://schema.org",
+    "@type":"FAQPage",
+    "mainEntity":[
+      {"@type":"Question","name":"Can I convert unlimited images to PDF?","acceptedAnswer":{"@type":"Answer","text":"The tool processes images sequentially to handle large batches; practical limits depend on your device. For huge batches, server-side conversion is recommended."}},
+      {"@type":"Question","name":"Does my data leave my device?","acceptedAnswer":{"@type":"Answer","text":"No — conversion is client-side in your browser; nothing is uploaded."}}
     ]
   }
   </script>
 
-  <!-- Font Awesome for icons -->
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 
-  <!-- pdf-lib & jszip -->
+  <!-- pdf-lib & jszip (CDNs) -->
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
   <style>
     :root{
-      --bg:#0b1220; --text:#eaf2ff; --card:#182335; --muted:#9fb3c8; --border:#2a3b55; --primary:#22d3ee;
+      --bg:#0b1220; --text:#eaf2ff; --card:#182335; --border:#2a3b55; --primary:#22d3ee; --muted:#9fb3c8;
     }
-    body.light{ --bg:#f6f8fb; --text:#0b1220; --card:#fff; --muted:#556677; --border:#e6eefc; --primary:#0b74ff; }
+    body.light{ --bg:#f6f8fb; --text:#0b1220; --card:#ffffff; --border:#e6eefc; --primary:#0b74ff; --muted:#556677; }
     *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text);transition:background .2s,color .2s}
+    body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);transition:.2s}
     .container{max-width:1100px;margin:0 auto;padding:18px}
     header{display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--card);border-bottom:1px solid var(--border)}
-    .brand{display:flex;gap:12px;align-items:center}
+    .brand{display:flex;align-items:center;gap:12px}
     .brand img{width:44px;height:44px;border-radius:8px}
     .title{font-weight:700;color:var(--primary)}
     .tag{font-size:.85rem;color:var(--muted)}
     .header-actions{display:flex;gap:8px;align-items:center}
     .btn-header{background:transparent;border:1px solid var(--border);padding:8px 12px;border-radius:9px;color:var(--text);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
-    .btn-header:hover{border-color:var(--primary);color:var(--primary)}
     main{padding:18px 0}
-    h1{margin:0 0 8px;color:var(--primary)}
-    p.lead{margin:0 0 16px;color:var(--muted)}
-    .uploader{border:2px dashed var(--border);padding:24px;border-radius:12px;background:var(--card);text-align:center;cursor:pointer;transition:border-color .15s}
-    .uploader.dragover{border-color:var(--primary);box-shadow:0 6px 18px rgba(0,0,0,.25)}
-    .small{font-size:.9rem;color:var(--muted)}
-    .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    h1{margin:0 0 6px;color:var(--primary)}
+    .lead{margin:0 0 12px;color:var(--muted)}
+    .uploader{border:2px dashed var(--border);padding:22px;border-radius:12px;background:var(--card);text-align:center;cursor:pointer}
+    .uploader.drag{border-color:var(--primary);box-shadow:0 8px 24px rgba(0,0,0,.28)}
+    .controls{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
     .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
     .btn-primary{background:var(--primary);color:#00131f}
     .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
-    .preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-top:18px}
-    .thumb{background:var(--card);border:1px solid var(--border);padding:8px;border-radius:10px;position:relative;display:flex;flex-direction:column;align-items:center;gap:8px}
-    .thumb img{max-width:100%;max-height:120px;border-radius:6px;object-fit:contain}
-    .thumb .meta{font-size:.82rem;color:var(--muted);text-align:center;}
-    .remove{position:absolute;top:8px;right:8px;background:rgba(255,0,0,.9);color:white;border:0;border-radius:50%;width:26px;height:26px;cursor:pointer}
+    .small{font-size:.9rem;color:var(--muted)}
+    .preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;margin-top:14px}
+    .thumb{background:var(--card);padding:8px;border:1px solid var(--border);border-radius:10px;position:relative;display:flex;flex-direction:column;align-items:center}
+    .thumb img{width:100%;height:90px;object-fit:cover;border-radius:6px}
+    .meta{font-size:.82rem;color:var(--muted);margin-top:6px;text-align:center}
+    .remove{position:absolute;top:8px;right:8px;background:rgba(255,0,0,.8);color:#fff;border:0;border-radius:50%;width:26px;height:26px;cursor:pointer}
     .drag-handle{position:absolute;left:8px;top:8px;color:var(--muted);cursor:grab}
-    .progress{height:10px;background:var(--border);border-radius:8px;overflow:hidden;margin-top:12px}
+    .progress{height:12px;background:var(--border);border-radius:10px;overflow:hidden;margin-top:12px;display:none}
     .progress-bar{height:100%;width:0;background:var(--primary);transition:width .2s}
     .spinner{display:inline-block;width:18px;height:18px;border:3px solid rgba(255,255,255,.12);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
-    footer{margin-top:28px;padding:12px 0;border-top:1px solid var(--border);color:var(--muted)}
-    @media (max-width:720px){ .header-actions{align-self:flex-end} .preview-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))} }
+    footer{margin-top:18px;border-top:1px solid var(--border);padding:14px 18px;color:var(--muted);background:var(--card)}
+    .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;max-width:1100px;margin:0 auto}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap}
+    .footer-links a{color:var(--primary);text-decoration:none;font-weight:600}
+    .settings{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .settings label{font-size:.9rem;color:var(--muted)}
+    input[type="range"]{width:180px}
+    @media (max-width:720px){ .preview-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))} .header-actions{align-self:flex-end} .footer-inner{flex-direction:column;align-items:flex-start} }
   </style>
 </head>
 <body>
+  <!-- Header -->
   <header>
     <div class="brand">
       <a href="../../index.html" style="display:inline-flex;align-items:center;gap:12px;text-decoration:none;color:inherit">
         <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub logo">
         <div>
           <div class="title">Smarttool Hub</div>
-          <div class="tag">Image → PDF</div>
+          <div class="tag">Image → PDF (Large Batches)</div>
         </div>
       </a>
     </div>
@@ -91,43 +89,58 @@
     </div>
   </header>
 
+  <!-- Main -->
   <main class="container" role="main">
-    <h1>Image to PDF Converter</h1>
-    <p class="lead">Upload JPG, PNG or WebP images, reorder them, then export a single PDF. All processing happens in your browser — private and fast.</p>
+    <h1>Image to PDF Converter — Large Batches</h1>
+    <p class="lead">Convert many images into a single PDF. This version processes images *sequentially* and frees memory as it goes so it can handle large batches (subject to your device limits).</p>
 
-    <div id="uploader" class="uploader" tabindex="0" aria-label="Drop images here or click to select">
-      <div style="font-size:1.1rem"><i class="fa-solid fa-image" style="color:var(--primary)"></i> Click or drag & drop images here</div>
-      <div class="small" style="margin-top:8px">Supports: JPG, PNG, WebP. Upload multiple — reorder with drag handle.</div>
+    <div id="uploader" class="uploader" tabindex="0" aria-label="Drop images or click to select">
+      <div style="font-size:1.05rem"><i class="fa-solid fa-image" style="color:var(--primary)"></i> Click or drag & drop images here</div>
+      <div class="small" style="margin-top:8px">Supported: JPEG, PNG, WebP. Processed sequentially. Use the "Max dimension" setting to downscale huge images for safety.</div>
       <input id="fileInput" type="file" accept="image/*" multiple style="display:none">
     </div>
 
     <div class="controls" id="controls" style="display:none">
+      <div class="settings">
+        <label class="small">Max dimension (px): <span id="maxDimLabel">2500</span></label>
+        <input id="maxDim" type="range" min="800" max="4000" value="2500" step="100" />
+      </div>
+
       <button id="clearAll" class="btn btn-ghost">Clear All</button>
-      <button id="convertBtn" class="btn btn-primary"><span id="convertLabel">Convert to PDF</span> <span id="convertSpinner" style="margin-left:8px;display:none" aria-hidden="true" class="spinner"></span></button>
-      <button id="downloadZipBtn" class="btn btn-ghost" disabled>Download All Images (ZIP)</button>
+      <button id="convertBtn" class="btn btn-primary"><span id="convertLabel">Convert to PDF</span> <span id="convertSpinner" style="margin-left:8px;display:none" class="spinner" aria-hidden="true"></span></button>
+      <button id="downloadZipBtn" class="btn btn-ghost" disabled>Download Originals (ZIP)</button>
     </div>
 
-    <div class="progress" style="display:none" aria-hidden="true"><div id="progressBar" class="progress-bar"></div></div>
+    <div id="progressBarWrap" class="progress" aria-hidden="true"><div id="progressBar" class="progress-bar"></div></div>
 
     <div class="preview-grid" id="previewGrid" aria-live="polite"></div>
 
-    <section style="margin-top:20px;color:var(--muted)">
-      <h2 style="color:var(--primary);margin:10px 0">How to use</h2>
-      <ol>
-        <li>Click the drop area or drag & drop images from your computer (mobile supported).</li>
-        <li>Reorder images by dragging the handle at the top-left of each thumbnail.</li>
-        <li>Click <strong>Convert to PDF</strong>. A single PDF containing all images will be generated.</li>
-        <li>Download the PDF. Use ZIP to download original images in bulk.</li>
-      </ol>
+    <section style="margin-top:16px;color:var(--muted)">
+      <h2 style="color:var(--primary);margin:10px 0">Notes & Tips</h2>
+      <ul>
+        <li>Processing is done one image at a time to reduce peak memory usage.</li>
+        <li>If your device runs out of memory, try lowering the Max dimension or split into smaller batches.</li>
+        <li>For thousands of large images, a server-side conversion is recommended.</li>
+      </ul>
     </section>
   </main>
 
-  <footer class="container">
-    <div>© <span id="year"></span> Smarttool Hub — Image to PDF</div>
+  <!-- Footer with links back to main site pages -->
+  <footer>
+    <div class="footer-inner">
+      <div>© <span id="year"></span> Smarttool Hub</div>
+      <div class="footer-links">
+        <a href="../../privacy.html">Privacy</a>
+        <a href="../../terms.html">Terms</a>
+        <a href="../../contact.html">Contact</a>
+        <a href="../../comments.html">Comments</a>
+        <a href="../../faq.html">FAQ</a>
+      </div>
+    </div>
   </footer>
 
   <script>
-  // Init theme toggle across pages
+  // ---------- Theme / helpers ----------
   (function(){
     const btn = document.getElementById('themeToggle');
     if(localStorage.getItem('sth_theme') === 'light'){ document.body.classList.add('light'); btn.innerHTML = '<i class="fa-solid fa-sun"></i>'; }
@@ -139,223 +152,357 @@
     document.getElementById('year').textContent = new Date().getFullYear();
   })();
 
-  // Utility: create drag reorder using pointer events (works desktop + touch)
-  function makeDraggableList(container, onReorder) {
+  // ---------- Small utilities ----------
+  function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+  function downloadBlob(blob, filename){
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=> URL.revokeObjectURL(a.href), 1500);
+  }
+
+  // ---------- Elements ----------
+  const uploader = document.getElementById('uploader');
+  const fileInput = document.getElementById('fileInput');
+  const previewGrid = document.getElementById('previewGrid');
+  const controls = document.getElementById('controls');
+  const clearAllBtn = document.getElementById('clearAll');
+  const convertBtn = document.getElementById('convertBtn');
+  const convertLabel = document.getElementById('convertLabel');
+  const convertSpinner = document.getElementById('convertSpinner');
+  const progressWrap = document.getElementById('progressBarWrap');
+  const progressBar = document.getElementById('progressBar');
+  const downloadZipBtn = document.getElementById('downloadZipBtn');
+  const maxDimRange = document.getElementById('maxDim');
+  const maxDimLabel = document.getElementById('maxDimLabel');
+
+  // ---------- State ----------
+  let files = [];     // File objects in chosen order
+  let thumbs = [];    // low-res data URLs for lightweight preview
+
+  maxDimRange.addEventListener('input', ()=>{ maxDimLabel.textContent = maxDimRange.value; });
+
+  // Click or drop handlers
+  uploader.addEventListener('click', ()=> fileInput.click());
+  fileInput.addEventListener('change', e=> handleFileList(e.target.files));
+  uploader.addEventListener('dragover', e=>{ e.preventDefault(); uploader.classList.add('drag'); });
+  uploader.addEventListener('dragleave', e=>{ uploader.classList.remove('drag'); });
+  uploader.addEventListener('drop', e=>{ e.preventDefault(); uploader.classList.remove('drag'); if(e.dataTransfer && e.dataTransfer.files) handleFileList(e.dataTransfer.files); });
+
+  function handleFileList(fileList){
+    const arr = Array.from(fileList).filter(f=>f.type && f.type.startsWith('image/'));
+    if(arr.length === 0) return;
+    files = files.concat(arr);
+    Promise.all(arr.map(f => makeThumbnailDataURL(f, 240))).then(results => {
+      thumbs = thumbs.concat(results);
+      renderPreviews();
+      controls.style.display = 'flex';
+      downloadZipBtn.disabled = files.length===0;
+    });
+    fileInput.value = '';
+  }
+
+  function makeThumbnailDataURL(file, maxSide){
+    return new Promise((res, rej)=>{
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        let sw = img.naturalWidth, sh = img.naturalHeight;
+        const scale = Math.min(1, maxSide / Math.max(sw, sh));
+        const cw = Math.round(sw * scale), ch = Math.round(sh * scale);
+        const c = document.createElement('canvas');
+        c.width = cw; c.height = ch;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(img,0,0,sw,sh,0,0,cw,ch);
+        const dataUrl = c.toDataURL('image/jpeg', 0.75);
+        URL.revokeObjectURL(url);
+        res(dataUrl);
+      };
+      img.onerror = (e)=> { URL.revokeObjectURL(url); rej(e); };
+      img.src = url;
+    });
+  }
+
+  function renderPreviews(){
+    previewGrid.innerHTML = '';
+    files.forEach((f, i) => {
+      const card = document.createElement('div'); card.className = 'thumb';
+      const dragHandle = document.createElement('div'); dragHandle.className = 'drag-handle'; dragHandle.innerHTML = '<i class="fa-solid fa-grip-lines"></i>';
+      const rm = document.createElement('button'); rm.className='remove'; rm.title='Remove'; rm.innerHTML='&times;';
+      rm.addEventListener('click', ()=> { files.splice(i,1); thumbs.splice(i,1); renderPreviews(); if(files.length===0) controls.style.display='none'; });
+      const img = document.createElement('img'); img.src = thumbs[i] || '';
+      const meta = document.createElement('div'); meta.className = 'meta'; meta.textContent = f.name;
+      const singleBtn = document.createElement('button'); singleBtn.className = 'btn btn-ghost'; singleBtn.style.marginTop='6px'; singleBtn.textContent = 'Download Single PDF';
+      singleBtn.addEventListener('click', ()=> convertSingleImageToPdf(i));
+      card.appendChild(dragHandle);
+      card.appendChild(rm);
+      card.appendChild(img);
+      card.appendChild(meta);
+      card.appendChild(singleBtn);
+      previewGrid.appendChild(card);
+    });
+    attachDragReorder(previewGrid, (from, to) => {
+      if(from === to) return;
+      const f = files.splice(from,1)[0]; files.splice(to,0,f);
+      const t = thumbs.splice(from,1)[0]; thumbs.splice(to,0,t);
+      renderPreviews();
+    });
+  }
+
+  function attachDragReorder(container, onReorder){
     let dragItem = null, startIndex = -1;
-    container.addEventListener('pointerdown', (ev) => {
-      const handle = ev.target.closest('.drag-handle');
-      if (!handle) return;
+    container.addEventListener('pointerdown', e=>{
+      const handle = e.target.closest('.drag-handle');
+      if(!handle) return;
       const item = handle.closest('.thumb');
-      if (!item) return;
-      ev.preventDefault();
+      if(!item) return;
+      e.preventDefault();
       dragItem = item;
       startIndex = Array.from(container.children).indexOf(item);
-      item.setPointerCapture(ev.pointerId);
+      item.setPointerCapture(e.pointerId);
       item.style.opacity = '0.7';
-      item.dataset.dragging = 'true';
     });
-    container.addEventListener('pointermove', (ev) => {
-      if (!dragItem) return;
-      const over = document.elementFromPoint(ev.clientX, ev.clientY);
+    container.addEventListener('pointermove', e=>{
+      if(!dragItem) return;
+      const over = document.elementFromPoint(e.clientX, e.clientY);
       const overItem = over && over.closest && over.closest('.thumb');
-      if (overItem && overItem !== dragItem) {
+      if(overItem && overItem !== dragItem){
         const children = Array.from(container.children);
         const overIndex = children.indexOf(overItem);
         const dragIndex = children.indexOf(dragItem);
-        if (overIndex > dragIndex) container.insertBefore(dragItem, overItem.nextSibling);
+        if(overIndex > dragIndex) container.insertBefore(dragItem, overItem.nextSibling);
         else container.insertBefore(dragItem, overItem);
       }
     });
-    container.addEventListener('pointerup', (ev) => {
-      if (!dragItem) return;
+    container.addEventListener('pointerup', e=>{
+      if(!dragItem) return;
       dragItem.style.opacity = '';
-      dragItem.releasePointerCapture(ev.pointerId);
-      dragItem.removeAttribute('data-dragging');
+      dragItem.releasePointerCapture(e.pointerId);
       const newIndex = Array.from(container.children).indexOf(dragItem);
       onReorder(startIndex, newIndex);
       dragItem = null; startIndex = -1;
     });
   }
 
-  // Main app
-  (function(){
-    const fileInput = document.getElementById('fileInput');
-    const uploader = document.getElementById('uploader');
-    const previewGrid = document.getElementById('previewGrid');
-    const controls = document.getElementById('controls');
-    const clearAllBtn = document.getElementById('clearAll');
-    const convertBtn = document.getElementById('convertBtn');
-    const convertLabel = document.getElementById('convertLabel');
-    const convertSpinner = document.getElementById('convertSpinner');
-    const progress = document.querySelector('.progress');
-    const progressBar = document.getElementById('progressBar');
-    const downloadZipBtn = document.getElementById('downloadZipBtn');
+  clearAllBtn.addEventListener('click', ()=>{ files=[]; thumbs=[]; renderPreviews(); controls.style.display='none'; downloadZipBtn.disabled=true; });
 
-    let files = []; // array of File objects (in order)
-    let previews = []; // dataURLs for preview
-
-    // click to open
-    uploader.addEventListener('click', ()=> fileInput.click());
-    fileInput.addEventListener('change', (e)=> handleFileList(e.target.files));
-
-    // drag/drop
-    uploader.addEventListener('dragover', (e)=>{ e.preventDefault(); uploader.classList.add('dragover'); });
-    uploader.addEventListener('dragleave', ()=> uploader.classList.remove('dragover'));
-    uploader.addEventListener('drop', (e)=>{ e.preventDefault(); uploader.classList.remove('dragover'); if(e.dataTransfer && e.dataTransfer.files) handleFileList(e.dataTransfer.files); });
-
-    // handle files
-    function handleFileList(fileList){
-      const arr = Array.from(fileList).filter(f => f.type && f.type.startsWith('image/'));
-      if (arr.length === 0) return;
-      // Append
-      files = files.concat(arr);
-      // create previews asynchronously
-      Promise.all(arr.map(fileToDataURL)).then(results => {
-        previews = previews.concat(results);
-        renderPreviews();
-        controls.style.display = 'flex';
-        downloadZipBtn.disabled = files.length === 0;
-      });
+  // Convert one image -> single PDF
+  async function convertSingleImageToPdf(index){
+    const f = files[index];
+    if(!f) return;
+    setBusySingle(true);
+    try {
+      const pdfDoc = await PDFLib.PDFDocument.create();
+      const result = await imageFileToEmbed(f);
+      const embedded = await embedArrayBufferIntoPdf(pdfDoc, result.arrayBuffer);
+      const page = pdfDoc.addPage([result.width, result.height]);
+      page.drawImage(embedded, { x:0, y:0, width: result.width, height: result.height });
+      const pdfBytes = await pdfDoc.save();
+      downloadBlob(new Blob([pdfBytes], { type: 'application/pdf' }), f.name.replace(/\.[^/.]+$/, '') + '.pdf');
+    } catch (err) {
+      alert('Conversion error: ' + (err && err.message ? err.message : err));
+    } finally {
+      setBusySingle(false);
     }
+  }
 
-    function fileToDataURL(file) {
-      return new Promise((res, rej) => {
-        const reader = new FileReader();
-        reader.onload = ()=> res(reader.result);
-        reader.onerror = rej;
-        reader.readAsDataURL(file);
-      });
-    }
-
-    // Render thumbnails
-    function renderPreviews(){
-      previewGrid.innerHTML = '';
-      files.forEach((f, idx) => {
-        const card = document.createElement('div'); card.className = 'thumb';
-        const dragHandle = document.createElement('div'); dragHandle.className = 'drag-handle'; dragHandle.title = 'Drag to reorder'; dragHandle.innerHTML = '<i class="fa-solid fa-grip-lines"></i>';
-        const rm = document.createElement('button'); rm.className='remove'; rm.title = 'Remove'; rm.innerHTML = '&times;';
-        rm.addEventListener('click', ()=> { files.splice(idx,1); previews.splice(idx,1); renderPreviews(); if(files.length===0){ controls.style.display='none'; } });
-        const img = document.createElement('img'); img.src = previews[idx];
-        const meta = document.createElement('div'); meta.className='meta'; meta.textContent = f.name;
-        const singleBtn = document.createElement('button'); singleBtn.className='btn btn-ghost'; singleBtn.style.marginTop='6px'; singleBtn.textContent = 'Download Single PDF';
-        singleBtn.addEventListener('click', ()=> convertSingleImageToPdf(f));
-        card.appendChild(dragHandle);
-        card.appendChild(rm);
-        card.appendChild(img);
-        card.appendChild(meta);
-        card.appendChild(singleBtn);
-        previewGrid.appendChild(card);
-      });
-
-      // attach draggable reorder
-      makeDraggableList(previewGrid, function(oldIndex, newIndex){
-        if(oldIndex === newIndex) return;
-        const item = files.splice(oldIndex,1)[0]; files.splice(newIndex,0,item);
-        const p = previews.splice(oldIndex,1)[0]; previews.splice(newIndex,0,p);
-        renderPreviews();
-      });
-    }
-
-    // Clear all
-    clearAllBtn.addEventListener('click', ()=>{ files=[]; previews=[]; renderPreviews(); controls.style.display='none'; downloadZipBtn.disabled=true; });
-
-    // Convert single image to single-page PDF and download
-    async function convertSingleImageToPdf(file){
-      setBusy(true);
-      try {
-        const imgBytes = await file.arrayBuffer();
-        const imgType = file.type;
-        const pdfDoc = await PDFLib.PDFDocument.create();
-        let pdfImage;
-        if(imgType === 'image/png') pdfImage = await pdfDoc.embedPng(imgBytes);
-        else pdfImage = await pdfDoc.embedJpg(imgBytes); // pdf-lib supports jpg/png
-        const page = pdfDoc.addPage([pdfImage.width, pdfImage.height]);
-        page.drawImage(pdfImage, { x:0, y:0, width:pdfImage.width, height:pdfImage.height });
-        const pdfBytes = await pdfDoc.save();
-        downloadBlob(new Blob([pdfBytes], { type: 'application/pdf' }), file.name.replace(/\.[^/.]+$/, "") + '.pdf');
-      } catch (err) {
-        alert('Conversion error: ' + err.message);
-      } finally { setBusy(false); }
-    }
-
-    // Convert all images -> single PDF (multi-page)
-    convertBtn.addEventListener('click', async ()=>{
-      if(files.length === 0) return alert('No images selected.');
-      setBusy(true);
-      progress.style.display = 'block';
-      progressBar.style.width = '0%';
-      try {
-        const pdfDoc = await PDFLib.PDFDocument.create();
-        for(let i=0;i<files.length;i++){
-          const f = files[i];
-          const arr = await f.arrayBuffer();
-          const mime = f.type;
-          let imgEmbed;
-          // embed jpg or png accordingly
-          if(mime === 'image/png') imgEmbed = await pdfDoc.embedPng(arr);
-          else imgEmbed = await pdfDoc.embedJpg(arr);
-          const page = pdfDoc.addPage([imgEmbed.width, imgEmbed.height]);
-          page.drawImage(imgEmbed, { x:0, y:0, width:imgEmbed.width, height:imgEmbed.height });
-          progressBar.style.width = Math.round(((i+1)/files.length)*100) + '%';
-          await sleep(60); // yield to UI a bit for progress (not necessary but UX friendly)
-        }
-        const pdfBytes = await pdfDoc.save();
-        downloadBlob(new Blob([pdfBytes], { type: 'application/pdf' }), 'images-to-pdf.pdf');
-      } catch (err) {
-        console.error(err);
-        alert('Failed to convert images to PDF: ' + (err.message || err));
-      } finally {
-        setBusy(false);
-        progressBar.style.width = '0%';
-        progress.style.display = 'none';
-      }
-    });
-
-    // Download original images as ZIP (bulk)
-    downloadZipBtn.addEventListener('click', async ()=>{
-      if(files.length === 0) return;
-      const zip = new JSZip();
+  // Convert all images -> single PDF sequentially
+  convertBtn.addEventListener('click', async ()=>{
+    if(files.length === 0) return alert('No images selected.');
+    setBusy(true);
+    progressWrap.style.display = 'block';
+    progressBar.style.width = '0%';
+    try {
+      const pdfDoc = await PDFLib.PDFDocument.create();
+      const maxDim = parseInt(maxDimRange.value || '2500', 10);
       for(let i=0;i<files.length;i++){
         const f = files[i];
-        const arr = await f.arrayBuffer();
-        zip.file(f.name, arr);
+        const result = await imageFileToEmbed(f, maxDim);
+        const embedded = await embedArrayBufferIntoPdf(pdfDoc, result.arrayBuffer);
+        const page = pdfDoc.addPage([result.width, result.height]);
+        page.drawImage(embedded, { x:0, y:0, width: result.width, height: result.height });
+        if(result.release) try{ result.release(); }catch(e){}
+        progressBar.style.width = Math.round(((i+1)/files.length)*100) + '%';
+        await sleep(30);
       }
-      const content = await zip.generateAsync({type:'blob'}, (meta)=> {
-        // meta.percent
-        progress.style.display = 'block';
-        progressBar.style.width = Math.round(meta.percent) + '%';
-      });
+      const pdfBytes = await pdfDoc.save();
+      downloadBlob(new Blob([pdfBytes], { type: 'application/pdf' }), 'images-to-pdf.pdf');
+    } catch (err){
+      console.error(err);
+      alert('Error converting images: ' + (err && err.message ? err.message : err));
+    } finally {
+      setBusy(false);
       progressBar.style.width = '0%';
-      downloadBlob(content, 'images.zip');
+      progressWrap.style.display = 'none';
+    }
+  });
+
+  // Download originals as ZIP
+  downloadZipBtn.addEventListener('click', async ()=>{
+    if(files.length === 0) return;
+    const zip = new JSZip();
+    progressWrap.style.display = 'block';
+    let done = 0;
+    for(let i=0;i<files.length;i++){
+      const f = files[i];
+      const arr = await f.arrayBuffer();
+      zip.file(f.name, arr);
+      done++;
+      progressBar.style.width = Math.round((done/files.length)*100) + '%';
+      await sleep(20);
+    }
+    const blob = await zip.generateAsync({ type:'blob' }, meta => {
+      progressBar.style.width = Math.round(meta.percent) + '%';
     });
+    progressBar.style.width = '0%';
+    progressWrap.style.display = 'none';
+    downloadBlob(blob, 'original-images.zip');
+  });
 
-    // Helpers
-    function setBusy(isBusy){
-      if(isBusy){
-        convertLabel.textContent = 'Converting...';
-        convertSpinner.style.display = '';
-        convertBtn.disabled = true;
-        clearAllBtn.disabled = true;
-        downloadZipBtn.disabled = true;
-      } else {
-        convertLabel.textContent = 'Convert to PDF';
-        convertSpinner.style.display = 'none';
-        convertBtn.disabled = false;
-        clearAllBtn.disabled = false;
-        downloadZipBtn.disabled = files.length === 0;
+  // helper: create thumbnail and image-to-arrayBuffer conversion
+  function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+  async function makeThumbnailDataURL(file, maxSide){
+    return new Promise((res, rej)=>{
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        let sw = img.naturalWidth, sh = img.naturalHeight;
+        const scale = Math.min(1, maxSide / Math.max(sw, sh));
+        const cw = Math.round(sw * scale), ch = Math.round(sh * scale);
+        const c = document.createElement('canvas');
+        c.width = cw; c.height = ch;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(img,0,0,sw,sh,0,0,cw,ch);
+        const dataUrl = c.toDataURL('image/jpeg', 0.75);
+        URL.revokeObjectURL(url);
+        res(dataUrl);
+      };
+      img.onerror = (e)=> { URL.revokeObjectURL(url); rej(e); };
+      img.src = url;
+    });
+  }
+
+  // imageFileToEmbed: returns arrayBuffer + width + height
+  async function imageFileToEmbed(file, maxDim=0){
+    try {
+      const url = URL.createObjectURL(file);
+      let bitmap = null;
+      try { bitmap = await createImageBitmap(file); } catch(e){ bitmap = null; }
+      let sw, sh;
+      if(bitmap){ sw = bitmap.width; sh = bitmap.height; }
+      else { const img = await loadImageFromBlob(file); sw = img.naturalWidth; sh = img.naturalHeight; }
+      let scale = 1;
+      if(maxDim>0){
+        const longest = Math.max(sw, sh);
+        if(longest > maxDim) scale = maxDim / longest;
       }
+      const targetW = Math.max(1, Math.round(sw * scale));
+      const targetH = Math.max(1, Math.round(sh * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = targetW; canvas.height = targetH;
+      const ctx = canvas.getContext('2d');
+      if(bitmap){ ctx.drawImage(bitmap, 0, 0, sw, sh, 0, 0, targetW, targetH); try{ bitmap.close && bitmap.close(); }catch(e){} }
+      else { const img = await loadImageFromBlob(file); ctx.drawImage(img, 0, 0, sw, sh, 0, 0, targetW, targetH); }
+      const pngBlob = await new Promise(res=>canvas.toBlob(res, 'image/png'));
+      const arr = await pngBlob.arrayBuffer();
+      URL.revokeObjectURL(url);
+      try{ canvas.width = canvas.height = 0; }catch(e){}
+      return { arrayBuffer: arr, width: targetW, height: targetH, release: ()=>{} };
+    } catch(err){
+      // fallback
+      const dataUrl = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
+      const img = await loadImageFromDataURL(dataUrl);
+      const sw = img.naturalWidth, sh = img.naturalHeight;
+      const scale = (maxDim>0) ? Math.min(1, maxDim/Math.max(sw,sh)) : 1;
+      const targetW = Math.round(sw * scale), targetH = Math.round(sh * scale);
+      const canvas = document.createElement('canvas'); canvas.width = targetW; canvas.height = targetH;
+      const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, sw, sh, 0, 0, targetW, targetH);
+      const pngBlob = await new Promise(res=>canvas.toBlob(res, 'image/png'));
+      const arr = await pngBlob.arrayBuffer();
+      try{ canvas.width = canvas.height = 0; }catch(e){}
+      return { arrayBuffer: arr, width: targetW, height: targetH, release: ()=>{} };
     }
-    function downloadBlob(blob, filename){
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      document.body.appendChild(a); a.click(); a.remove();
-      // free URL eventually
-      setTimeout(()=> URL.revokeObjectURL(a.href), 1000);
-    }
-    function sleep(ms){ return new Promise(res=>setTimeout(res, ms)); }
+  }
 
-  })();
+  function loadImageFromBlob(blob){
+    return new Promise((res, rej)=>{
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = ()=> { URL.revokeObjectURL(url); res(img); };
+      img.onerror = (e)=> { URL.revokeObjectURL(url); rej(e); };
+      img.src = url;
+    });
+  }
+  function loadImageFromDataURL(dataUrl){
+    return new Promise((res, rej)=>{
+      const img = new Image();
+      img.onload = ()=> res(img);
+      img.onerror = rej;
+      img.src = dataUrl;
+    });
+  }
+
+  async function embedArrayBufferIntoPdf(pdfDoc, arrBuf){
+    const bytes = new Uint8Array(arrBuf);
+    const isPng = bytes[0]===0x89 && bytes[1]===0x50 && bytes[2]===0x4E && bytes[3]===0x47;
+    if(isPng) return await pdfDoc.embedPng(arrBuf);
+    else return await pdfDoc.embedJpg(arrBuf);
+  }
+
+  function setBusy(on){
+    if(on){
+      convertLabel.textContent = 'Converting...';
+      convertSpinner.style.display = '';
+      convertBtn.disabled = true;
+      clearAllBtn.disabled = true;
+      downloadZipBtn.disabled = true;
+    } else {
+      convertLabel.textContent = 'Convert to PDF';
+      convertSpinner.style.display = 'none';
+      convertBtn.disabled = false;
+      clearAllBtn.disabled = false;
+      downloadZipBtn.disabled = files.length === 0;
+    }
+  }
+  function setBusySingle(on){ if(on){ convertBtn.disabled = true; } else { convertBtn.disabled = false; } }
+
+  // Hook convert action
+  convertBtn.addEventListener('click', (ev)=>{ ev.preventDefault(); if(files.length===0) return alert('No images selected.'); convertAllSequential(); });
+
+  async function convertAllSequential(){
+    if(files.length === 0) return;
+    setBusy(true);
+    progressWrap.style.display = 'block';
+    progressBar.style.width = '0%';
+    try {
+      const pdfDoc = await PDFLib.PDFDocument.create();
+      const maxDim = parseInt(maxDimRange.value || '2500', 10);
+      for(let i=0;i<files.length;i++){
+        const f = files[i];
+        const result = await imageFileToEmbed(f, maxDim);
+        const embedded = await embedArrayBufferIntoPdf(pdfDoc, result.arrayBuffer);
+        const page = pdfDoc.addPage([result.width, result.height]);
+        page.drawImage(embedded, { x:0, y:0, width: result.width, height: result.height });
+        if(result.release) try{ result.release(); }catch(e){}
+        progressBar.style.width = Math.round(((i+1)/files.length)*100) + '%';
+        await sleep(30);
+      }
+      const pdfBytes = await pdfDoc.save();
+      downloadBlob(new Blob([pdfBytes], { type: 'application/pdf' }), 'images-to-pdf.pdf');
+    } catch (err){
+      console.error(err);
+      alert('Error converting images: ' + (err && err.message ? err.message : err));
+    } finally {
+      setBusy(false);
+      progressBar.style.width = '0%';
+      progressWrap.style.display = 'none';
+    }
+  }
+
+  // end script
   </script>
 </body>
 </html>
