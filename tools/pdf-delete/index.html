@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Delete PDF Pages — Smarttool Hub</title>
+  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+  <style>
+    :root{
+      --bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;
+      --primary:#22d3ee;--muted:#9fb3c8;--radius:12px;
+    }
+    body.light{
+      --bg:#f6f8fb;--text:#0b1220;--card:#ffffff;--border:#e6eefc;
+      --primary:#0b74ff;--muted:#556677;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;font-family:Inter,system-ui,Roboto,Arial;background:var(--bg);color:var(--text);
+      min-height:100vh;display:flex;flex-direction:column;
+    }
+    .container{max-width:1000px;margin:24px auto;padding:18px}
+    header{display:flex;align-items:center;justify-content:space-between;background:var(--card);padding:12px;border-radius:10px;border:1px solid var(--border)}
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand img{width:44px;height:44px;border-radius:8px}
+    .brand .title{font-weight:700;color:var(--primary)}
+    .tool {background:var(--card);padding:18px;border-radius:12px;border:1px solid var(--border);margin-top:16px}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    input[type=file]{padding:8px;background:transparent;color:var(--text)}
+    .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+    .btn-primary{background:linear-gradient(90deg,var(--primary),#60c9ff);color:#00131f}
+    .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+    .pages-list{margin-top:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+    .page-item{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;border:1px dashed transparent;display:flex;align-items:center;gap:8px}
+    .page-item input{transform:scale(1.1)}
+    .controls{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+    .muted{color:var(--muted);font-size:.95rem}
+    .notice{margin-top:12px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid var(--border)}
+    footer{margin-top:auto;padding:14px;text-align:center;color:var(--muted)}
+    @media (max-width:560px){ .row{flex-direction:column;align-items:stretch} .pages-list{grid-template-columns:repeat(2,1fr)} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="logo">
+        <div>
+          <div class="title">Smarttool Hub</div>
+          <div class="muted">Delete PDF Pages — Client-side</div>
+        </div>
+      </div>
+      <div>
+        <a class="btn btn-ghost" href="../../index.html"><i class="fa-solid fa-house"></i> Home</a>
+      </div>
+    </header>
+
+    <div class="tool" id="tool">
+      <h2>Delete PDF Pages</h2>
+      <p class="muted">Upload a PDF, check the pages you want to remove, then click <strong>Delete Selected Pages</strong>. Everything runs in your browser.</p>
+
+      <div class="row" style="margin-top:12px;">
+        <input id="fileInput" type="file" accept="application/pdf"/>
+        <button id="loadBtn" class="btn btn-primary">Load PDF</button>
+        <button id="selectAllBtn" class="btn btn-ghost">Select All</button>
+        <button id="deselectAllBtn" class="btn btn-ghost">Deselect All</button>
+      </div>
+
+      <div id="meta" class="muted notice" style="display:none;margin-top:12px;"></div>
+
+      <div id="pagesContainer" class="pages-list" style="display:none;"></div>
+
+      <div class="controls">
+        <button id="deleteBtn" class="btn btn-primary" disabled><i class="fa-solid fa-trash"></i> Delete Selected Pages</button>
+        <button id="downloadBtn" class="btn btn-ghost" disabled><i class="fa-solid fa-download"></i> Download Edited PDF</button>
+        <button id="downloadOriginalBtn" class="btn btn-ghost" disabled><i class="fa-solid fa-file-arrow-down"></i> Download Original</button>
+      </div>
+
+      <div id="status" class="muted" style="margin-top:10px;"></div>
+    </div>
+
+    <footer>
+      © <span id="year"></span> Smarttool Hub — All processing is done locally in your browser.
+    </footer>
+  </div>
+
+  <!-- pdf-lib (client-side) -->
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+  <script>
+    // Set year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const fileInput = document.getElementById('fileInput');
+    const loadBtn = document.getElementById('loadBtn');
+    const pagesContainer = document.getElementById('pagesContainer');
+    const meta = document.getElementById('meta');
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    const deselectAllBtn = document.getElementById('deselectAllBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const downloadOriginalBtn = document.getElementById('downloadOriginalBtn');
+    const status = document.getElementById('status');
+
+    let originalArrayBuffer = null;
+    let originalFileName = 'document.pdf';
+    let loadedPdfDoc = null;
+    let pageCount = 0;
+    let lastEditedBlob = null;
+
+    function setStatus(msg, isError = false) {
+      status.textContent = msg || '';
+      status.style.color = isError ? '#ff8a8a' : '';
+    }
+
+    loadBtn.addEventListener('click', async () => {
+      setStatus('');
+      pagesContainer.style.display = 'none';
+      meta.style.display = 'none';
+      deleteBtn.disabled = true;
+      downloadBtn.disabled = true;
+      downloadOriginalBtn.disabled = true;
+      lastEditedBlob = null;
+
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) {
+        setStatus('Please choose a PDF file first.');
+        return;
+      }
+      if (file.type !== 'application/pdf') {
+        setStatus('Selected file is not a PDF.', true);
+        return;
+      }
+
+      originalFileName = file.name || 'document.pdf';
+      const reader = new FileReader();
+
+      reader.onload = async (e) => {
+        try {
+          originalArrayBuffer = e.target.result;
+          setStatus('Loading PDF...');
+          const uint8 = new Uint8Array(originalArrayBuffer);
+          // Load with pdf-lib
+          loadedPdfDoc = await PDFLib.PDFDocument.load(uint8, {ignoreEncryption: false});
+          pageCount = loadedPdfDoc.getPageCount();
+
+          meta.style.display = 'block';
+          meta.innerHTML = `<strong>File:</strong> ${originalFileName} — <strong>Pages:</strong> ${pageCount}`;
+
+          renderPageList(pageCount);
+          pagesContainer.style.display = 'grid';
+          deleteBtn.disabled = false;
+          downloadOriginalBtn.disabled = false;
+          setStatus('');
+        } catch (err) {
+          console.error(err);
+          setStatus('Failed to load PDF. Possibly encrypted or malformed.', true);
+        }
+      };
+
+      reader.onerror = () => {
+        setStatus('Failed to read the file.', true);
+      };
+
+      reader.readAsArrayBuffer(file);
+    });
+
+    function renderPageList(n) {
+      pagesContainer.innerHTML = '';
+      for (let i = 0; i < n; i++) {
+        const div = document.createElement('div');
+        div.className = 'page-item';
+        div.innerHTML = `
+          <input type="checkbox" class="page-checkbox" data-index="${i}"/>
+          <div style="flex:1">
+            <div>Page <strong>${i+1}</strong></div>
+            <div class="muted" style="font-size:.85rem">Index: ${i}</div>
+          </div>
+        `;
+        pagesContainer.appendChild(div);
+      }
+    }
+
+    selectAllBtn.addEventListener('click', () => {
+      document.querySelectorAll('.page-checkbox').forEach(cb => cb.checked = true);
+    });
+    deselectAllBtn.addEventListener('click', () => {
+      document.querySelectorAll('.page-checkbox').forEach(cb => cb.checked = false);
+    });
+
+    // Delete selected pages -> create new PDF
+    deleteBtn.addEventListener('click', async () => {
+      setStatus('');
+      if (!loadedPdfDoc || pageCount === 0) {
+        setStatus('No PDF loaded.', true);
+        return;
+      }
+      const checked = Array.from(document.querySelectorAll('.page-checkbox'))
+        .filter(cb => cb.checked)
+        .map(cb => parseInt(cb.dataset.index, 10));
+
+      if (checked.length === 0) {
+        setStatus('No pages selected for deletion. Select pages to remove or use "Select All".', true);
+        return;
+      }
+      // Confirm if all pages selected
+      if (checked.length === pageCount) {
+        const ok = confirm('You selected ALL pages. This will create an empty PDF (no pages). Continue?');
+        if (!ok) return;
+      }
+
+      try {
+        setStatus('Creating edited PDF — please wait...');
+        // Create a new PDFDocument
+        const newPdfDoc = await PDFLib.PDFDocument.create();
+
+        // Build list of pages to keep
+        const toKeep = [];
+        for (let i = 0; i < pageCount; i++) {
+          if (!checked.includes(i)) toKeep.push(i);
+        }
+
+        if (toKeep.length === 0) {
+          // No pages to keep — create an empty PDF (pdf-lib will create zero pages)
+          // We'll still create and save so user can download an empty PDF if they want
+        } else {
+          // copyPages expects the source PDF to be provided; use loadedPdfDoc
+          const copiedPages = await newPdfDoc.copyPages(loadedPdfDoc, toKeep);
+          copiedPages.forEach((p) => newPdfDoc.addPage(p));
+        }
+
+        const newBytes = await newPdfDoc.save();
+        lastEditedBlob = new Blob([newBytes], { type: 'application/pdf' });
+        downloadBtn.disabled = false;
+
+        // Auto-trigger download (optional) — we enable user to click download
+        setStatus(`Edited PDF created. ${toKeep.length} pages kept, ${checked.length} removed.`);
+      } catch (err) {
+        console.error(err);
+        setStatus('Error while creating edited PDF.', true);
+      }
+    });
+
+    // Download edited PDF
+    downloadBtn.addEventListener('click', () => {
+      if (!lastEditedBlob) { setStatus('No edited PDF available. Click "Delete Selected Pages" first.', true); return; }
+      const name = originalFileName.replace(/\.pdf$/i, '') + '-edited.pdf';
+      triggerDownload(lastEditedBlob, name);
+    });
+
+    // Download original PDF (raw)
+    downloadOriginalBtn.addEventListener('click', () => {
+      if (!originalArrayBuffer) { setStatus('No original PDF loaded.', true); return; }
+      const blob = new Blob([originalArrayBuffer], { type: 'application/pdf' });
+      triggerDownload(blob, originalFileName.replace(/\.pdf$/i, '') + '-original.pdf');
+    });
+
+    function triggerDownload(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }
+
+    // Optional: allow double-click on page item to toggle selection
+    pagesContainer.addEventListener('dblclick', (e) => {
+      const item = e.target.closest('.page-item');
+      if (!item) return;
+      const cb = item.querySelector('.page-checkbox');
+      if (cb) cb.checked = !cb.checked;
+    });
+
+  </script>
+</body>
+</html>
