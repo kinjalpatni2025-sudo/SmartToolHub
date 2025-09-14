@@ -1,244 +1,153 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Delete PDF Pages — Smarttool Hub</title>
-  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
+  <meta name="description" content="Remove unwanted pages from a PDF. 100% client-side.">
+  <link rel="icon" href="../../https://img.icons8.com/fluency/48/toolbox.png"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
   <style>
+    /* --- Theme variables matched to your landing page --- */
     :root{
-      --bg:#0b1220;--text:#eaf2ff;--card:#0f1724;--border:#233049;
+      --bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;
       --primary:#22d3ee;--muted:#9fb3c8;--radius:12px;
-      --footer-height:220px;
     }
     body.light{
       --bg:#f6f8fb;--text:#0b1220;--card:#ffffff;--border:#e6eefc;
       --primary:#0b74ff;--muted:#556677;
     }
     *{box-sizing:border-box}
-    html,body{height:100%}
     body{
-      margin:0;font-family:Inter,system-ui,Roboto,Arial;background:var(--bg);color:var(--text);
-      display:flex;flex-direction:column;
+      margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      background:var(--bg);color:var(--text);transition:background .25s,color .25s;min-height:100vh;display:flex;flex-direction:column;
     }
-
-    /* full-width container that grows */
-    .page {
-      display:flex;flex-direction:column;min-height:100vh;
-    }
-
+    .container{max-width:1200px;margin:0 auto;padding:20px;width:100%}
     header{
-      display:flex;align-items:center;justify-content:space-between;background:var(--card);
-      padding:12px 18px;border-radius:8px;border:1px solid var(--border);margin:18px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;border-radius:8px;
     }
     .brand{display:flex;gap:12px;align-items:center}
-    .brand img{width:44px;height:44px;border-radius:8px}
-    .brand .title{font-weight:700;color:var(--primary)}
-    .muted{color:var(--muted)}
-
-    /* Main content area uses remaining vertical space, full width */
-    main{
-      flex:1 1 auto;display:flex;gap:18px;padding:0 18px 18px 18px;
-      align-items:flex-start;
+    .brand img{width:46px;height:46px;border-radius:10px}
+    .brand .title{font-size:1.15rem;font-weight:700;color:var(--primary);margin:0}
+    .brand .tag{font-size:.85rem;color:var(--muted)}
+    .header-actions{display:flex;gap:10px;align-items:center}
+    .btn-header{
+      border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;
+      color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;font-weight:600
     }
-
-    /* Tool area — fluid and fills space */
-    .tool{
-      background:var(--card);padding:18px;border-radius:12px;border:1px solid var(--border);
-      flex:1 1 0;min-width:320px;box-shadow:0 6px 18px rgba(0,0,0,0.25);
-      display:flex;flex-direction:column;
+    .btn-header:hover{border-color:var(--primary);color:var(--primary)}
+    main.tool-wrap{padding:20px 0;flex:1}
+    .tool-card {
+      background:var(--card);border-radius:var(--radius);border:1px solid var(--border);
+      padding:22px;margin-top:18px;
     }
-
-    /* Side panel (optional) */
-    .side{
-      width:320px;max-width:36%;min-width:220px;background:rgba(255,255,255,0.02);
-      border-radius:12px;padding:12px;border:1px solid var(--border);height:fit-content;
-    }
-
+    .tool-title{font-size:1.6rem;color:var(--primary);margin:0 0 6px}
+    .tool-desc{color:var(--muted);margin-bottom:18px}
     .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-    input[type=file]{padding:8px;background:transparent;color:var(--text)}
-    .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
-    .btn-primary{background:linear-gradient(90deg,var(--primary),#60c9ff);color:#00131f}
-    .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
-    .pages-list{margin-top:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
-    .page-item{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;border:1px dashed transparent;display:flex;align-items:center;gap:8px}
-    .controls{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
-    .notice{margin-top:12px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid var(--border)}
-    .help{font-size:.95rem;color:var(--muted)}
-
-    /* fixed footer that contains all tools references */
-    footer{
-      height:var(--footer-height);background:var(--card);border-top:1px solid var(--border);
-      display:flex;align-items:flex-start;padding:18px;gap:18px;position:relative;
+    input[type=file]{padding:8px;background:transparent;color:var(--text);border-radius:8px;border:1px solid var(--border);padding:10px}
+    .btn{
+      padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:8px;
     }
-    .footer-inner{width:100%;display:flex;gap:18px;align-items:flex-start}
-    .footer-brand{min-width:240px}
-    .all-tools{flex:1 1 auto;max-height:calc(var(--footer-height) - 48px);overflow:auto;padding-right:6px}
-    .tools-search{display:flex;gap:8px;margin-bottom:10px}
-    .tools-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
-    .tool-link{display:block;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid var(--border);text-decoration:none;color:var(--text);font-size:.95rem}
-    .tools-meta{min-width:220px}
-
-    /* small screens */
-    @media (max-width:960px){
-      main{flex-direction:column;padding:0 12px 12px 12px}
-      .side{width:100%}
-      footer{flex-direction:column;height:auto;padding-bottom:36px}
-      .all-tools{max-height:260px}
+    .btn-primary{background:var(--primary);color:#00131f}
+    .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+    .muted{color:var(--muted);font-size:.95rem}
+    .notice{margin-top:12px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid var(--border)}
+    .pages-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:12px}
+    .page-item{
+      display:flex;gap:10px;align-items:center;padding:10px;border-radius:10px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border:1px solid rgba(255,255,255,0.02)
+    }
+    .page-item small{color:var(--muted);display:block}
+    .controls{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+    footer{margin-top:24px;padding:18px 0;background:var(--card);border-top:1px solid var(--border)}
+    .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap}
+    .footer-links a{color:var(--primary);text-decoration:none;font-weight:600}
+    @media (max-width:720px){
+      header{flex-direction:column;align-items:flex-start}
+      .row{flex-direction:column;align-items:stretch}
+      .pages-grid{grid-template-columns:repeat(2,1fr)}
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <header>
-      <div class="brand">
-        <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="logo">
+  <header class="container">
+    <div class="brand">
+      <a href="../../index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;">
+        <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub Logo">
         <div>
           <div class="title">Smarttool Hub</div>
-          <div class="muted">Delete PDF Pages — Client-side</div>
+          <div class="tag">Delete PDF Pages</div>
         </div>
-      </div>
+      </a>
+    </div>
+    <div class="header-actions">
+      <a href="../../index.html" class="btn-header"><i class="fa-solid fa-house"></i> Home</a>
+      <button class="btn-header" id="themeToggle" title="Toggle dark/light mode"><i class="fa-solid fa-moon"></i></button>
+    </div>
+  </header>
+
+  <main class="container tool-wrap">
+    <div class="tool-card" id="tool">
+      <h1 class="tool-title">Delete PDF Pages</h1>
+      <p class="tool-desc">Upload a PDF, select pages to remove, then download the edited PDF. Everything is processed in your browser — no uploads to servers.</p>
+
       <div class="row">
-        <a class="btn btn-ghost" href="../../index.html"><i class="fa-solid fa-house"></i> Home</a>
-        <button id="toggleTheme" class="btn btn-ghost"><i class="fa-solid fa-sun"></i></button>
+        <input id="fileInput" type="file" accept="application/pdf"/>
+        <button id="loadBtn" class="btn btn-primary"><i class="fa-solid fa-file-import"></i> Load PDF</button>
+        <button id="selectAllBtn" class="btn btn-ghost"><i class="fa-solid fa-check-double"></i> Select All</button>
+        <button id="deselectAllBtn" class="btn btn-ghost"><i class="fa-solid fa-xmark"></i> Deselect All</button>
       </div>
-    </header>
 
-    <main>
-      <section class="tool" id="tool">
-        <h2>Delete PDF Pages</h2>
-        <p class="muted help">Upload a PDF, check pages to remove, then click <strong>Delete Selected Pages</strong>. Everything runs locally in the browser.</p>
+      <div id="meta" class="notice" style="display:none;margin-top:12px"></div>
 
-        <div class="row" style="margin-top:12px;">
-          <input id="fileInput" type="file" accept="application/pdf"/>
-          <button id="loadBtn" class="btn btn-primary">Load PDF</button>
-          <button id="selectAllBtn" class="btn btn-ghost">Select All</button>
-          <button id="deselectAllBtn" class="btn btn-ghost">Deselect All</button>
-        </div>
+      <div id="pagesContainer" class="pages-grid" style="display:none"></div>
 
-        <div id="meta" class="muted notice" style="display:none;margin-top:12px;"></div>
-
-        <div id="pagesContainer" class="pages-list" style="display:none;"></div>
-
-        <div class="controls">
-          <button id="deleteBtn" class="btn btn-primary" disabled><i class="fa-solid fa-trash"></i> Delete Selected Pages</button>
-          <button id="downloadBtn" class="btn btn-ghost" disabled><i class="fa-solid fa-download"></i> Download Edited PDF</button>
-          <button id="downloadOriginalBtn" class="btn btn-ghost" disabled><i class="fa-solid fa-file-arrow-down"></i> Download Original</button>
-        </div>
-
-        <div id="status" class="muted" style="margin-top:10px;"></div>
-      </section>
-
-      <aside class="side">
-        <h3 class="muted">Quick Actions</h3>
-        <div style="margin-top:8px;">
-          <button id="removeOddBtn" class="btn btn-ghost" style="width:100%;margin-bottom:8px">Remove Odd Pages</button>
-          <button id="removeEvenBtn" class="btn btn-ghost" style="width:100%;margin-bottom:8px">Remove Even Pages</button>
-          <button id="rangeBtn" class="btn btn-ghost" style="width:100%;margin-bottom:8px">Remove Range (e.g. 2-5)</button>
-          <div style="margin-top:12px" class="muted">Tip: use Select/Deselect to quickly choose pages.</div>
-        </div>
-      </aside>
-    </main>
-
-    <footer>
-      <div class="footer-inner">
-        <div class="footer-brand">
-          <div style="display:flex;gap:10px;align-items:center">
-            <img src="https://img.icons8.com/fluency/48/toolbox.png" style="width:36px;height:36px;border-radius:6px"/>
-            <div>
-              <div style="font-weight:700">Smarttool Hub</div>
-              <div class="muted" style="font-size:.9rem">All processing is done in your browser</div>
-            </div>
-          </div>
-          <div style="margin-top:10px;font-size:.9rem" class="muted">
-            © <span id="year"></span> — Built by you. Update the footer `toolList` in the script to match your actual tools.
-          </div>
-        </div>
-
-        <div class="all-tools">
-          <div class="tools-search">
-            <input id="toolSearch" placeholder="Search tools..." style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text)"/>
-            <button id="collapseTools" class="btn btn-ghost">Collapse</button>
-          </div>
-          <div id="toolsList" class="tools-list"></div>
-        </div>
-
-        <div class="tools-meta">
-          <h4 class="muted">Footer / References</h4>
-          <div style="margin-top:8px" class="muted">
-            <div><a class="tool-link" href="../../privacy.html">Privacy Policy</a></div>
-            <div style="margin-top:6px"><a class="tool-link" href="../../terms.html">Terms of Use</a></div>
-            <div style="margin-top:6px"><a class="tool-link" href="../../contact.html">Contact</a></div>
-            <div style="margin-top:12px" class="muted">Need different ordering or grouping? Edit the <code>toolList</code> array in the script.</div>
-          </div>
-        </div>
+      <div class="controls">
+        <button id="deleteBtn" class="btn btn-primary" disabled><i class="fa-solid fa-trash"></i> Delete Selected Pages</button>
+        <button id="downloadBtn" class="btn btn-ghost" disabled><i class="fa-solid fa-download"></i> Download Edited PDF</button>
+        <button id="downloadOriginalBtn" class="btn btn-ghost" disabled><i class="fa-solid fa-file-arrow-down"></i> Download Original</button>
       </div>
-    </footer>
-  </div>
+
+      <div id="status" class="muted" style="margin-top:10px"></div>
+      <div class="muted notice" style="margin-top:10px">Tip: Double-click a page tile to toggle selection. Selecting all pages will create an empty PDF file.</div>
+    </div>
+  </main>
+
+  <footer class="container">
+    <div class="footer-inner">
+      <div>© <span id="year"></span> Smarttool Hub</div>
+      <div class="footer-links">
+        <a href="../../privacy.html">Privacy</a>
+        <a href="../../terms.html">Terms</a>
+        <a href="../../contact.html">Contact</a>
+      </div>
+    </div>
+  </footer>
 
   <!-- pdf-lib (client-side) -->
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <script>
-    // Edit this list to exactly match your tool filenames/paths and names.
-    // Example: {name:'Split PDF', href:'../split-pdf/index.html'}
-    const toolList = [
-      {name:'Home', href:'../../index.html'},
-      {name:'Delete PDF Pages', href:'index.html'},
-      {name:'Merge PDFs', href:'../merge-pdf/index.html'},
-      {name:'Split PDF', href:'../split-pdf/index.html'},
-      {name:'PDF to Image', href:'../pdf-to-image/index.html'},
-      {name:'Image to PDF', href:'../image-to-pdf/index.html'},
-      {name:'Compress PDF', href:'../compress-pdf/index.html'},
-      {name:'Rotate PDF', href:'../rotate-pdf/index.html'},
-      {name:'Add Watermark', href:'../watermark/index.html'},
-      {name:'OCR PDF', href:'../ocr/index.html'},
-      // add more tools here...
-    ];
-
-    // Populate footer tools list
-    const toolsListEl = document.getElementById('toolsList');
-    function renderTools(filter='') {
-      toolsListEl.innerHTML = '';
-      const q = filter.trim().toLowerCase();
-      toolList.filter(t => t.name.toLowerCase().includes(q)).forEach(t => {
-        const a = document.createElement('a');
-        a.className = 'tool-link';
-        a.href = t.href;
-        a.textContent = t.name;
-        a.target = '_self';
-        toolsListEl.appendChild(a);
-      });
-      if (toolsListEl.children.length === 0) {
-        const p = document.createElement('div');
-        p.className = 'muted';
-        p.textContent = 'No tools match your search.';
-        toolsListEl.appendChild(p);
-      }
-    }
-    renderTools();
-
-    document.getElementById('toolSearch').addEventListener('input', (e) => renderTools(e.target.value));
-    document.getElementById('collapseTools').addEventListener('click', () => {
-      const all = document.querySelector('.all-tools');
-      if (all.style.display === 'none') {
-        all.style.display = 'block';
-        document.getElementById('collapseTools').textContent = 'Collapse';
-      } else {
-        all.style.display = 'none';
-        document.getElementById('collapseTools').textContent = 'Expand';
-      }
-    });
-
-    // Small utility: toggle light/dark
-    document.getElementById('toggleTheme').addEventListener('click', () => {
-      document.body.classList.toggle('light');
-    });
-
-    // Set year
+    // Use same theme toggle logic as your site
     document.getElementById('year').textContent = new Date().getFullYear();
+    const themeToggle = document.getElementById('themeToggle');
+    if (localStorage.getItem('sth_theme') === 'light') {
+      document.body.classList.add('light');
+      themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+    }
+    themeToggle.onclick = () => {
+      document.body.classList.toggle('light');
+      if (document.body.classList.contains('light')) {
+        themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+        localStorage.setItem('sth_theme', 'light');
+      } else {
+        themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
+        localStorage.removeItem('sth_theme');
+      }
+    };
 
-    // Tool logic (Delete PDF Pages) ------------------------------------------------
+    // Elements
     const fileInput = document.getElementById('fileInput');
     const loadBtn = document.getElementById('loadBtn');
     const pagesContainer = document.getElementById('pagesContainer');
@@ -249,10 +158,6 @@
     const downloadBtn = document.getElementById('downloadBtn');
     const downloadOriginalBtn = document.getElementById('downloadOriginalBtn');
     const status = document.getElementById('status');
-
-    const removeOddBtn = document.getElementById('removeOddBtn');
-    const removeEvenBtn = document.getElementById('removeEvenBtn');
-    const rangeBtn = document.getElementById('rangeBtn');
 
     let originalArrayBuffer = null;
     let originalFileName = 'document.pdf';
@@ -275,24 +180,16 @@
       lastEditedBlob = null;
 
       const file = fileInput.files && fileInput.files[0];
-      if (!file) {
-        setStatus('Please choose a PDF file first.');
-        return;
-      }
-      if (file.type !== 'application/pdf') {
-        setStatus('Selected file is not a PDF.', true);
-        return;
-      }
+      if (!file) { setStatus('Please choose a PDF file first.'); return; }
+      if (file.type !== 'application/pdf') { setStatus('Selected file is not a PDF.', true); return; }
 
       originalFileName = file.name || 'document.pdf';
       const reader = new FileReader();
-
       reader.onload = async (e) => {
         try {
           originalArrayBuffer = e.target.result;
           setStatus('Loading PDF...');
           const uint8 = new Uint8Array(originalArrayBuffer);
-          // Load with pdf-lib
           loadedPdfDoc = await PDFLib.PDFDocument.load(uint8, {ignoreEncryption: false});
           pageCount = loadedPdfDoc.getPageCount();
 
@@ -306,14 +203,10 @@
           setStatus('');
         } catch (err) {
           console.error(err);
-          setStatus('Failed to load PDF. Possibly encrypted or malformed.', true);
+          setStatus('Failed to load PDF. It may be encrypted or malformed.', true);
         }
       };
-
-      reader.onerror = () => {
-        setStatus('Failed to read the file.', true);
-      };
-
+      reader.onerror = () => setStatus('Failed to read the file.', true);
       reader.readAsArrayBuffer(file);
     });
 
@@ -323,10 +216,10 @@
         const div = document.createElement('div');
         div.className = 'page-item';
         div.innerHTML = `
-          <input type="checkbox" class="page-checkbox" data-index="${i}"/>
+          <input type="checkbox" class="page-checkbox" data-index="${i}" aria-label="Select page ${i+1}"/>
           <div style="flex:1">
             <div>Page <strong>${i+1}</strong></div>
-            <div class="muted" style="font-size:.85rem">Index: ${i}</div>
+            <small>Index: ${i}</small>
           </div>
         `;
         pagesContainer.appendChild(div);
@@ -340,22 +233,14 @@
       document.querySelectorAll('.page-checkbox').forEach(cb => cb.checked = false);
     });
 
-    // Delete selected pages -> create new PDF
     deleteBtn.addEventListener('click', async () => {
       setStatus('');
-      if (!loadedPdfDoc || pageCount === 0) {
-        setStatus('No PDF loaded.', true);
-        return;
-      }
+      if (!loadedPdfDoc || pageCount === 0) { setStatus('No PDF loaded.', true); return; }
       const checked = Array.from(document.querySelectorAll('.page-checkbox'))
         .filter(cb => cb.checked)
         .map(cb => parseInt(cb.dataset.index, 10));
 
-      if (checked.length === 0) {
-        setStatus('No pages selected for deletion. Select pages to remove or use "Select All".', true);
-        return;
-      }
-      // Confirm if all pages selected
+      if (checked.length === 0) { setStatus('No pages selected for deletion.', true); return; }
       if (checked.length === pageCount) {
         const ok = confirm('You selected ALL pages. This will create an empty PDF (no pages). Continue?');
         if (!ok) return;
@@ -365,19 +250,15 @@
         setStatus('Creating edited PDF — please wait...');
         const newPdfDoc = await PDFLib.PDFDocument.create();
 
-        // Build list of pages to keep
         const toKeep = [];
         for (let i = 0; i < pageCount; i++) {
           if (!checked.includes(i)) toKeep.push(i);
         }
 
-        if (toKeep.length === 0) {
-          // Create empty PDF
-        } else {
+        if (toKeep.length > 0) {
           const copiedPages = await newPdfDoc.copyPages(loadedPdfDoc, toKeep);
-          copiedPages.forEach((p) => newPdfDoc.addPage(p));
+          copiedPages.forEach(p => newPdfDoc.addPage(p));
         }
-
         const newBytes = await newPdfDoc.save();
         lastEditedBlob = new Blob([newBytes], { type: 'application/pdf' });
         downloadBtn.disabled = false;
@@ -388,14 +269,12 @@
       }
     });
 
-    // Download edited PDF
     downloadBtn.addEventListener('click', () => {
       if (!lastEditedBlob) { setStatus('No edited PDF available. Click "Delete Selected Pages" first.', true); return; }
       const name = originalFileName.replace(/\.pdf$/i, '') + '-edited.pdf';
       triggerDownload(lastEditedBlob, name);
     });
 
-    // Download original PDF (raw)
     downloadOriginalBtn.addEventListener('click', () => {
       if (!originalArrayBuffer) { setStatus('No original PDF loaded.', true); return; }
       const blob = new Blob([originalArrayBuffer], { type: 'application/pdf' });
@@ -413,57 +292,13 @@
       setTimeout(() => URL.revokeObjectURL(url), 2000);
     }
 
-    // Optional: allow double-click on page item to toggle selection
+    // Double-click to toggle selection
     pagesContainer.addEventListener('dblclick', (e) => {
       const item = e.target.closest('.page-item');
       if (!item) return;
       const cb = item.querySelector('.page-checkbox');
       if (cb) cb.checked = !cb.checked;
     });
-
-    // Quick actions: remove odd/even/range
-    removeOddBtn.addEventListener('click', () => {
-      document.querySelectorAll('.page-checkbox').forEach(cb => {
-        const idx = parseInt(cb.dataset.index,10);
-        cb.checked = (idx % 2 === 0); // page 1 index 0 -> keep? The button intends to "Remove odd pages" -> check odd indexes for removal
-        // Adjusted: mark for deletion on odd pages -> set checked true for odd page indexes (1,3,5 -> idx 0,2,4?). To avoid confusion, implement as:
-      });
-      // To implement correctly, we'll invert: We will check boxes for pages that are odd-numbered (1,3,5) meaning indexes 0,2,4
-      document.querySelectorAll('.page-checkbox').forEach(cb => {
-        const idx = parseInt(cb.dataset.index,10);
-        cb.checked = ((idx + 1) % 2 === 1); // check odd-numbered pages
-      });
-    });
-
-    removeEvenBtn.addEventListener('click', () => {
-      document.querySelectorAll('.page-checkbox').forEach(cb => {
-        const idx = parseInt(cb.dataset.index,10);
-        cb.checked = ((idx + 1) % 2 === 0); // check even-numbered pages
-      });
-    });
-
-    rangeBtn.addEventListener('click', () => {
-      const r = prompt('Enter page range to remove, e.g. 2-5 (single page allowed: 3). Multiple ranges comma-separated: 2-3,7');
-      if (!r) return;
-      // parse ranges -> set checked true for pages to remove
-      const ranges = r.split(',').map(s => s.trim()).filter(Boolean);
-      const removeSet = new Set();
-      ranges.forEach(rs => {
-        if (rs.includes('-')) {
-          const [a,b] = rs.split('-').map(x => parseInt(x,10)).filter(Number.isFinite);
-          if (!Number.isFinite(a) || !Number.isFinite(b)) return;
-          for (let p = Math.min(a,b); p <= Math.max(a,b); p++) removeSet.add(p);
-        } else {
-          const p = parseInt(rs,10);
-          if (Number.isFinite(p)) removeSet.add(p);
-        }
-      });
-      document.querySelectorAll('.page-checkbox').forEach(cb => {
-        const pageNum = parseInt(cb.dataset.index,10) + 1;
-        cb.checked = removeSet.has(pageNum);
-      });
-    });
-
   </script>
 </body>
 </html>
