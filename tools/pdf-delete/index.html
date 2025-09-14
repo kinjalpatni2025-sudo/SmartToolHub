@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Delete PDF Pages — Smarttool Hub</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Delete PDF Pages - Smarttool Hub</title>
+  <meta name="description" content="Remove unwanted pages from PDF files. 100% browser-based, private and fast."/>
   <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
   <style>
@@ -15,379 +16,673 @@
       --bg:#f6f8fb;--text:#0b1220;--card:#ffffff;--border:#e6eefc;
       --primary:#0b74ff;--muted:#556677;
     }
-    *{box-sizing:border-box}
+    *{box-sizing:border-box;margin:0;padding:0}
     body{
-      margin:0;font-family:Inter,system-ui,Roboto,Arial;background:var(--bg);color:var(--text);
+      font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      background:var(--bg);color:var(--text);transition:background .25s,color .25s;
       min-height:100vh;display:flex;flex-direction:column;
     }
     .container{max-width:1200px;margin:0 auto;padding:20px;width:100%}
-    header{display:flex;align-items:center;justify-content:space-between;background:var(--card);border-bottom:1px solid var(--border);padding:12px 20px;border-radius:10px}
-    .brand{display:flex;align-items:center;gap:12px}
+    header{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;
+    }
+    .brand{display:flex;gap:12px;align-items:center}
     .brand img{width:46px;height:46px;border-radius:10px}
-    .brand .title{font-size:1.15rem;font-weight:700;color:var(--primary)}
-    .btn{padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:8px}
-    .btn-primary{background:var(--primary);color:#00131f}
-    .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px}
-    .tool-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:18px}
-    .tool-title{font-size:1.4rem;color:var(--primary);margin:0 0 8px}
-    .muted{color:var(--muted)}
-    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-    input[type=file]{padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text)}
-    .files-section{margin-top:16px;display:flex;flex-direction:column;gap:16px}
-    .file-block{border:1px solid var(--border);padding:12px;border-radius:10px;background:rgba(255,255,255,0.01)}
-    .file-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .pages-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-top:12px}
-    .page-item{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);text-align:center;background:rgba(255,255,255,0.01)}
-    .page-item canvas{max-width:100%;height:auto;border-radius:6px;display:block;margin:0 auto 8px}
-    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-    .preview-block{margin-top:12px;padding:10px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.02)}
-    iframe.preview{width:100%;height:420px;border:none;border-radius:6px}
-    .small{font-size:.9rem}
+    .brand .title{font-size:1.25rem;font-weight:700;color:var(--primary);margin:0}
+    .brand .tag{font-size:.9rem;color:var(--muted)}
+    .header-actions{display:flex;gap:10px;align-items:center}
+    .btn-header{
+      border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;
+      color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;font-weight:600
+    }
+    .btn-header:hover{border-color:var(--primary);color:var(--primary)}
+    
+    /* Tool-specific styles */
+    .tool-content {
+      background:var(--card);border-radius:var(--radius);border:1px solid var(--border);
+      padding:25px;margin-top:20px;
+    }
+    .tool-title {
+      font-size:1.8rem;margin-bottom:5px;color:var(--primary);
+    }
+    .tool-description {
+      color:var(--muted);margin-bottom:25px;
+    }
+    .upload-area {
+      width:100%;min-height:200px;padding:25px;border-radius:var(--radius);
+      background:var(--bg);border:2px dashed var(--border);color:var(--text);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      text-align:center;margin-bottom:20px;cursor:pointer;transition:border-color .2s;
+    }
+    .upload-area:hover, .upload-area.dragover {
+      border-color:var(--primary);
+    }
+    .upload-area i {
+      font-size:3rem;margin-bottom:15px;color:var(--muted);
+    }
+    .upload-text {
+      font-size:1.2rem;margin-bottom:10px;
+    }
+    .upload-subtext {
+      color:var(--muted);font-size:0.9rem;
+    }
+    #fileInput {
+      display:none;
+    }
+    .file-info {
+      background:var(--bg);border-radius:var(--radius);border:1px solid var(--border);
+      padding:15px;margin-bottom:20px;display:none;
+    }
+    .file-info-header {
+      display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;
+    }
+    .file-name {
+      font-weight:600;
+    }
+    .file-size {
+      color:var(--muted);font-size:0.9rem;
+    }
+    .page-selection {
+      margin-bottom:25px;
+    }
+    .selection-title {
+      margin-bottom:15px;font-weight:600;
+    }
+    .page-options {
+      display:flex;gap:15px;flex-wrap:wrap;
+    }
+    .page-option {
+      display:flex;align-items:center;gap:8px;
+    }
+    .page-input {
+      padding:10px;border-radius:var(--radius);border:1px solid var(--border);
+      background:var(--bg);color:var(--text);width:100%;max-width:300px;
+    }
+    .page-input:focus {
+      outline:none;border-color:var(--primary);
+    }
+    .action-buttons {
+      display:flex;gap:12px;flex-wrap:wrap;
+    }
+    .btn {
+      padding:12px 20px;border-radius:var(--radius);border:none;
+      font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;
+    }
+    .btn-primary {
+      background:var(--primary);color:#00131f;
+    }
+    .btn-secondary {
+      background:var(--card);color:var(--text);border:1px solid var(--border);
+    }
+    .btn:disabled {
+      opacity:0.6;cursor:not-allowed;
+    }
+    .btn:hover:not(:disabled) {
+      opacity:0.9;
+    }
+    
+    /* Preview styles */
+    .preview-container {
+      display: none;
+      margin-top: 20px;
+    }
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .preview-title {
+      font-weight: 600;
+    }
+    .preview-toggle {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .preview-toggle:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .thumbnails-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 10px;
+      background: var(--bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .thumbnail-wrapper {
+      position: relative;
+      cursor: pointer;
+      border: 2px solid transparent;
+      border-radius: 6px;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    .thumbnail-wrapper.selected {
+      border-color: var(--primary);
+    }
+    .thumbnail-wrapper.selected .page-number {
+      background-color: var(--primary);
+      color: #00131f;
+    }
+    .thumbnail {
+      width: 100%;
+      height: 150px;
+      object-fit: contain;
+      background: white;
+    }
+    .page-number {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+    }
+    .page-checkbox {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+    }
+    
+    footer{margin-top:auto;padding:18px 0;background:var(--card);border-top:1px solid var(--border)}
+    .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap}
+    .footer-links a{color:var(--primary);text-decoration:none;font-weight:600}
     @media (max-width:720px){
-      .pages-grid{grid-template-columns:repeat(2,1fr)}
       header{flex-direction:column;align-items:flex-start;gap:10px}
+      .header-actions{align-self:flex-end}
+      .page-options{flex-direction:column;}
+      .action-buttons{flex-direction:column;}
+      .btn{width:100%;justify-content:center;}
+      .thumbnails-container {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      }
     }
   </style>
 </head>
 <body>
-  <header class="container">
-    <div class="brand">
-      <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="logo">
+<header class="container">
+  <div class="brand">
+    <a href="index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+      <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub Logo">
       <div>
         <div class="title">Smarttool Hub</div>
-        <div class="muted small">Delete PDF Pages</div>
+        <div class="tag">Fast • Private • 100% Client-side</div>
       </div>
-    </div>
-    <div>
-      <a href="../../index.html" class="btn-ghost"><i class="fa-solid fa-house"></i> Home</a>
-    </div>
-  </header>
+    </a>
+  </div>
+  <div class="header-actions">
+    <a href="index.html" class="btn-header"><i class="fa-solid fa-house"></i> Home</a>
+    <button class="btn-header" id="themeToggle" title="Toggle dark/light mode"><i class="fa-solid fa-moon"></i></button>
+  </div>
+</header>
 
-  <main class="container">
-    <div class="tool-card">
-      <h2 class="tool-title">Delete PDF Pages (multi-file)</h2>
-      <p class="muted">Select one or more PDF files. Thumbnails of every page will appear — tick pages you want to remove. Click <strong>Delete Selected Pages</strong> to create edited PDFs for each file. Preview & download each edited file below.</p>
-
-      <div class="row">
-        <label style="display:flex;gap:8px;align-items:center;">
-          <input id="fileInput" type="file" accept="application/pdf" multiple />
-        </label>
-        <button id="loadBtn" class="btn btn-primary"><i class="fa-solid fa-file-import"></i> Load Files</button>
-        <button id="clearBtn" class="btn btn-ghost"><i class="fa-solid fa-trash-arrow-up"></i> Clear</button>
+<main class="container">
+  <div class="tool-content">
+    <h1 class="tool-title">Delete PDF Pages</h1>
+    <p class="tool-description">Remove unwanted pages from your PDF files. Your files are processed entirely in your browser—no server uploads.</p>
+    
+    <div class="upload-area" id="uploadArea">
+      <input type="file" id="fileInput" accept=".pdf">
+      <i class="fas fa-file-pdf"></i>
+      <div class="upload-text">Drag & drop your PDF here</div>
+      <div class="upload-subtext">or click to browse files</div>
+    </div>
+    
+    <div class="file-info" id="fileInfo">
+      <div class="file-info-header">
+        <div class="file-name" id="fileName">document.pdf</div>
+        <div class="file-size" id="fileSize">0 KB</div>
       </div>
-
-      <div class="files-section" id="filesSection"></div>
-
-      <div class="controls">
-        <button id="deleteBtn" class="btn btn-primary" disabled><i class="fa-solid fa-trash"></i> Delete Selected Pages</button>
-        <button id="downloadAllBtn" class="btn btn-ghost" disabled><i class="fa-solid fa-download"></i> Download All Edited</button>
-      </div>
-
-      <div id="globalStatus" class="muted small" style="margin-top:10px"></div>
-
-      <div id="editedPreviews" style="margin-top:16px"></div>
+      <div id="pageCount">Total pages: 0</div>
     </div>
-  </main>
+    
+    <div class="preview-container" id="previewContainer">
+      <div class="preview-header">
+        <div class="preview-title">Select pages to delete:</div>
+        <button class="preview-toggle" id="togglePreview">
+          <i class="fas fa-eye-slash"></i> Hide Preview
+        </button>
+      </div>
+      <div class="thumbnails-container" id="thumbnailsContainer"></div>
+    </div>
+    
+    <div class="page-selection">
+      <div class="selection-title">Or specify pages manually:</div>
+      <div class="page-options">
+        <div class="page-option">
+          <input type="radio" id="rangeOption" name="deleteOption" value="range" checked>
+          <label for="rangeOption">Page range (e.g., 1,3,5-8)</label>
+        </div>
+        <div class="page-option">
+          <input type="radio" id="allOption" name="deleteOption" value="all">
+          <label for="allOption">All except selected pages</label>
+        </div>
+      </div>
+      <input type="text" class="page-input" id="pagesInput" placeholder="Enter page numbers (e.g., 1,3,5-8)">
+    </div>
+    
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="processBtn" disabled><i class="fas fa-trash"></i> Delete Pages</button>
+      <button class="btn btn-secondary" id="resetBtn"><i class="fas fa-redo"></i> Reset</button>
+    </div>
+  </div>
+</main>
 
-  <footer class="container" style="margin-top:20px;padding:12px 0;color:var(--muted)">
-    © <span id="year"></span> Smarttool Hub
-  </footer>
+<footer class="container">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> Smarttool Hub</div>
+    <div class="footer-links">
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="contact.html">Contact</a>
+      <a href="comments.html">Comments</a>
+      <a href="faq.html">FAQ</a>
+    </div>
+  </div>
+</footer>
 
-  <!-- Libraries -->
-  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
-  <script>
-    // Basic DOM
-    const fileInput = document.getElementById('fileInput');
-    const loadBtn = document.getElementById('loadBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const filesSection = document.getElementById('filesSection');
-    const deleteBtn = document.getElementById('deleteBtn');
-    const downloadAllBtn = document.getElementById('downloadAllBtn');
-    const globalStatus = document.getElementById('globalStatus');
-    const editedPreviews = document.getElementById('editedPreviews');
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    // State: array of objects per file
-    // { file, arrayBuffer, pdfDoc(lib), pdfjsDoc, pageCount, deletedPages:Set<number>, editedBlob, editedUrl }
-    let filesState = [];
-
-    // Configure pdf.js worker (uses built-in worker from CDN)
-    if (window.pdfjsLib) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+<script>
+  // Set current year
+  document.getElementById('year').textContent = new Date().getFullYear();
+  
+  // Theme toggle functionality
+  const themeToggle = document.getElementById('themeToggle');
+  if (localStorage.getItem('sth_theme') === 'light') {
+    document.body.classList.add('light');
+    themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+  }
+  
+  themeToggle.onclick = () => {
+    document.body.classList.toggle('light');
+    if (document.body.classList.contains('light')) {
+      themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+      localStorage.setItem('sth_theme', 'light');
+    } else {
+      themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
+      localStorage.removeItem('sth_theme');
     }
-
-    function setGlobalStatus(msg, isError=false){
-      globalStatus.textContent = msg;
-      globalStatus.style.color = isError ? '#ff8a8a' : '';
+  };
+  
+  // PDF handling functionality
+  const uploadArea = document.getElementById('uploadArea');
+  const fileInput = document.getElementById('fileInput');
+  const fileInfo = document.getElementById('fileInfo');
+  const fileName = document.getElementById('fileName');
+  const fileSize = document.getElementById('fileSize');
+  const pageCount = document.getElementById('pageCount');
+  const pagesInput = document.getElementById('pagesInput');
+  const processBtn = document.getElementById('processBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const rangeOption = document.getElementById('rangeOption');
+  const allOption = document.getElementById('allOption');
+  const previewContainer = document.getElementById('previewContainer');
+  const thumbnailsContainer = document.getElementById('thumbnailsContainer');
+  const togglePreview = document.getElementById('togglePreview');
+  
+  let currentFile = null;
+  let currentPdf = null;
+  let selectedPages = new Set();
+  
+  // Event listeners
+  uploadArea.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', handleFileSelect);
+  uploadArea.addEventListener('dragover', handleDragOver);
+  uploadArea.addEventListener('dragleave', handleDragLeave);
+  uploadArea.addEventListener('drop', handleDrop);
+  processBtn.addEventListener('click', processPdf);
+  resetBtn.addEventListener('click', resetTool);
+  pagesInput.addEventListener('input', validateInput);
+  rangeOption.addEventListener('change', updatePlaceholder);
+  allOption.addEventListener('change', updatePlaceholder);
+  togglePreview.addEventListener('click', togglePreviewVisibility);
+  
+  function handleDragOver(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    uploadArea.classList.add('dragover');
+  }
+  
+  function handleDragLeave(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    uploadArea.classList.remove('dragover');
+  }
+  
+  function handleDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    uploadArea.classList.remove('dragover');
+    
+    const files = e.dataTransfer.files;
+    if (files.length && files[0].type === 'application/pdf') {
+      fileInput.files = files;
+      handleFileSelect();
     }
-
-    clearBtn.onclick = () => {
-      filesState.forEach(f => {
-        if (f.editedUrl) URL.revokeObjectURL(f.editedUrl);
+  }
+  
+  function handleFileSelect() {
+    if (fileInput.files.length === 0) return;
+    
+    const file = fileInput.files[0];
+    currentFile = file;
+    
+    // Update file info
+    fileName.textContent = file.name;
+    fileSize.textContent = formatFileSize(file.size);
+    
+    // Read PDF to get page count
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const typedArray = new Uint8Array(e.target.result);
+      
+      // Load PDF using pdf.js
+      pdfjsLib.getDocument(typedArray).promise.then(function(pdf) {
+        currentPdf = pdf;
+        pageCount.textContent = `Total pages: ${pdf.numPages}`;
+        fileInfo.style.display = 'block';
+        previewContainer.style.display = 'block';
+        generateThumbnails(pdf);
+        validateInput();
+      }).catch(function(error) {
+        alert('Error reading PDF: ' + error.message);
+        resetTool();
       });
-      filesState = [];
-      filesSection.innerHTML = '';
-      editedPreviews.innerHTML = '';
-      deleteBtn.disabled = true;
-      downloadAllBtn.disabled = true;
-      setGlobalStatus('');
-      fileInput.value = '';
     };
-
-    loadBtn.onclick = async () => {
-      setGlobalStatus('');
-      filesSection.innerHTML = '';
-      editedPreviews.innerHTML = '';
-      filesState.forEach(f => { if (f.editedUrl) URL.revokeObjectURL(f.editedUrl); });
-      filesState = [];
-
-      const fileList = Array.from(fileInput.files || []);
-      if (fileList.length === 0) { setGlobalStatus('Please select one or more PDF files.'); return; }
-
-      setGlobalStatus('Loading files — rendering thumbnails (this may take a while for large PDFs)...');
-      loadBtn.disabled = true;
-      clearBtn.disabled = true;
-
-      for (let i = 0; i < fileList.length; i++) {
-        const file = fileList[i];
-        try {
-          const arrayBuffer = await file.arrayBuffer();
-          // pdf-lib load (for editing)
-          const pdfLibDoc = await PDFLib.PDFDocument.load(new Uint8Array(arrayBuffer));
-          // pdf.js load (for rendering thumbnails)
-          const pdfjsDoc = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
-          const pageCount = pdfjsDoc.numPages;
-
-          const fileState = {
-            file,
-            arrayBuffer,
-            pdfLibDoc,
-            pdfjsDoc,
-            pageCount,
-            deletedPages: new Set(),
-            editedBlob: null,
-            editedUrl: null
-          };
-          filesState.push(fileState);
-
-          // Render UI block for this file
-          const block = document.createElement('div');
-          block.className = 'file-block';
-          block.dataset.fileIndex = i;
-
-          const header = document.createElement('div');
-          header.className = 'file-header';
-          header.innerHTML = `<div><strong>${escapeHtml(file.name)}</strong> — <span class="muted small">${pageCount} pages</span></div>
-                              <div>
-                                <button class="btn btn-ghost btn-select-all small">Select All</button>
-                                <button class="btn btn-ghost btn-deselect-all small">Deselect All</button>
-                              </div>`;
-          block.appendChild(header);
-
-          const pagesGrid = document.createElement('div');
-          pagesGrid.className = 'pages-grid';
-          pagesGrid.setAttribute('aria-label', `Pages for ${file.name}`);
-
-          // Render each page thumbnail
-          for (let p = 1; p <= pageCount; p++) {
-            const page = await pdfjsDoc.getPage(p);
-            const viewport = page.getViewport({ scale: 0.5 });
-            const canvas = document.createElement('canvas');
-            canvas.width = Math.floor(viewport.width);
-            canvas.height = Math.floor(viewport.height);
-            const ctx = canvas.getContext('2d');
-
-            // Render page into canvas
-            await page.render({ canvasContext: ctx, viewport }).promise;
-
-            const pageItem = document.createElement('div');
-            pageItem.className = 'page-item';
-            pageItem.innerHTML = `
-              <div style="min-height:1px"></div>
-              <label style="cursor:pointer;display:block">
-                <div style="display:flex;justify-content:center;margin-bottom:6px"></div>
-                <input type="checkbox" data-file-index="${filesState.length - 1}" data-page-index="${p - 1}"> Page ${p}
-              </label>
-            `;
-            pageItem.querySelector('div').appendChild(canvas);
-
-            // Double-click toggles checkbox
-            pageItem.addEventListener('dblclick', (e) => {
-              const cb = pageItem.querySelector('input[type=checkbox]');
-              cb.checked = !cb.checked;
-              // update deletedPages set
-              const fi = parseInt(cb.dataset.fileIndex,10);
-              const pi = parseInt(cb.dataset.pageIndex,10);
-              updateDeletedSet(fi, pi, cb.checked);
-            });
-
-            // Checkbox change updates set
-            pageItem.querySelector('input[type=checkbox]').addEventListener('change', (ev) => {
-              const cb = ev.target;
-              const fi = parseInt(cb.dataset.fileIndex,10);
-              const pi = parseInt(cb.dataset.pageIndex,10);
-              updateDeletedSet(fi, pi, cb.checked);
-            });
-
-            pagesGrid.appendChild(pageItem);
-          }
-
-          // Select/Deselect all buttons
-          header.querySelector('.btn-select-all').addEventListener('click', () => {
-            pagesGrid.querySelectorAll('input[type=checkbox]').forEach(cb => {
-              cb.checked = true;
-              const fi = parseInt(cb.dataset.fileIndex,10);
-              const pi = parseInt(cb.dataset.pageIndex,10);
-              updateDeletedSet(fi, pi, true);
-            });
+    reader.readAsArrayBuffer(file);
+  }
+  
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+  
+  function generateThumbnails(pdf) {
+    thumbnailsContainer.innerHTML = '';
+    selectedPages.clear();
+    
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const pageNumber = i;
+      
+      pdf.getPage(pageNumber).then(function(page) {
+        const viewport = page.getViewport({ scale: 0.5 });
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        
+        const renderContext = {
+          canvasContext: context,
+          viewport: viewport
+        };
+        
+        page.render(renderContext).promise.then(function() {
+          const thumbnailWrapper = document.createElement('div');
+          thumbnailWrapper.className = 'thumbnail-wrapper';
+          thumbnailWrapper.dataset.page = pageNumber;
+          
+          const thumbnail = document.createElement('img');
+          thumbnail.className = 'thumbnail';
+          thumbnail.src = canvas.toDataURL();
+          thumbnail.alt = `Page ${pageNumber}`;
+          
+          const pageNumberLabel = document.createElement('div');
+          pageNumberLabel.className = 'page-number';
+          pageNumberLabel.textContent = pageNumber;
+          
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.className = 'page-checkbox';
+          checkbox.dataset.page = pageNumber;
+          
+          thumbnailWrapper.appendChild(thumbnail);
+          thumbnailWrapper.appendChild(pageNumberLabel);
+          thumbnailWrapper.appendChild(checkbox);
+          
+          thumbnailWrapper.addEventListener('click', function() {
+            togglePageSelection(pageNumber, thumbnailWrapper, checkbox);
           });
-          header.querySelector('.btn-deselect-all').addEventListener('click', () => {
-            pagesGrid.querySelectorAll('input[type=checkbox]').forEach(cb => {
-              cb.checked = false;
-              const fi = parseInt(cb.dataset.fileIndex,10);
-              const pi = parseInt(cb.dataset.pageIndex,10);
-              updateDeletedSet(fi, pi, false);
-            });
-          });
-
-          block.appendChild(pagesGrid);
-          filesSection.appendChild(block);
-
-        } catch (err) {
-          console.error('Error loading file', file.name, err);
-          const errBlock = document.createElement('div');
-          errBlock.className = 'file-block';
-          errBlock.innerHTML = `<strong>${escapeHtml(file.name)}</strong> — <span class="muted">Failed to load (possibly encrypted or corrupted)</span>`;
-          filesSection.appendChild(errBlock);
-        }
-      } // end for files
-
-      loadBtn.disabled = false;
-      clearBtn.disabled = false;
-
-      if (filesState.length > 0) {
-        deleteBtn.disabled = false;
-        setGlobalStatus(`Loaded ${filesState.length} file(s). Select pages to delete, then click "Delete Selected Pages".`);
+          
+          thumbnailsContainer.appendChild(thumbnailWrapper);
+        });
+      });
+    }
+  }
+  
+  function togglePageSelection(pageNumber, wrapper, checkbox) {
+    if (selectedPages.has(pageNumber)) {
+      selectedPages.delete(pageNumber);
+      wrapper.classList.remove('selected');
+      checkbox.checked = false;
+    } else {
+      selectedPages.add(pageNumber);
+      wrapper.classList.add('selected');
+      checkbox.checked = true;
+    }
+    
+    // Update the text input with selected pages
+    updatePagesInputFromSelection();
+    validateInput();
+  }
+  
+  function updatePagesInputFromSelection() {
+    if (selectedPages.size === 0) {
+      pagesInput.value = '';
+      return;
+    }
+    
+    // Convert set to sorted array
+    const pagesArray = Array.from(selectedPages).sort((a, b) => a - b);
+    
+    // Create ranges for consecutive pages
+    let ranges = [];
+    let start = pagesArray[0];
+    let end = pagesArray[0];
+    
+    for (let i = 1; i < pagesArray.length; i++) {
+      if (pagesArray[i] === end + 1) {
+        end = pagesArray[i];
       } else {
-        setGlobalStatus('No files loaded.');
+        ranges.push(start === end ? start : `${start}-${end}`);
+        start = pagesArray[i];
+        end = pagesArray[i];
       }
-    };
-
-    function updateDeletedSet(fileIndex, pageIndex, checked) {
-      const state = filesState[fileIndex];
-      if (!state) return;
-      if (checked) state.deletedPages.add(pageIndex);
-      else state.deletedPages.delete(pageIndex);
-
-      // Enable/disable global actions
-      const anyDeletion = filesState.some(f => f.deletedPages.size > 0);
-      deleteBtn.disabled = !anyDeletion;
     }
-
-    // Delete selected pages (process all files)
-    deleteBtn.onclick = async () => {
-      setGlobalStatus('Creating edited PDFs — please wait...');
-      deleteBtn.disabled = true;
-      loadBtn.disabled = true;
-      clearBtn.disabled = true;
-      downloadAllBtn.disabled = true;
-      editedPreviews.innerHTML = '';
-
-      for (let fi = 0; fi < filesState.length; fi++) {
-        const f = filesState[fi];
-        try {
-          const keepPages = [];
-          for (let p = 0; p < f.pageCount; p++) {
-            if (!f.deletedPages.has(p)) keepPages.push(p);
-          }
-
-          const newPdf = await PDFLib.PDFDocument.create();
-
-          if (keepPages.length > 0) {
-            // copy selected pages from original
-            const copied = await newPdf.copyPages(f.pdfLibDoc, keepPages);
-            copied.forEach(pg => newPdf.addPage(pg));
-          }
-          // else empty PDF (0 pages)
-
-          const newBytes = await newPdf.save();
-          const editedBlob = new Blob([newBytes], { type: 'application/pdf' });
-          // store blob and url for preview/download
-          if (f.editedUrl) URL.revokeObjectURL(f.editedUrl);
-          f.editedBlob = editedBlob;
-          f.editedUrl = URL.createObjectURL(editedBlob);
-
-          // Show preview block for this file
-          const preview = document.createElement('div');
-          preview.className = 'preview-block';
-          preview.innerHTML = `
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
-              <div><strong>${escapeHtml(f.file.name)}</strong> — <span class="muted small">${keepPages.length} pages kept, ${f.deletedPages.size} removed</span></div>
-              <div style="display:flex;gap:8px">
-                <a class="btn btn-ghost small" href="${f.editedUrl}" download="${safeFileName(f.file.name.replace(/\.pdf$/i,'') + '-edited.pdf')}"><i class="fa-solid fa-download"></i> Download</a>
-                <button class="btn btn-ghost small" data-open-preview>Open Preview</button>
-              </div>
-            </div>
-            <div style="margin-top:10px;display:none" data-preview-container>
-              <iframe class="preview" src="${f.editedUrl}"></iframe>
-            </div>
-          `;
-          preview.querySelector('[data-open-preview]').addEventListener('click', (e) => {
-            const cont = preview.querySelector('[data-preview-container]');
-            cont.style.display = cont.style.display === 'none' ? 'block' : 'none';
-          });
-
-          editedPreviews.appendChild(preview);
-
-        } catch (err) {
-          console.error('Error creating edited PDF for', f.file.name, err);
-          const fail = document.createElement('div');
-          fail.className = 'preview-block';
-          fail.innerHTML = `<strong>${escapeHtml(f.file.name)}</strong> — <span class="muted">Failed to create edited PDF</span>`;
-          editedPreviews.appendChild(fail);
-        }
+    
+    ranges.push(start === end ? start : `${start}-${end}`);
+    
+    pagesInput.value = ranges.join(',');
+  }
+  
+  function updatePlaceholder() {
+    if (allOption.checked) {
+      pagesInput.placeholder = "Enter pages to keep (e.g., 1,3,5-8)";
+    } else {
+      pagesInput.placeholder = "Enter pages to delete (e.g., 1,3,5-8)";
+    }
+  }
+  
+  function togglePreviewVisibility() {
+    if (thumbnailsContainer.style.display === 'none') {
+      thumbnailsContainer.style.display = 'grid';
+      togglePreview.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Preview';
+    } else {
+      thumbnailsContainer.style.display = 'none';
+      togglePreview.innerHTML = '<i class="fas fa-eye"></i> Show Preview';
+    }
+  }
+  
+  function validateInput() {
+    if (!currentFile) {
+      processBtn.disabled = true;
+      return;
+    }
+    
+    const pagesText = pagesInput.value.trim();
+    if (pagesText === '' && selectedPages.size === 0) {
+      processBtn.disabled = true;
+      return;
+    }
+    
+    processBtn.disabled = false;
+  }
+  
+  function processPdf() {
+    if (!currentFile || !currentPdf) return;
+    
+    let pagesText = pagesInput.value.trim();
+    
+    // If no input but pages are selected visually, use those
+    if (pagesText === '' && selectedPages.size > 0) {
+      pagesText = Array.from(selectedPages).sort((a, b) => a - b).join(',');
+    }
+    
+    const deleteMode = rangeOption.checked; // true = delete selected, false = keep selected
+    
+    // Show processing state
+    processBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    processBtn.disabled = true;
+    
+    // Parse page ranges
+    const pagesToProcess = parsePageRanges(pagesText);
+    
+    // Get all page indices (1-based)
+    const allPages = Array.from({length: currentPdf.numPages}, (_, i) => i + 1);
+    
+    // Determine which pages to keep
+    let pagesToKeep;
+    if (deleteMode) {
+      // Delete mode: remove specified pages
+      pagesToKeep = allPages.filter(page => !pagesToProcess.includes(page));
+    } else {
+      // Keep mode: only keep specified pages
+      pagesToKeep = pagesToProcess.filter(page => page <= currentPdf.numPages);
+    }
+    
+    if (pagesToKeep.length === 0) {
+      alert('The resulting PDF would have no pages. Please adjust your selection.');
+      resetProcessButton();
+      return;
+    }
+    
+    // Create a new PDF with only the selected pages
+    const pdfDocPromise = PDFLib.PDFDocument.create();
+    pdfDocPromise.then(async (newPdfDoc) => {
+      for (const pageNum of pagesToKeep) {
+        const page = await currentPdf.getPage(pageNum);
+        const viewport = page.getViewport({scale: 1.0});
+        
+        // Create canvas to render page
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        
+        const renderContext = {
+          canvasContext: context,
+          viewport: viewport
+        };
+        
+        await page.render(renderContext).promise;
+        
+        // Convert canvas to image and add to new PDF
+        const imageData = canvas.toDataURL('image/png');
+        const image = await newPdfDoc.embedPng(imageData);
+        const newPage = newPdfDoc.addPage([viewport.width, viewport.height]);
+        newPage.drawImage(image, {
+          x: 0,
+          y: 0,
+          width: viewport.width,
+          height: viewport.height,
+        });
       }
-
-      setGlobalStatus('Edited PDFs created. Use the Download buttons or "Download All Edited" to get files.');
-      downloadAllBtn.disabled = false;
-      loadBtn.disabled = false;
-      clearBtn.disabled = false;
-      deleteBtn.disabled = false;
-    };
-
-    // Download all edited PDFs individually (triggers multiple downloads)
-    downloadAllBtn.onclick = () => {
-      filesState.forEach(f => {
-        if (f.editedBlob) {
-          const a = document.createElement('a');
-          a.href = f.editedUrl;
-          a.download = safeFileName(f.file.name.replace(/\.pdf$/i, '') + '-edited.pdf');
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-        }
-      });
-    };
-
-    // Utility: sanitize filename for download
-    function safeFileName(name) {
-      return name.replace(/[<>:"/\\|?*\x00-\x1F]/g, '_');
-    }
-
-    // Utility: escape html in strings for insertion into textContent contexts where needed
-    function escapeHtml(s){
-      if (!s) return '';
-      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-    }
-
-    // When user navigates away, revoke created object URLs
-    window.addEventListener('beforeunload', () => {
-      filesState.forEach(f => {
-        if (f.editedUrl) URL.revokeObjectURL(f.editedUrl);
-      });
+      
+      // Save the new PDF
+      const pdfBytes = await newPdfDoc.save();
+      const blob = new Blob([pdfBytes], {type: 'application/pdf'});
+      const url = URL.createObjectURL(blob);
+      
+      // Create download link
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = currentFile.name.replace('.pdf', '_edited.pdf');
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+      
+      resetProcessButton();
+    }).catch(function(error) {
+      alert('Error processing PDF: ' + error.message);
+      resetProcessButton();
     });
-  </script>
+  }
+  
+  function parsePageRanges(rangeString) {
+    const result = [];
+    const ranges = rangeString.split(',');
+    
+    for (const range of ranges) {
+      if (range.includes('-')) {
+        const [start, end] = range.split('-').map(num => parseInt(num.trim()));
+        for (let i = start; i <= end; i++) {
+          if (!isNaN(i)) result.push(i);
+        }
+      } else {
+        const num = parseInt(range.trim());
+        if (!isNaN(num)) result.push(num);
+      }
+    }
+    
+    return result;
+  }
+  
+  function resetProcessButton() {
+    processBtn.innerHTML = '<i class="fas fa-trash"></i> Delete Pages';
+    processBtn.disabled = false;
+  }
+  
+  function resetTool() {
+    fileInput.value = '';
+    fileInfo.style.display = 'none';
+    previewContainer.style.display = 'none';
+    pagesInput.value = '';
+    processBtn.disabled = true;
+    currentFile = null;
+    currentPdf = null;
+    selectedPages.clear();
+    rangeOption.checked = true;
+    updatePlaceholder();
+  }
+</script>
+
+<!-- PDF.js library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 </body>
 </html>
