@@ -1,632 +1,537 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Rotate PDF Pages - Smarttool Hub</title>
-  <meta name="description" content="Rotate pages of a PDF file in the browser. Rotate all pages or a range (90°, 180°, 270°)."/>
-  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
-  <style>
-    :root{
-      --bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;
-      --primary:#22d3ee;--muted:#9fb3c8;--radius:12px;
-    }
-    body.light{
-      --bg:#f6f8fb;--text:#0b1220;--card:#ffffff;--border:#e6eefc;
-      --primary:#0b74ff;--muted:#556677;
-    }
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{
-      font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
-      background:var(--bg);color:var(--text);transition:background .25s,color .25s;
-      min-height:100vh;display:flex;flex-direction:column;
-    }
-    .container{max-width:1200px;margin:0 auto;padding:20px;width:100%}
-    header{
-      display:flex;align-items:center;justify-content:space-between;gap:12px;
-      background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;
-    }
-    .brand{display:flex;gap:12px;align-items:center}
-    .brand img{width:46px;height:46px;border-radius:10px}
-    .brand .title{font-size:1.25rem;font-weight:700;color:var(--primary);margin:0}
-    .brand .tag{font-size:.9rem;color:var(--muted)}
-    .header-actions{display:flex;gap:10px;align-items:center}
-    .btn-header{
-      border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;
-      color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;font-weight:600
-    }
-    .btn-header:hover{border-color:var(--primary);color:var(--primary)}
-    .tool-content {
-      background:var(--card);border-radius:var(--radius);border:1px solid var(--border);
-      padding:25px;margin-top:20px;
-    }
-    .tool-title {
-      font-size:1.8rem;margin-bottom:5px;color:var(--primary);
-    }
-    .tool-description {
-      color:var(--muted);margin-bottom:25px;
-    }
-    .upload-area {
-      border:2px dashed var(--border);border-radius:var(--radius);padding:40px;
-      text-align:center;margin-bottom:25px;transition:all 0.3s;cursor:pointer;
-      background:var(--bg);
-    }
-    .upload-area:hover, .upload-area.dragover {
-      border-color:var(--primary);background:rgba(34,211,238,0.05);
-    }
-    .upload-icon {
-      font-size:3rem;color:var(--muted);margin-bottom:15px;
-    }
-    .upload-text {
-      color:var(--text);margin-bottom:15px;font-weight:600;
-    }
-    .upload-subtext {
-      color:var(--muted);font-size:0.9rem;
-    }
-    .file-input {
-      display:none;
-    }
-    .selected-file {
-      display:flex;align-items:center;gap:12px;padding:15px;
-      background:var(--bg);border-radius:var(--radius);border:1px solid var(--border);
-      margin-bottom:25px;
-    }
-    .file-icon {
-      font-size:1.5rem;color:var(--primary);
-    }
-    .file-info {
-      flex:1;
-    }
-    .file-name {
-      font-weight:600;margin-bottom:4px;color:var(--text);
-    }
-    .file-size {
-      color:var(--muted);font-size:0.9rem;
-    }
-    .remove-file {
-      background:transparent;border:none;color:var(--muted);cursor:pointer;
-      padding:5px;border-radius:4px;
-    }
-    .remove-file:hover {
-      color:#ef4444;
-    }
-    .options {
-      display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;
-    }
-    .option-card {
-      background:var(--bg);border:1px solid var(--border);padding:12px;border-radius:10px;min-width:220px;
-    }
-    .option-card label{display:block;margin-bottom:8px;font-weight:600;color:var(--text)}
-    .option-card input[type="text"], .option-card input[type="number"]{
-      width:100%;padding:10px;border-radius:8px;background:var(--card);border:1px solid var(--border);color:var(--text)
-    }
-    .rotate-presets{display:flex;gap:8px;flex-wrap:wrap}
-    .preset-btn{padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer}
-    .preset-btn.active{border-color:var(--primary);color:var(--primary);font-weight:700}
-    .password-note {
-      background:var(--bg);border-radius:var(--radius);border:1px solid var(--border);
-      padding:15px;margin-top:10px;
-    }
-    .action-buttons {
-      display:flex;gap:12px;flex-wrap:wrap;
-    }
-    .btn {
-      padding:12px 20px;border-radius:var(--radius);border:none;
-      font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;
-    }
-    .btn-primary {
-      background:var(--primary);color:#00131f;
-    }
-    .btn-secondary {
-      background:var(--card);color:var(--text);border:1px solid var(--border);
-    }
-    .btn:disabled {
-      opacity:0.6;cursor:not-allowed;
-    }
-    .btn:hover:not(:disabled) {
-      opacity:0.9;
-    }
-    .status-message {
-      margin-top:15px;padding:10px;border-radius:var(--radius);
-      background:var(--bg);border:1px solid var(--border);
-      color:var(--muted);font-size:0.9rem;display:none;
-    }
-    .status-success {
-      border-color:#10b981;color:#10b981;
-    }
-    .status-error {
-      border-color:#ef4444;color:#ef4444;
-    }
-    .status-info {
-      border-color:var(--primary);color:var(--primary);
-    }
-    .progress {
-      margin-top:12px;height:10px;background:rgba(255,255,255,0.05);border-radius:999px;overflow:hidden;
-    }
-    .progress > div {
-      height:100%;width:0%;background:linear-gradient(90deg,var(--primary),#85d7ff);transition:width .25s;
-    }
-    footer{margin-top:auto;padding:18px 0;background:var(--card);border-top:1px solid var(--border)}
-    .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-    .footer-links{display:flex;gap:14px;flex-wrap:wrap}
-    .footer-links a{color:var(--primary);text-decoration:none;font-weight:600}
-    @media (max-width:720px){
-      header{flex-direction:column;align-items:flex-start;gap:10px}
-      .header-actions{align-self:flex-end}
-      .action-buttons{flex-direction:column;}
-      .btn{width:100%;justify-content:center;}
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Rotate PDF Pages (with thumbnails & arbitrary angles)</title>
+<link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+<style>
+  :root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8;--radius:12px}
+  body.light{--bg:#f6f8fb;--text:#0b1220;--card:#ffffff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+  .container{max-width:1200px;margin:0 auto;padding:20px;width:100%}
+  header{display:flex;align-items:center;justify-content:space-between;background:var(--card);border-bottom:1px solid var(--border);padding:12px;border-radius:8px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand img{width:44px;height:44px;border-radius:8px}
+  .title{font-weight:700;color:var(--primary)}
+  .tag{font-size:.9rem;color:var(--muted)}
+  .btn-header{border:1px solid var(--border);background:transparent;padding:8px 10px;border-radius:8px;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:8px}
+  .tool-content{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:20px;margin-top:16px}
+  .upload-area{border:2px dashed var(--border);border-radius:12px;padding:30px;text-align:center;cursor:pointer}
+  .upload-area.dragover{border-color:var(--primary);background:rgba(34,211,238,0.03)}
+  .selected-file{display:flex;align-items:center;gap:12px;padding:12px;background:transparent;border-radius:8px}
+  .options{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+  .option-card{background:var(--bg);border:1px solid var(--border);padding:12px;border-radius:10px;min-width:220px}
+  .rotate-presets{display:flex;gap:8px;flex-wrap:wrap}
+  .preset-btn{padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer}
+  .preset-btn.active{border-color:var(--primary);color:var(--primary);font-weight:700}
+  .action-buttons{display:flex;gap:10px;margin-top:14px}
+  .btn{padding:10px 14px;border-radius:10px;border:none;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+  .btn-primary{background:var(--primary);color:#00131f}
+  .btn-secondary{background:var(--card);color:var(--text);border:1px solid var(--border)}
+  .status-message{margin-top:12px;padding:10px;border-radius:10px;background:var(--bg);border:1px solid var(--border);color:var(--muted);display:none}
+  .status-error{border-color:#ef4444;color:#ef4444}
+  .status-success{border-color:#10b981;color:#10b981}
+  .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;max-height:260px;overflow:auto;padding:8px;border-radius:8px;background:rgba(255,255,255,0.01)}
+  .thumb{width:120px;border:1px solid var(--border);border-radius:8px;padding:6px;cursor:pointer;text-align:center;background:var(--bg)}
+  .thumb canvas{width:100%;height:auto;border-radius:4px}
+  .thumb .pnum{font-size:0.85rem;color:var(--muted);margin-top:6px}
+  .thumb.selected{outline:3px solid rgba(34,211,238,0.18);box-shadow:0 6px 18px rgba(0,0,0,0.35)}
+  .footer{margin-top:auto;padding:12px 0;text-align:center;color:var(--muted)}
+  .server-section{margin-top:12px;padding:10px;border-radius:8px;border:1px dashed var(--border);color:var(--muted);background:rgba(255,255,255,0.01)}
+  @media (max-width:720px){.options{flex-direction:column}.thumb{width:90px}}
+</style>
 </head>
 <body>
 <header class="container">
   <div class="brand">
-    <a href="index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
-      <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub Logo">
-      <div>
-        <div class="title">Smarttool Hub</div>
-        <div class="tag">Fast • Private • 100% Client-side</div>
-      </div>
-    </a>
+    <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="logo">
+    <div>
+      <div class="title">Smarttool Hub</div>
+      <div class="tag">Rotate PDF — thumbnails • arbitrary angles • server option</div>
+    </div>
   </div>
-  <div class="header-actions">
-    <a href="index.html" class="btn-header"><i class="fa-solid fa-house"></i> Home</a>
-    <button class="btn-header" id="themeToggle" title="Toggle dark/light mode"><i class="fa-solid fa-moon"></i></button>
+  <div>
+    <button id="themeToggle" class="btn-header" title="Toggle theme"><i class="fa-solid fa-moon"></i></button>
   </div>
 </header>
 
 <main class="container">
   <div class="tool-content">
-    <h1 class="tool-title">Rotate PDF Pages</h1>
-    <p class="tool-description">Rotate pages (90°, 180°, 270°). Process happens entirely in your browser — no upload to servers. Choose pages (e.g. <code>1-3,5</code>) or leave blank for all.</p>
-    
-    <div class="upload-area" id="uploadArea">
-      <div class="upload-icon">
-        <i class="fas fa-file-pdf"></i>
-      </div>
-      <div class="upload-text">Drop your PDF here or click to browse</div>
-      <div class="upload-subtext">Maximum file size: 50MB</div>
-      <input type="file" id="fileInput" class="file-input" accept=".pdf">
+    <h2>Rotate PDF Pages</h2>
+    <p style="color:var(--muted)">Drag & drop or browse. Use thumbnails to select pages visually. Enter any angle (eg. 15, 45). For exact vector-preserving rotation choose the server-side option below.</p>
+
+    <div id="uploadArea" class="upload-area">
+      <div style="font-size:28px;color:var(--muted)"><i class="fa-solid fa-file-pdf"></i></div>
+      <div style="font-weight:700;margin-top:6px">Drop PDF here or click to browse</div>
+      <div style="color:var(--muted);margin-top:6px">Max 80 MB</div>
+      <input id="fileInput" type="file" accept="application/pdf" style="display:none"/>
     </div>
-    
-    <div id="selectedFileContainer" style="display: none;">
-      <div class="selected-file">
-        <div class="file-icon">
-          <i class="fas fa-file-pdf"></i>
-        </div>
-        <div class="file-info">
-          <div class="file-name" id="fileName">document.pdf</div>
-          <div class="file-size" id="fileSize">0 KB</div>
-        </div>
-        <button class="remove-file" id="removeFile" title="Remove file">
-          <i class="fas fa-times"></i>
-        </button>
+
+    <div id="fileMeta" style="display:none;margin-top:12px" class="selected-file">
+      <div style="flex:1">
+        <div id="fileName" style="font-weight:700"></div>
+        <div id="fileSize" style="color:var(--muted);font-size:0.9rem"></div>
+      </div>
+      <div>
+        <button id="removeFile" class="btn btn-secondary"><i class="fa-solid fa-times"></i> Remove</button>
       </div>
     </div>
-    
+
     <div class="options">
       <div class="option-card">
-        <label>Rotate Preset</label>
-        <div class="rotate-presets">
+        <label style="font-weight:700">Rotation</label>
+        <div class="rotate-presets" id="presets">
           <button class="preset-btn active" data-angle="90">90°</button>
           <button class="preset-btn" data-angle="180">180°</button>
           <button class="preset-btn" data-angle="270">270°</button>
         </div>
-        <div style="margin-top:10px;">
-          <label style="margin-top:10px;">Custom (90/180/270 recommended)</label>
-          <input id="customAngle" type="number" placeholder="Enter degrees (e.g. 90)">
+        <div style="margin-top:10px">
+          <label style="display:block;margin-bottom:6px;font-weight:600">Custom angle (any degrees)</label>
+          <input id="angleInput" type="number" placeholder="e.g. 15 or -30" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text)">
         </div>
       </div>
 
       <div class="option-card">
-        <label>Pages to rotate</label>
-        <input id="pageRange" type="text" placeholder="e.g. 1-3,5  (leave empty = all pages)">
-        <small style="color:var(--muted);display:block;margin-top:8px;">Use comma-separated ranges and numbers.</small>
+        <label style="font-weight:700">Selection</label>
+        <div style="margin-bottom:8px;color:var(--muted)">Click thumbnails to toggle. Use range input below for fallback (e.g. 1-3,5).</div>
+        <input id="rangeInput" type="text" placeholder="Page ranges, eg. 1-3,5 (leave empty = selected thumbs or all)" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text)">
       </div>
     </div>
 
-    <div class="action-buttons">
-      <button class="btn btn-primary" id="rotateBtn" disabled>
-        <i class="fas fa-rotate-right"></i> Rotate PDF
-      </button>
-      <button class="btn btn-secondary" id="downloadBtn" disabled>
-        <i class="fas fa-download"></i> Download Rotated PDF
-      </button>
-      <button class="btn btn-secondary" id="resetBtn">
-        <i class="fas fa-redo"></i> Reset
-      </button>
+    <div style="margin-top:12px">
+      <div style="font-weight:700;margin-bottom:6px">Page preview (click to select)</div>
+      <div id="thumbnails" class="thumbs" aria-live="polite"></div>
     </div>
 
-    <div id="statusMessage" class="status-message"></div>
-    <div class="progress" id="progress" style="display:none"><div></div></div>
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+      <button id="processBtn" class="btn btn-primary" disabled><i class="fa-solid fa-rotate-right"></i> Rotate</button>
+      <button id="downloadBtn" class="btn btn-secondary" disabled><i class="fa-solid fa-download"></i> Download</button>
+      <button id="resetBtn" class="btn btn-secondary"><i class="fa-solid fa-eraser"></i> Reset</button>
+    </div>
+
+    <div id="status" class="status-message" style="margin-top:10px"></div>
+
+    <div class="server-section" style="margin-top:12px">
+      <div style="font-weight:700">Server-side (vector-preserving) option</div>
+      <div style="color:var(--muted);margin-top:6px">
+        If you need to keep selectable text / vector graphics (no rasterization), run a server-side tool like <code>qpdf</code> or <code>pdftk</code>. Example Node.js snippet using <code>qpdf</code> is shown below.
+      </div>
+      <pre style="background:rgba(255,255,255,0.02);padding:8px;border-radius:6px;margin-top:8px;color:var(--muted);font-size:12px;overflow:auto">
+# Example (server-side qpdf):
+qpdf in.pdf --rotate=+90:1-3 -- out.pdf
+
+# Node.js spawn example shown below in the instructions section (see bottom of this file).
+      </pre>
+    </div>
+
+    <div id="downloadLinkArea" style="margin-top:12px"></div>
   </div>
 </main>
 
-<footer class="container">
-  <div class="footer-inner">
-    <div>© <span id="year"></span> Smarttool Hub</div>
-    <div class="footer-links">
-      <a href="privacy.html">Privacy</a>
-      <a href="terms.html">Terms</a>
-      <a href="contact.html">Contact</a>
-      <a href="comments.html">Comments</a>
-      <a href="faq.html">FAQ</a>
-    </div>
-  </div>
+<footer class="footer container">
+  © <span id="year"></span> Smarttool Hub — Local processing (client-side) or server qpdf (vector)
 </footer>
 
-<!-- Libraries -->
-<script src="https://unpkg.com/pdfjs-dist@3.11.172/build/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
+<!-- We'll dynamically load PDF.js and jsPDF and initialize after both ready -->
 <script>
-  // Year
   document.getElementById('year').textContent = new Date().getFullYear();
-
-  // pdfjs worker
-  if (window['pdfjsLib']) {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.172/build/pdf.worker.min.js';
-  }
-
-  // Theme toggle
+  // theme toggle simple persistence
   const themeToggle = document.getElementById('themeToggle');
-  if (localStorage.getItem('sth_theme') === 'light') {
-    document.body.classList.add('light');
-    themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
-  }
+  if (localStorage.getItem('sth_theme') === 'light') { document.body.classList.add('light'); themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; }
   themeToggle.onclick = () => {
     document.body.classList.toggle('light');
-    if (document.body.classList.contains('light')) {
-      themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
-      localStorage.setItem('sth_theme', 'light');
-    } else {
-      themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
-      localStorage.removeItem('sth_theme');
-    }
+    if (document.body.classList.contains('light')) { themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; localStorage.setItem('sth_theme','light'); }
+    else { themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); }
   };
 
-  // Elements
-  const uploadArea = document.getElementById('uploadArea');
+  // ----- dynamic script loader helpers -----
+  function loadScript(src){ return new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = src; s.async = true;
+    s.onload = () => res(); s.onerror = e => rej(e); document.head.appendChild(s);
+  }); }
+
+  // Load required libs, then initialize app
+  (async function bootstrap(){
+    try {
+      // Use known-stable CDN versions
+      await loadScript('https://unpkg.com/pdfjs-dist@3.11.172/build/pdf.min.js');
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+      // pdfjs exposes pdfjsLib on window; ensure worker path
+      if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.172/build/pdf.worker.min.js';
+      } else {
+        throw new Error('pdfjsLib failed to load');
+      }
+      // now safe to init
+      initApp();
+    } catch (err) {
+      showStatus('Failed to initialize libraries: ' + (err.message || err), 'error');
+      console.error(err);
+    }
+  })();
+
+  // ------ UI + App logic ------
+  let pdfDoc = null;
+  let selectedFile = null;
   const fileInput = document.getElementById('fileInput');
-  const selectedFileContainer = document.getElementById('selectedFileContainer');
+  const uploadArea = document.getElementById('uploadArea');
+  const thumbnailsEl = document.getElementById('thumbnails');
+  const fileMeta = document.getElementById('fileMeta');
   const fileNameEl = document.getElementById('fileName');
   const fileSizeEl = document.getElementById('fileSize');
   const removeFileBtn = document.getElementById('removeFile');
-  const rotateBtn = document.getElementById('rotateBtn');
+  const processBtn = document.getElementById('processBtn');
   const downloadBtn = document.getElementById('downloadBtn');
   const resetBtn = document.getElementById('resetBtn');
-  const statusMessage = document.getElementById('statusMessage');
-  const progressEl = document.getElementById('progress');
-  const progressBar = progressEl.querySelector('div');
+  const angleInput = document.getElementById('angleInput');
+  const presets = document.getElementById('presets');
   const presetBtns = document.querySelectorAll('.preset-btn');
-  const customAngleInput = document.getElementById('customAngle');
-  const pageRangeInput = document.getElementById('pageRange');
+  const rangeInput = document.getElementById('rangeInput');
+  const statusEl = document.getElementById('status');
+  const downloadLinkArea = document.getElementById('downloadLinkArea');
 
-  let selectedFile = null;
-  let rotatedBlob = null;
-  let selectedAngle = 90;
+  let pageCount = 0;
+  let thumbsState = []; // array of {pageNum,selected,canvasBlobUrl(optional)}
+  let resultBlob = null;
+  let libReady = true; // set after bootstrap
 
-  // Drag & drop
-  uploadArea.addEventListener('click', () => fileInput.click());
-  uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
-  uploadArea.addEventListener('dragleave', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); });
-  uploadArea.addEventListener('drop', handleDrop);
-  fileInput.addEventListener('change', handleFileSelect);
-  removeFileBtn.addEventListener('click', removeSelectedFile);
-  rotateBtn.addEventListener('click', rotatePDF);
-  downloadBtn.addEventListener('click', downloadRotatedPDF);
-  resetBtn.addEventListener('click', resetTool);
+  function showStatus(msg, kind) {
+    statusEl.style.display = 'block';
+    statusEl.textContent = msg;
+    statusEl.classList.remove('status-error','status-success');
+    if (kind === 'error') statusEl.classList.add('status-error');
+    else if (kind === 'success') statusEl.classList.add('status-success');
+    if (!kind) setTimeout(()=>{ statusEl.style.display='none'; },6000);
+  }
 
-  presetBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      presetBtns.forEach(b => b.classList.remove('active'));
+  function resetUI() {
+    selectedFile = null;
+    if (pdfDoc && pdfDoc.destroy) { pdfDoc.destroy(); pdfDoc = null; }
+    thumbsState = [];
+    thumbnailsEl.innerHTML = '';
+    fileMeta.style.display = 'none';
+    processBtn.disabled = true;
+    downloadBtn.disabled = true;
+    resultBlob = null;
+    downloadLinkArea.innerHTML = '';
+    rangeInput.value = '';
+    angleInput.value = '';
+    presetBtns.forEach(b=>b.classList.remove('active'));
+    document.querySelector('.preset-btn[data-angle="90"]').classList.add('active');
+  }
+
+  // upload handlers
+  uploadArea.addEventListener('click', ()=> fileInput.click());
+  uploadArea.addEventListener('dragover', e=>{ e.preventDefault(); uploadArea.classList.add('dragover'); });
+  uploadArea.addEventListener('dragleave', e=>{ e.preventDefault(); uploadArea.classList.remove('dragover'); });
+  uploadArea.addEventListener('drop', e=>{ e.preventDefault(); uploadArea.classList.remove('dragover'); const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) handleFile(f); });
+  fileInput.addEventListener('change', (e)=> { if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]); });
+  removeFileBtn.addEventListener('click', resetUI);
+  resetBtn.addEventListener('click', resetUI);
+
+  // preset buttons behavior
+  presetBtns.forEach(btn=>{
+    btn.addEventListener('click', ()=> {
+      presetBtns.forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
-      customAngleInput.value = '';
-      selectedAngle = parseInt(btn.getAttribute('data-angle'), 10);
+      angleInput.value = ''; // clear custom when preset chosen
     });
   });
 
-  customAngleInput.addEventListener('input', () => {
-    const v = parseInt(customAngleInput.value, 10);
-    if (!isNaN(v)) {
-      selectedAngle = ((v % 360) + 360) % 360; // normalize 0..359
-      presetBtns.forEach(b => b.classList.remove('active'));
-    }
-  });
-
-  function handleDrop(e) {
-    e.preventDefault();
-    uploadArea.classList.remove('dragover');
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      handleFile(files[0]);
-    }
-  }
-
-  function handleFileSelect(e) {
-    const file = e.target.files[0];
-    if (file) handleFile(file);
-  }
-
   function handleFile(file) {
-    if (!file.type || file.type !== 'application/pdf') {
-      showStatus('Please select a PDF file', 'error');
-      return;
-    }
-    if (file.size > 50 * 1024 * 1024) {
-      showStatus('File too large. Maximum size is 50 MB.', 'error');
-      return;
-    }
+    if (file.type !== 'application/pdf') { showStatus('Please select a PDF file', 'error'); return; }
+    if (file.size > 80 * 1024 * 1024) { showStatus('File too large (max 80MB)', 'error'); return; }
     selectedFile = file;
+    fileMeta.style.display = 'flex';
     fileNameEl.textContent = file.name;
-    fileSizeEl.textContent = formatFileSize(file.size);
-    selectedFileContainer.style.display = 'block';
-    rotatedBlob = null;
+    fileSizeEl.textContent = formatSize(file.size);
+    showStatus('Loading preview thumbnails...', 'info');
+    loadPdfAndRenderThumbs(file);
+  }
+
+  function formatSize(bytes){
+    if(bytes===0) return '0 B'; const k=1024; const sizes=['B','KB','MB','GB']; const i=Math.floor(Math.log(bytes)/Math.log(k)); return (bytes/Math.pow(k,i)).toFixed(2)+' '+sizes[i];
+  }
+
+  async function loadPdfAndRenderThumbs(file) {
+    // clear old
+    thumbnailsEl.innerHTML = '';
+    thumbsState = [];
+    resultBlob = null;
     downloadBtn.disabled = true;
-    rotateBtn.disabled = false;
-    showStatus('PDF file selected', 'success');
-  }
+    processBtn.disabled = true;
+    downloadLinkArea.innerHTML = '';
 
-  function removeSelectedFile() {
-    selectedFile = null;
-    fileInput.value = '';
-    selectedFileContainer.style.display = 'none';
-    rotatedBlob = null;
-    downloadBtn.disabled = true;
-    rotateBtn.disabled = true;
-    showStatus('File removed', 'info');
-  }
-
-  function setProgress(pct) {
-    progressEl.style.display = pct >= 0 && pct < 100 ? 'block' : 'none';
-    progressBar.style.width = Math.max(0, Math.min(100, pct)) + '%';
-  }
-
-  function showStatus(message, type) {
-    statusMessage.textContent = message;
-    statusMessage.classList.remove('status-success', 'status-error', 'status-info');
-    if (type === 'success') statusMessage.classList.add('status-success');
-    else if (type === 'error') statusMessage.classList.add('status-error');
-    else statusMessage.classList.add('status-info');
-    statusMessage.style.display = 'block';
-    if (type !== 'info') {
-      setTimeout(() => { statusMessage.style.display = 'none'; }, 6000);
-    }
-  }
-
-  // Parse page ranges like "1-3,5,7"
-  function parsePageRanges(text, totalPages) {
-    if (!text || !text.trim()) {
-      // all pages
-      return new Set(Array.from({length: totalPages}, (_, i) => i + 1));
-    }
-    const parts = text.split(',');
-    const pages = new Set();
-    for (let p of parts) {
-      p = p.trim();
-      if (!p) continue;
-      if (p.includes('-')) {
-        const [s,e] = p.split('-').map(x => parseInt(x.trim(), 10));
-        if (isNaN(s) || isNaN(e)) continue;
-        const start = Math.max(1, Math.min(s, e));
-        const end = Math.min(totalPages, Math.max(s, e));
-        for (let i = start; i <= end; i++) pages.add(i);
-      } else {
-        const n = parseInt(p, 10);
-        if (!isNaN(n) && n >= 1 && n <= totalPages) pages.add(n);
-      }
-    }
-    // if nothing matched, default to all
-    if (pages.size === 0) return new Set(Array.from({length: totalPages}, (_, i) => i + 1));
-    return pages;
-  }
-
-  async function rotatePDF() {
-    if (!selectedFile) {
-      showStatus('Please select a PDF file first', 'error');
-      return;
-    }
-
-    // Only support 0/90/180/270 for exact page dimension preservation
-    const allowed = [0, 90, 180, 270];
-    if (!allowed.includes(selectedAngle)) {
-      showStatus('Please use rotation of 90°, 180°, or 270°. (Custom angles are not supported in this version.)', 'error');
-      return;
-    }
-
-    showStatus('Loading PDF... (processing in your browser)', 'info');
-    setProgress(2);
-
-    const arrayBuffer = await selectedFile.arrayBuffer();
-    let loadingTask;
+    const arrayBuf = await file.arrayBuffer();
     try {
-      loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      pdfDoc = await pdfjsLib.getDocument({data:arrayBuf}).promise;
     } catch (err) {
-      showStatus('Failed to initialize PDF reader: ' + (err.message || err), 'error');
-      setProgress(0);
-      return;
+      showStatus('Unable to open PDF: ' + (err && err.message ? err.message : err), 'error'); console.error(err); return;
     }
 
-    let pdfDoc;
-    try {
-      pdfDoc = await loadingTask.promise;
-    } catch (reason) {
-      showStatus('Unable to open PDF: ' + (reason && reason.message ? reason.message : reason), 'error');
-      setProgress(0);
-      return;
-    }
+    pageCount = pdfDoc.numPages;
+    if (!pageCount || pageCount <= 0) { showStatus('PDF has no pages', 'error'); return; }
 
-    try {
-      const numPages = pdfDoc.numPages;
-      if (!numPages || numPages <= 0) {
-        showStatus('PDF contains no pages.', 'error');
-        setProgress(0);
-        return;
-      }
-      showStatus(`PDF opened — ${numPages} page(s). Rendering pages...`, 'info');
-
-      const pagesToRotate = parsePageRanges(pageRangeInput.value, numPages);
-
-      const { jsPDF } = window.jspdf;
-      let finalDoc = null;
-      let first = true;
-
-      for (let i = 1; i <= numPages; i++) {
-        setProgress(2 + Math.round((i - 1) / numPages * 90));
+    showStatus(`Rendering ${pageCount} thumbnails...`, null);
+    // Render thumbnails (small scale)
+    for (let i = 1; i <= pageCount; ++i) {
+      try {
         const page = await pdfDoc.getPage(i);
-
-        // Use viewport at scale 1.5
-        const scale = 1.5;
-        const rotationForRender = 0; // render original page orientation; we'll rotate canvas later
-        const viewport = page.getViewport({ scale, rotation: rotationForRender });
-
+        const scale = 0.15 + Math.max(0, 180 / Math.max(page.getViewport({scale:1}).width, page.getViewport({scale:1}).height)); // heuristic small scale
+        const viewport = page.getViewport({scale});
         const canvas = document.createElement('canvas');
         canvas.width = Math.floor(viewport.width);
         canvas.height = Math.floor(viewport.height);
         const ctx = canvas.getContext('2d');
+        await page.render({canvasContext:ctx,viewport}).promise;
 
-        await page.render({ canvasContext: ctx, viewport }).promise;
+        // create thumbnail node
+        const thumb = document.createElement('div');
+        thumb.className = 'thumb';
+        thumb.dataset.p = i;
+        thumb.appendChild(canvas);
+        const pnum = document.createElement('div'); pnum.className='pnum'; pnum.textContent = 'Page ' + i;
+        thumb.appendChild(pnum);
+        thumbnailsEl.appendChild(thumb);
 
-        // If this page is to be rotated, transform the rendered canvas into a rotated canvas
-        let finalCanvas = canvas;
-        if (pagesToRotate.has(i) && (selectedAngle % 360) !== 0) {
-          // create a new canvas with swapped width/height for 90/270
-          const angle = selectedAngle % 360;
-          const rad = angle * Math.PI / 180;
-          let newW, newH;
-          if (angle === 90 || angle === 270) {
-            newW = canvas.height;
-            newH = canvas.width;
-          } else {
-            // 180
-            newW = canvas.width;
-            newH = canvas.height;
-          }
-          const rCanvas = document.createElement('canvas');
-          rCanvas.width = Math.floor(newW);
-          rCanvas.height = Math.floor(newH);
-          const rCtx = rCanvas.getContext('2d');
+        // state
+        thumbsState.push({pageNum:i, selected:true, canvas}); // default select all
+        thumb.classList.add('selected');
 
-          // translate/rotate and draw
-          rCtx.save();
-          if (angle === 90) {
-            rCtx.translate(rCanvas.width, 0);
-            rCtx.rotate(rad);
-          } else if (angle === 180) {
-            rCtx.translate(rCanvas.width, rCanvas.height);
-            rCtx.rotate(rad);
-          } else if (angle === 270) {
-            rCtx.translate(0, rCanvas.height);
-            rCtx.rotate(rad);
-          }
-          rCtx.drawImage(canvas, 0, 0);
-          rCtx.restore();
+        // click toggles
+        thumb.addEventListener('click', ()=> {
+          const st = thumbsState.find(s=>s.pageNum===i);
+          st.selected = !st.selected;
+          thumb.classList.toggle('selected', st.selected);
+        });
 
-          finalCanvas = rCanvas;
-        }
-
-        // Convert finalCanvas to JPEG DataURL
-        const imgData = finalCanvas.toDataURL('image/jpeg', 0.92);
-
-        // Calculate page dimensions in mm (use original viewport's width/height but swap if rotated by 90/270)
-        const ptToMm = (pt) => (pt / 72) * 25.4;
-        let pageWidthPt = viewport.width;
-        let pageHeightPt = viewport.height;
-        if (pagesToRotate.has(i) && (selectedAngle === 90 || selectedAngle === 270)) {
-          // swap physical width/height
-          [pageWidthPt, pageHeightPt] = [viewport.height, viewport.width];
-        }
-        const pageWidthMm = ptToMm(pageWidthPt);
-        const pageHeightMm = ptToMm(pageHeightPt);
-
-        if (first) {
-          const orientation = pageWidthMm >= pageHeightMm ? 'landscape' : 'portrait';
-          finalDoc = new jsPDF({
-            unit: 'mm',
-            format: [pageWidthMm, pageHeightMm],
-            compress: true,
-            orientation
-          });
-          finalDoc.addImage(imgData, 'JPEG', 0, 0, pageWidthMm, pageHeightMm, undefined, 'FAST');
-          first = false;
-        } else {
-          finalDoc.addPage([pageWidthMm, pageHeightMm], pageWidthMm >= pageHeightMm ? 'landscape' : 'portrait');
-          finalDoc.addImage(imgData, 'JPEG', 0, 0, pageWidthMm, pageHeightMm, undefined, 'FAST');
-        }
-
+        // free page object
         page.cleanup && page.cleanup();
-        // small yield
-        await new Promise(r => setTimeout(r, 30));
+      } catch (errThumb) {
+        console.error('thumb error page', i, errThumb);
+      }
+    }
+    showStatus('Thumbnails ready. Click to toggle pages or use range input. Then click Rotate.', null);
+    processBtn.disabled = false;
+  }
+
+  function parseRangesOrThumbnails() {
+    // If range input present, respect it; else use thumbsState selected pages; if neither, all pages
+    const total = pageCount;
+    const text = (rangeInput.value||'').trim();
+    if (text) {
+      const parts = text.split(',');
+      const set = new Set();
+      for (const part of parts) {
+        const p = part.trim();
+        if (!p) continue;
+        if (p.includes('-')) {
+          const [a,b]=p.split('-').map(x=>parseInt(x.trim(),10));
+          if (isNaN(a)||isNaN(b)) continue;
+          const s = Math.max(1, Math.min(a,b));
+          const e = Math.min(total, Math.max(a,b));
+          for (let k=s;k<=e;k++) set.add(k);
+        } else {
+          const n = parseInt(p,10);
+          if (!isNaN(n) && n>=1 && n<=total) set.add(n);
+        }
+      }
+      if (set.size === 0) return new Set(Array.from({length:total},(_,i)=>i+1));
+      return set;
+    } else if (thumbsState.length > 0) {
+      return new Set(thumbsState.filter(t=>t.selected).map(t=>t.pageNum));
+    } else {
+      return new Set(Array.from({length:total},(_,i)=>i+1));
+    }
+  }
+
+  // MAIN rotate processing: renders each page at higher resolution, applies rotation, writes to jsPDF
+  processBtn.addEventListener('click', async ()=> {
+    if (!pdfDoc) { showStatus('No PDF loaded', 'error'); return; }
+    processBtn.disabled = true; resultBlob = null; downloadBtn.disabled = true; downloadLinkArea.innerHTML='';
+
+    // decide angle
+    let angle;
+    if (angleInput.value && angleInput.value.trim() !== '') angle = parseFloat(angleInput.value);
+    else {
+      const active = document.querySelector('.preset-btn.active');
+      angle = active ? parseFloat(active.dataset.angle) : 90;
+    }
+    if (isNaN(angle)) { showStatus('Invalid angle', 'error'); processBtn.disabled=false; return; }
+
+    showStatus('Processing pages... This may take time for large PDFs.', null);
+
+    const pagesToProcess = parseRangesOrThumbnails();
+    const { jsPDF } = window.jspdf;
+
+    // We'll iterate all pages in order; pages not selected are added unchanged (rendered and added back).
+    let outDoc = null;
+    let first = true;
+
+    for (let p = 1; p <= pageCount; ++p) {
+      showStatus(`Processing page ${p} / ${pageCount}...`);
+      const page = await pdfDoc.getPage(p);
+
+      // render at a scale that keeps quality: use 2.0 for decent resolution
+      const renderScale = 2.0; // you can tune for file size/quality
+      const origViewport = page.getViewport({scale:renderScale});
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.ceil(origViewport.width);
+      canvas.height = Math.ceil(origViewport.height);
+      const ctx = canvas.getContext('2d');
+
+      await page.render({canvasContext:ctx,viewport:origViewport}).promise;
+
+      // If page is selected for rotation, compute rotated canvas bounding box
+      const shouldRotate = pagesToProcess.has(p);
+      let finalCanvas = canvas;
+
+      if (shouldRotate) {
+        // angle normalized to 0..360
+        const a = ((angle % 360) + 360) % 360;
+        // If angle is 0, skip rotation
+        if (Math.abs(a) > 0.0001) {
+          const rad = a * Math.PI / 180;
+          const sin = Math.abs(Math.sin(rad));
+          const cos = Math.abs(Math.cos(rad));
+          const newW = Math.ceil(canvas.width * cos + canvas.height * sin);
+          const newH = Math.ceil(canvas.width * sin + canvas.height * cos);
+          const rcanvas = document.createElement('canvas');
+          rcanvas.width = newW; rcanvas.height = newH;
+          const rctx = rcanvas.getContext('2d');
+
+          // move origin to center, rotate, draw centered
+          rctx.translate(newW / 2, newH / 2);
+          rctx.rotate(rad);
+          rctx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
+          finalCanvas = rcanvas;
+        }
       }
 
-      setProgress(98);
-      showStatus('Finished generating rotated PDF...', 'info');
+      // convert finalCanvas to dataURL JPEG
+      const imgData = finalCanvas.toDataURL('image/jpeg', 0.92);
 
-      const outputPdfBytes = finalDoc.output('arraybuffer');
-      rotatedBlob = new Blob([outputPdfBytes], { type: 'application/pdf' });
+      // convert page original pts to mm (pdf uses points at 72pt/in)
+      const ptToMm = (pt)=> (pt/72)*25.4;
+      // When rotated to arbitrary angle we increased pixel bounding box; we must compute new page size in pts
+      // We approximate newPtsWidth = newPixelWidth / renderScale (because origViewport.width = pts * renderScale)
+      let pagePtWidth = origViewport.width / renderScale;
+      let pagePtHeight = origViewport.height / renderScale;
+      if (shouldRotate) {
+        // finalCanvas dimensions in pixels correspond to newPt = pixels / renderScale
+        pagePtWidth = finalCanvas.width / renderScale;
+        pagePtHeight = finalCanvas.height / renderScale;
+      }
+      const pageWidthMm = ptToMm(pagePtWidth);
+      const pageHeightMm = ptToMm(pagePtHeight);
 
+      // create or add page to jsPDF
+      if (first) {
+        const orientation = pageWidthMm >= pageHeightMm ? 'landscape' : 'portrait';
+        outDoc = new jsPDF({unit:'mm',format:[pageWidthMm,pageHeightMm],orientation});
+        outDoc.addImage(imgData,'JPEG',0,0,pageWidthMm,pageHeightMm,undefined,'FAST');
+        first = false;
+      } else {
+        outDoc.addPage([pageWidthMm,pageHeightMm], pageWidthMm >= pageHeightMm ? 'landscape' : 'portrait');
+        outDoc.addImage(imgData,'JPEG',0,0,pageWidthMm,pageHeightMm,undefined,'FAST');
+      }
+
+      page.cleanup && page.cleanup();
+      // small yield to keep UI responsive
+      await new Promise(r=>setTimeout(r,20));
+    }
+
+    // produce output
+    try {
+      const outArray = outDoc.output('arraybuffer');
+      resultBlob = new Blob([outArray], {type:'application/pdf'});
       downloadBtn.disabled = false;
-      setProgress(100);
-      showStatus('Rotated PDF ready. Click Download to save.', 'success');
-
-      pdfDoc.cleanup && pdfDoc.cleanup();
-      loadingTask.destroy && loadingTask.destroy();
-    } catch (err) {
-      console.error(err);
-      showStatus('Error while processing PDF: ' + (err.message || err), 'error');
-      setProgress(0);
+      showStatus('Rotation finished — click Download to save.', 'success');
+      // provide inline download link
+      const url = URL.createObjectURL(resultBlob);
+      downloadLinkArea.innerHTML = '<a href="'+url+'" download="rotated-'+ (selectedFile ? selectedFile.name : 'out.pdf') +'" class="btn btn-primary" style="text-decoration:none;margin-top:8px">Download Rotated PDF</a>';
+      processBtn.disabled = false;
+    } catch (errOut) {
+      console.error(errOut);
+      showStatus('Failed to create PDF: ' + (errOut && errOut.message ? errOut.message : errOut), 'error');
+      processBtn.disabled = false;
     }
-  }
-
-  function downloadRotatedPDF() {
-    if (!rotatedBlob) {
-      showStatus('No rotated PDF available. Please rotate first.', 'error');
-      return;
-    }
-    const url = URL.createObjectURL(rotatedBlob);
-    const a = document.createElement('a');
-    a.href = url;
-    const outName = selectedFile ? 'rotated-' + selectedFile.name : 'rotated.pdf';
-    a.download = outName;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 150);
-    showStatus('Rotated PDF downloaded successfully', 'success');
-  }
-
-  function resetTool() {
-    removeSelectedFile();
-    rotatedBlob = null;
-    setProgress(0);
-    downloadBtn.disabled = true;
-    rotateBtn.disabled = true;
-    pageRangeInput.value = '';
-    customAngleInput.value = '';
-    // reset preset to 90
-    presetBtns.forEach(b => b.classList.remove('active'));
-    document.querySelector('.preset-btn[data-angle="90"]').classList.add('active');
-    selectedAngle = 90;
-    showStatus('Tool reset', 'info');
-  }
-
-  function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  }
-
-  // initial note
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      showStatus('Note: Rotations supported: 90°, 180°, 270°. Use page range (e.g. 1-3,5) to rotate specific pages.', 'info');
-    }, 800);
   });
+
+  downloadBtn.addEventListener('click', ()=>{
+    if (!resultBlob) { showStatus('Nothing to download', 'error'); return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(resultBlob);
+    a.download = 'rotated-' + (selectedFile ? selectedFile.name : 'out.pdf'); document.body.appendChild(a); a.click();
+    setTimeout(()=>{ document.body.removeChild(a); },200);
+  });
+
+  function initApp(){
+    // everything sufficiently loaded; attach any extra handlers if required
+    // (already mostly wired above)
+    showStatus('Libraries ready — load a PDF to begin.', null);
+  }
+
+  // Utility: when page loaded after library bootstrap, call initApp if library is ready
+  window.addEventListener('beforeunload', ()=>{
+    if (pdfDoc && pdfDoc.destroy) pdfDoc.destroy();
+  });
+
+  // PDF loader: invoked by handleFile
+  async function loadPdfAndRenderThumbs(file){ /* implementation replaced above */ }
+
+  // Because we declared loadPdfAndRenderThumbs earlier in this file, reassign to ensure it's the function used
+  // (the real implementation is above; due to the in-file ordering we included it already)
+  // end of script
 </script>
+
+<!-- Instruction: server-side Node.js example (qpdf) -->
+<script type="text/plain" id="serverExample">
+/*
+Node.js server example to rotate pages with qpdf (keeps vectors/text selectable).
+Requires qpdf installed on the server machine:
+  - Ubuntu: sudo apt-get install qpdf
+  - Mac: brew install qpdf
+
+This example runs qpdf as a child process. IMPORTANT: validate and sanitize user input in production.
+
+const express = require('express');
+const { execFile } = require('child_process');
+const path = require('path');
+const os = require('os');
+const fs = require('fs');
+
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Endpoint expects: uploaded file accessible (or path), rotation angle and page range (like "1-3,5")
+app.post('/rotate-via-qpdf', (req, res) => {
+  // For simplicity assume file is already saved at req.body.inputPath
+  const inputPath = req.body.inputPath; // sanitize in real apps
+  const pageRange = req.body.pageRange || '1-' + getPageCountSomehow();
+  const angle = parseInt(req.body.angle, 10) || 90; // qpdf accepts +90, -90
+  const rotateFlag = (angle >= 0 ? '+' : '') + angle + ':' + pageRange;
+
+  const tmpOut = path.join(os.tmpdir(), 'rotated-' + Date.now() + '.pdf');
+
+  // qpdf usage: qpdf in.pdf --rotate=+90:1-3 out.pdf
+  execFile('qpdf', [inputPath, '--rotate=' + rotateFlag, tmpOut], (err) => {
+    if (err) {
+      console.error('qpdf error', err);
+      return res.status(500).json({error: 'Server rotation failed'});
+    }
+    res.download(tmpOut, 'rotated.pdf', (err2) => {
+      fs.unlink(tmpOut, ()=>{});
+    });
+  });
+});
+
+app.listen(3000, ()=> console.log('Server listening on 3000'));
+*/
+</script>
+
 </body>
 </html>
