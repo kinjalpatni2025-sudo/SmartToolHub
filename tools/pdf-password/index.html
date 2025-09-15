@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Password Encrypt / Decrypt PDF - Smarttool Hub (Client-side)</title>
-  <meta name="description" content="Encrypt and decrypt PDF files fully client-side (no API key). Generate encrypted .enc files and decrypt them back to PDF."/>
+  <title>Encrypt & Decrypt PDF with Password Protection - Smarttool Hub</title>
+  <meta name="description" content="Encrypt and decrypt PDF files with password protection fully client-side (no API key). Generate encrypted .enc files and decrypt them back to PDF.">
   <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
   <style>
@@ -39,20 +39,13 @@
     }
     .btn-header:hover{border-color:var(--primary);color:var(--primary)}
     
-    /* Tool-specific styles */
     .tool-content {
       background:var(--card);border-radius:var(--radius);border:1px solid var(--border);
       padding:25px;margin-top:20px;
     }
-    .tool-title {
-      font-size:1.8rem;margin-bottom:5px;color:var(--primary);
-    }
-    .tool-description {
-      color:var(--muted);margin-bottom:18px;
-    }
-    .split {
-      display:grid;grid-template-columns:1fr 1fr;gap:20px;
-    }
+    .tool-title {font-size:1.8rem;margin-bottom:5px;color:var(--primary);}
+    .tool-description {color:var(--muted);margin-bottom:18px;}
+    .split {display:grid;grid-template-columns:1fr 1fr;gap:20px;}
     .panel {
       background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));
       border:1px solid var(--border);padding:18px;border-radius:12px;
@@ -63,9 +56,7 @@
     .muted{color:var(--muted);font-size:0.92rem}
     .row{display:flex;gap:12px;align-items:center;margin-top:12px}
     .col{flex:1}
-    .btn{
-      padding:10px 14px;border-radius:10px;border:none;font-weight:700;cursor:pointer;
-    }
+    .btn{padding:10px 14px;border-radius:10px;border:none;font-weight:700;cursor:pointer;}
     .btn-primary{background:var(--primary);color:#00131f}
     .btn-secondary{background:transparent;border:1px solid var(--border);color:var(--text)}
     .status{margin-top:12px;padding:10px;border-radius:10px;background:var(--bg);border:1px solid var(--border);color:var(--muted)}
@@ -99,19 +90,21 @@
 
 <main class="container">
   <div class="tool-content">
-    <h1 class="tool-title">Encrypt & Decrypt PDF (Client-side)</h1>
-    <p class="tool-description">No API key required. Encrypt PDFs into a secure `.enc` file using AES-GCM, and decrypt them back to PDF using the same page.</p>
+    <h1 class="tool-title">Encrypt & Decrypt PDF with Password Protection (Client-side)</h1>
+    <p class="tool-description">
+      No API key required. Encrypt PDFs into a secure <code>.enc</code> file using AES-GCM with password protection,
+      and decrypt them back to PDF using the same page.
+    </p>
 
     <div class="split">
       <!-- Encrypt Panel -->
-      <div class="panel" id="encryptPanel">
+      <div class="panel">
         <h2 style="margin:0 0 8px;color:var(--primary)">Encrypt PDF</h2>
-        <p class="muted">Select a PDF, choose a password, and download an encrypted .enc file. Keep the password safe.</p>
-        <label for="encFile">Choose PDF file</label>
+        <label>Choose PDF file</label>
         <input id="encFile" type="file" accept="application/pdf">
-        <label for="encPassword">Password</label>
+        <label>Password</label>
         <input id="encPassword" class="input" type="password" placeholder="Enter strong password">
-        <label for="encFilename">Output filename</label>
+        <label>Output filename</label>
         <input id="encFilename" class="input" type="text" placeholder="my-document.enc">
         <div class="row" style="margin-top:14px">
           <button id="encryptBtn" class="btn btn-primary"><i class="fa-solid fa-lock"></i> Encrypt & Download</button>
@@ -121,14 +114,13 @@
       </div>
 
       <!-- Decrypt Panel -->
-      <div class="panel" id="decryptPanel">
+      <div class="panel">
         <h2 style="margin:0 0 8px;color:var(--primary)">Decrypt .enc → PDF</h2>
-        <p class="muted">Select the encrypted file and enter the password to recover the original PDF.</p>
-        <label for="decFile">Choose .enc file</label>
+        <label>Choose .enc file</label>
         <input id="decFile" type="file" accept=".enc,application/octet-stream">
-        <label for="decPassword">Password</label>
+        <label>Password</label>
         <input id="decPassword" class="input" type="password" placeholder="Enter password used for encryption">
-        <label for="decFilename">Output filename</label>
+        <label>Output filename</label>
         <input id="decFilename" class="input" type="text" placeholder="original.pdf">
         <div class="row" style="margin-top:14px">
           <button id="decryptBtn" class="btn btn-primary"><i class="fa-solid fa-unlock"></i> Decrypt & Download</button>
@@ -165,24 +157,7 @@
 </footer>
 
 <script>
-  // UI elements
-  const encFileEl = document.getElementById('encFile');
-  const encPassEl = document.getElementById('encPassword');
-  const encNameEl = document.getElementById('encFilename');
-  const encryptBtn = document.getElementById('encryptBtn');
-  const clearEncBtn = document.getElementById('clearEnc');
-  const encStatus = document.getElementById('encStatus');
-
-  const decFileEl = document.getElementById('decFile');
-  const decPassEl = document.getElementById('decPassword');
-  const decNameEl = document.getElementById('decFilename');
-  const decryptBtn = document.getElementById('decryptBtn');
-  const clearDecBtn = document.getElementById('clearDec');
-  const decStatus = document.getElementById('decStatus');
-
-  const logEl = document.getElementById('log');
-  const yearEl = document.getElementById('year');
-  yearEl.textContent = new Date().getFullYear();
+  document.getElementById('year').textContent = new Date().getFullYear();
 
   // theme toggle
   const themeToggle = document.getElementById('themeToggle');
@@ -201,126 +176,83 @@
     }
   };
 
+  const encFileEl = document.getElementById('encFile');
+  const encPassEl = document.getElementById('encPassword');
+  const encNameEl = document.getElementById('encFilename');
+  const encryptBtn = document.getElementById('encryptBtn');
+  const clearEncBtn = document.getElementById('clearEnc');
+  const encStatus = document.getElementById('encStatus');
+
+  const decFileEl = document.getElementById('decFile');
+  const decPassEl = document.getElementById('decPassword');
+  const decNameEl = document.getElementById('decFilename');
+  const decryptBtn = document.getElementById('decryptBtn');
+  const clearDecBtn = document.getElementById('clearDec');
+  const decStatus = document.getElementById('decStatus');
+
+  const logEl = document.getElementById('log');
   function log(msg){
     const t = new Date().toLocaleTimeString();
     logEl.textContent = `[${t}] ${msg}\\n` + logEl.textContent;
   }
-
   function showStatus(el, msg, isError=false){
     el.style.display = 'block';
     el.textContent = msg;
     el.style.borderColor = isError ? '#ef4444' : '#10b981';
     el.style.color = isError ? '#ef4444' : '#10b981';
-    if (!isError) {
-      setTimeout(()=>{ el.style.display = 'none'; }, 6000);
-    }
+    if (!isError) { setTimeout(()=>{ el.style.display = 'none'; }, 6000); }
   }
 
-  // ===== Web Crypto helpers =====
   function str2ab(str){ return new TextEncoder().encode(str); }
   async function deriveKey(password, salt, iterations=200000, keyLen=256){
     const pwKey = await crypto.subtle.importKey('raw', str2ab(password), {name:'PBKDF2'}, false, ['deriveKey']);
-    const derived = await crypto.subtle.deriveKey({
-      name:'PBKDF2',
-      salt: salt,
-      iterations: iterations,
-      hash: 'SHA-256'
-    }, pwKey, {name:'AES-GCM', length: keyLen}, false, ['encrypt','decrypt']);
-    return derived;
+    return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:iterations,hash:'SHA-256'}, pwKey, {name:'AES-GCM',length:keyLen}, false, ['encrypt','decrypt']);
   }
   function randBytes(len){ return crypto.getRandomValues(new Uint8Array(len)); }
 
   async function encryptBuffer(buffer, password){
-    const salt = randBytes(16); // 16 bytes
-    const iv = randBytes(12);   // 12 bytes for AES-GCM
+    const salt = randBytes(16), iv = randBytes(12);
     const key = await deriveKey(password, salt);
     const cipher = await crypto.subtle.encrypt({name:'AES-GCM', iv: iv}, key, buffer);
-    const cipherU8 = new Uint8Array(cipher);
-    const out = new Uint8Array(salt.byteLength + iv.byteLength + cipherU8.byteLength);
-    out.set(salt, 0);
-    out.set(iv, salt.byteLength);
-    out.set(cipherU8, salt.byteLength + iv.byteLength);
+    const out = new Uint8Array(salt.length+iv.length+cipher.byteLength);
+    out.set(salt,0); out.set(iv,salt.length); out.set(new Uint8Array(cipher), salt.length+iv.length);
     return out;
   }
-
-  async function decryptBuffer(packedU8, password){
-    if (packedU8.length < 28) throw new Error('File too small or corrupted');
-    const salt = packedU8.slice(0,16);
-    const iv = packedU8.slice(16,28);
-    const ciphertext = packedU8.slice(28);
-    const key = await deriveKey(password, salt);
-    const plain = await crypto.subtle.decrypt({name:'AES-GCM', iv: iv}, key, ciphertext);
-    return plain;
+  async function decryptBuffer(packed,password){
+    if(packed.length<28) throw new Error('File too small');
+    const salt=packed.slice(0,16), iv=packed.slice(16,28), ct=packed.slice(28);
+    const key=await deriveKey(password,salt);
+    return crypto.subtle.decrypt({name:'AES-GCM',iv:iv}, key, ct);
+  }
+  function downloadBlob(blob,filename){
+    const a=document.createElement('a'), url=URL.createObjectURL(blob);
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click();
+    setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},200);
   }
 
-  function downloadBlob(blob, filename){
-    const a = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    a.href = url; a.download = filename || 'file';
-    document.body.appendChild(a); a.click();
-    setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
-  }
-
-  // ===== Encrypt flow =====
-  encryptBtn.addEventListener('click', async ()=>{
+  encryptBtn.onclick=async()=>{
     try{
-      const file = encFileEl.files[0];
-      const password = encPassEl.value;
-      if (!file) { alert('Please select a PDF file to encrypt'); return; }
-      if (!password || password.length < 4) { alert('Please enter a password (min 4 chars recommended)'); return; }
-      encStatus.style.display = 'block'; encStatus.textContent = 'Reading file...';
-      log('Reading file: ' + file.name);
-      const arrayBuffer = await file.arrayBuffer();
-      encStatus.textContent = 'Encrypting (this may take a moment)...';
-      log('Encrypting with PBKDF2 + AES-GCM...');
-      const packed = await encryptBuffer(arrayBuffer, password);
-      const outName = encNameEl.value ? encNameEl.value.trim() : (file.name + '.enc');
-      const blob = new Blob([packed], {type: 'application/octet-stream'});
-      downloadBlob(blob, outName);
-      showStatus(encStatus, 'Encryption complete — downloaded: ' + outName, false);
-      log('Encryption finished: ' + outName);
-    } catch (err) {
-      console.error(err);
-      showStatus(encStatus, 'Encryption failed: ' + (err.message||err), true);
-      log('Encryption error: ' + (err.message||err));
-    }
-  });
+      const file=encFileEl.files[0], pw=encPassEl.value;
+      if(!file||!pw){alert('Select file & password');return;}
+      encStatus.style.display='block';encStatus.textContent='Encrypting...';log('Encrypting '+file.name);
+      const buf=await file.arrayBuffer(), packed=await encryptBuffer(buf,pw);
+      const outName=encNameEl.value||file.name+'.enc'; downloadBlob(new Blob([packed],{type:'application/octet-stream'}), outName);
+      showStatus(encStatus,'Encrypted: '+outName,false); log('Done: '+outName);
+    }catch(e){showStatus(encStatus,'Error: '+e,true);log('Error: '+e);}
+  };
+  clearEncBtn.onclick=()=>{encFileEl.value='';encPassEl.value='';encNameEl.value='';encStatus.style.display='none';};
 
-  clearEncBtn.addEventListener('click', ()=>{
-    encFileEl.value=''; encPassEl.value=''; encNameEl.value=''; encStatus.style.display='none';
-    log('Encryption inputs cleared');
-  });
-
-  // ===== Decrypt flow =====
-  decryptBtn.addEventListener('click', async ()=>{
+  decryptBtn.onclick=async()=>{
     try{
-      const file = decFileEl.files[0];
-      const password = decPassEl.value;
-      if (!file) { alert('Please select an encrypted (.enc) file to decrypt'); return; }
-      if (!password) { alert('Please enter the password'); return; }
-      decStatus.style.display = 'block'; decStatus.textContent = 'Reading encrypted file...';
-      log('Reading encrypted file: ' + file.name);
-      const packed = new Uint8Array(await file.arrayBuffer());
-      decStatus.textContent = 'Decrypting (this may take a moment)...';
-      log('Attempting decrypt...');
-      const plain = await decryptBuffer(packed, password);
-      const outName = decNameEl.value ? decNameEl.value.trim() : 'decrypted.pdf';
-      const blob = new Blob([plain], {type: 'application/pdf'});
-      downloadBlob(blob, outName);
-      showStatus(decStatus, 'Decryption complete — downloaded: ' + outName, false);
-      log('Decryption succeeded: ' + outName);
-    } catch (err) {
-      console.error(err);
-      showStatus(decStatus, 'Decryption failed — wrong password or corrupted file.', true);
-      log('Decryption error: ' + (err.message||err));
-      alert('Decryption failed — wrong password or corrupted file.');
-    }
-  });
-
-  clearDecBtn.addEventListener('click', ()=>{
-    decFileEl.value=''; decPassEl.value=''; decNameEl.value=''; decStatus.style.display='none';
-    log('Decryption inputs cleared');
-  });
+      const file=decFileEl.files[0], pw=decPassEl.value;
+      if(!file||!pw){alert('Select file & password');return;}
+      decStatus.style.display='block';decStatus.textContent='Decrypting...';log('Decrypting '+file.name);
+      const packed=new Uint8Array(await file.arrayBuffer()), plain=await decryptBuffer(packed,pw);
+      const outName=decNameEl.value||'decrypted.pdf'; downloadBlob(new Blob([plain],{type:'application/pdf'}), outName);
+      showStatus(decStatus,'Decrypted: '+outName,false); log('Done: '+outName);
+    }catch(e){showStatus(decStatus,'Failed: wrong password or corrupt',true);log('Error: '+e);}
+  };
+  clearDecBtn.onclick=()=>{decFileEl.value='';decPassEl.value='';decNameEl.value='';decStatus.style.display='none';};
 </script>
 </body>
 </html>
