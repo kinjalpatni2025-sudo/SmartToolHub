@@ -35,6 +35,8 @@
     .option-group{margin-bottom:15px}
     .option-group label{display:block;margin-bottom:8px;font-weight:500;color:var(--text)}
     .option-group input,.option-group select,.option-group textarea{width:100%;padding:10px 12px;border-radius:var(--radius);background:var(--bg);border:1px solid var(--border);color:var(--text)}
+    .option-group textarea{min-height:80px;resize:vertical}
+    .color-input{display:flex;align-items:center;gap:10px}
     .preview-area{border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:16px;background:var(--bg);min-height:200px;position:relative}
     .preview-grid{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;max-height:420px;overflow:auto;padding:6px}
     .page-thumb{background:var(--card);border-radius:8px;padding:8px;border:1px solid var(--border);min-width:180px;display:flex;flex-direction:column;gap:8px;align-items:center}
@@ -50,6 +52,9 @@
     .progress{width:100%;height:12px;background:rgba(255,255,255,0.06);border-radius:8px;overflow:hidden;margin-top:8px;border:1px solid var(--border)}
     .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--primary),#7ee7ff);transition:width .25s}
     footer{margin-top:auto;padding:18px 0;background:var(--card);border-top:1px solid var(--border)}
+    .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap}
+    .footer-links a{color:var(--primary);text-decoration:none;font-weight:600}
     @media (max-width:720px){.watermark-options{grid-template-columns:1fr}.btn{width:100%;justify-content:center}.page-thumb{min-width:140px}}
   </style>
 </head>
@@ -58,7 +63,10 @@
   <div class="brand">
     <a href="index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
       <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub Logo">
-      <div><div class="title">Smarttool Hub</div><div class="tag">Fast • Private • 100% Client-side</div></div>
+      <div>
+        <div class="title">Smarttool Hub</div>
+        <div class="tag">Fast • Private • 100% Client-side</div>
+      </div>
     </a>
   </div>
   <div class="header-actions">
@@ -134,15 +142,26 @@
   </div>
 </main>
 
-<footer class="container"><div class="footer-inner"><div>© <span id="year"></span> Smarttool Hub</div><div class="footer-links"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="contact.html">Contact</a><a href="comments.html">Comments</a><a href="faq.html">FAQ</a></div></div></footer>
+<footer class="container">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> Smarttool Hub</div>
+    <div class="footer-links">
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="contact.html">Contact</a>
+      <a href="comments.html">Comments</a>
+      <a href="faq.html">FAQ</a>
+    </div>
+  </div>
+</footer>
 
 <script>
-/* Try multiple CDNs for pdf.js and jsPDF. If both load, use them.
-   Approach:
-   - pdf.js: render pages to canvases (previews)
-   - draw watermark onto canvases
-   - jsPDF: create a new PDF from canvas images and download
-*/
+  // Put current year into footer (same as your attached code)
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+
+<script>
+/* Loader + app code (pdf.js previews + jsPDF final) */
 (async function loader() {
   const pdfJsCDNs = [
     'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js',
@@ -189,11 +208,7 @@
   }
 
   const pdfJsOk = await tryLoad(pdfJsCDNs, 'pdfjsLib', 9000);
-  if (pdfJsOk && window.pdfjsLib) {
-    // set worker
-    const worker = pdfWorkerCDNs[0];
-    pdfjsLib.GlobalWorkerOptions.workerSrc = worker;
-  }
+  if (pdfJsOk && window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerCDNs[0];
 
   const jsPdfOk = await tryLoad(jsPdfCDNs, 'jspdf', 9000);
 
@@ -203,14 +218,11 @@
     document.getElementById('libraryHelp').innerHTML = '<strong>Libraries failed to load.</strong><br>Possible fixes:<ol style="margin:6px 0 0 18px"><li>Allow requests to CDN domains (cdnjs.cloudflare.com, cdn.jsdelivr.net, unpkg.com).</li><li>Host <code>pdf.min.js</code>, <code>pdf.worker.min.js</code>, and <code>jspdf.umd.min.js</code> locally and add local &lt;script&gt; tags.</li></ol>If you want, paste console errors here and I will help.';
   }
 
-  // Start main app with info which libraries are available
   startApp({ pdfJsAvailable: pdfJsOk && !!window.pdfjsLib, jsPdfAvailable: jsPdfOk && !!window.jspdf });
-})(); // end loader
+})();
 
 function startApp(env = { pdfJsAvailable: true, jsPdfAvailable: true }) {
   document.getElementById('year').textContent = new Date().getFullYear();
-
-  // elements
   const uploadArea = document.getElementById('uploadArea');
   const fileInput = document.getElementById('fileInput');
   const selectedFileContainer = document.getElementById('selectedFileContainer');
@@ -240,10 +252,7 @@ function startApp(env = { pdfJsAvailable: true, jsPdfAvailable: true }) {
   const progressStage = document.getElementById('progressStage');
   const themeToggle = document.getElementById('themeToggle');
 
-  // theme
-  if (localStorage.getItem('sth_theme') === 'light') {
-    document.body.classList.add('light'); themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
-  }
+  if (localStorage.getItem('sth_theme') === 'light') { document.body.classList.add('light'); themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; }
   themeToggle.onclick = () => {
     document.body.classList.toggle('light');
     if (document.body.classList.contains('light')) { themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; localStorage.setItem('sth_theme','light'); }
@@ -256,7 +265,6 @@ function startApp(env = { pdfJsAvailable: true, jsPdfAvailable: true }) {
 
   updateColorText(); updateOpacityValue();
 
-  // listeners
   uploadArea.addEventListener('click', () => fileInput.click());
   uploadArea.addEventListener('dragover', handleDragOver);
   uploadArea.addEventListener('dragleave', handleDragLeave);
@@ -320,18 +328,18 @@ function startApp(env = { pdfJsAvailable: true, jsPdfAvailable: true }) {
 
   function removeSelectedFile() { selectedFile = null; fileInput.value = ''; selectedFileContainer.style.display = 'none'; addWatermarkBtn.disabled = true; resetPreviewGrid(); }
   function handleWatermarkImage(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => { uploadedImageDataUrl = ev.target.result; renderPreviewPages(); showStatus('Watermark image loaded', 'success'); }; reader.readAsDataURL(file); }
-  function updateColorText() { watermarkColorText.value = watermarkColor.value.toUpperCase(); }
-  function updateOpacityValue() { opacityValue.textContent = `${watermarkOpacity.value}%`; }
-  function setProgress(percent) { progressBar.style.width = `${percent}%`; progressText.textContent = `${Math.round(percent)}%`; }
-  function showStatus(message, type) { statusMessage.textContent = message; statusMessage.classList.remove('status-success','status-error'); if (type==='success') statusMessage.classList.add('status-success'); if (type==='error') statusMessage.classList.add('status-error'); statusMessage.style.display='block'; if (type!=='info') setTimeout(()=>{ statusMessage.style.display='none'; },5000); }
-  function resetPreviewGrid(){ previewGrid.innerHTML=''; pdfDocForPreview=null; }
+  function updateColorText() { document.getElementById('watermarkColorText').value = watermarkColor.value.toUpperCase(); }
+  function updateOpacityValue() { document.getElementById('opacityValue').textContent = `${watermarkOpacity.value}%`; }
+  function setProgress(percent) { document.getElementById('progressBar').style.width = `${percent}%`; document.getElementById('progressText').textContent = `${Math.round(percent)}%`; }
+  function showStatus(message, type) { statusMessage.textContent = message; statusMessage.classList.remove('status-success','status-error'); if (type === 'success') statusMessage.classList.add('status-success'); if (type === 'error') statusMessage.classList.add('status-error'); statusMessage.style.display = 'block'; if (type !== 'info') setTimeout(()=> { statusMessage.style.display = 'none'; }, 5000); }
+  function resetPreviewGrid() { previewGrid.innerHTML = ''; pdfDocForPreview = null; }
 
   async function renderPreviewPages() {
     previewGrid.innerHTML = '';
     if (!pdfDocForPreview) return;
     const scaleSetting = parseFloat(previewScale.value) || 1;
     const pageCount = pdfDocForPreview.numPages;
-    for (let p=1; p<=pageCount; p++){
+    for (let p = 1; p <= pageCount; p++) {
       try {
         const page = await pdfDocForPreview.getPage(p);
         const viewport = page.getViewport({ scale: 1 * scaleSetting });
@@ -340,82 +348,114 @@ function startApp(env = { pdfJsAvailable: true, jsPdfAvailable: true }) {
         canvas.width = Math.floor(viewport.width);
         canvas.height = Math.floor(viewport.height);
         await page.render({ canvasContext: ctx, viewport }).promise;
-        await applyCanvasWatermark(canvas, ctx); // draw visual watermark on preview
-        const thumb = document.createElement('div'); thumb.className='page-thumb';
-        const canvasCopy = document.createElement('canvas'); canvasCopy.width=canvas.width; canvasCopy.height=canvas.height; canvasCopy.getContext('2d').drawImage(canvas,0,0);
-        canvasCopy.style.maxWidth='100%'; canvasCopy.style.height='auto'; thumb.appendChild(canvasCopy);
-        const label = document.createElement('div'); label.className='thumb-label'; label.textContent=`Page ${p}`; thumb.appendChild(label);
-        thumb.style.cursor='pointer';
-        thumb.addEventListener('click',()=>{ const dataUrl = canvasCopy.toDataURL('image/png'); const w=window.open(''); if(w){ w.document.write(`<title>Page ${p} preview</title><img src="${dataUrl}" style="max-width:100%;">`);} else showStatus('Popup blocked — allow popups for preview', 'error'); });
+        await applyCanvasWatermark(canvas, ctx);
+        const thumb = document.createElement('div');
+        thumb.className = 'page-thumb';
+        const canvasCopy = document.createElement('canvas');
+        canvasCopy.width = canvas.width; canvasCopy.height = canvas.height;
+        canvasCopy.getContext('2d').drawImage(canvas, 0, 0);
+        canvasCopy.style.maxWidth = '100%'; canvasCopy.style.height = 'auto';
+        thumb.appendChild(canvasCopy);
+        const label = document.createElement('div'); label.className = 'thumb-label'; label.textContent = `Page ${p}`; thumb.appendChild(label);
+        thumb.style.cursor = 'pointer';
+        thumb.addEventListener('click', () => {
+          const dataUrl = canvasCopy.toDataURL('image/png');
+          const w = window.open('');
+          if (w) {
+            w.document.write(`<title>Page ${p} preview</title><img src="${dataUrl}" style="max-width:100%;">`);
+          } else {
+            showStatus('Popup blocked — allow popups for preview', 'error');
+          }
+        });
         previewGrid.appendChild(thumb);
-      } catch(e){ console.error('Preview render error page',p,e); }
+      } catch (err) {
+        console.error('Preview render error page', p, err);
+      }
     }
   }
 
   function applyCanvasWatermark(canvas, ctx) {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const pos = watermarkPosition.value;
       const opacity = watermarkOpacity.value / 100;
       const sizeChoice = watermarkSize.value;
       let fontSizePx = 36;
-      switch(sizeChoice){ case 'small': fontSizePx=18; break; case 'medium': fontSizePx=28; break; case 'large': fontSizePx=42; break; case 'xlarge': fontSizePx=60; break; }
+      switch(sizeChoice) { case 'small': fontSizePx = 18; break; case 'medium': fontSizePx = 28; break; case 'large': fontSizePx = 42; break; case 'xlarge': fontSizePx = 60; break; }
       if (watermarkType.value === 'text') {
         const text = watermarkText.value || 'Confidential';
-        let canvasFont = 'Helvetica'; if (watermarkFont.value==='TimesRoman') canvasFont='Times New Roman'; if (watermarkFont.value==='Courier') canvasFont='Courier New';
-        ctx.save(); ctx.globalAlpha = opacity; ctx.fillStyle = watermarkColor.value; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font = `${fontSizePx}px ${canvasFont}`;
-        if (pos==='diagonal') {
+        let canvasFont = 'Helvetica';
+        if (watermarkFont.value === 'TimesRoman') canvasFont = 'Times New Roman';
+        if (watermarkFont.value === 'Courier') canvasFont = 'Courier New';
+        ctx.save();
+        ctx.globalAlpha = opacity;
+        ctx.fillStyle = watermarkColor.value;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = `${fontSizePx}px ${canvasFont}`;
+        if (pos === 'diagonal') {
           const step = fontSizePx * 6;
-          ctx.translate(canvas.width/2, canvas.height/2);
-          ctx.rotate(-30 * Math.PI/180);
-          for (let y=-canvas.height; y<canvas.height*2; y+=step) ctx.fillText(text,0,y);
+          ctx.translate(canvas.width / 2, canvas.height / 2);
+          ctx.rotate(-30 * Math.PI / 180);
+          for (let y = -canvas.height; y < canvas.height * 2; y += step) {
+            ctx.fillText(text, 0, y);
+          }
           ctx.setTransform(1,0,0,1,0,0);
         } else {
-          let x = canvas.width/2; let y = canvas.height/2;
-          if (pos==='top-left'){ x = canvas.width*0.15; y = canvas.height*0.15; }
-          if (pos==='top-right'){ x = canvas.width*0.85; y = canvas.height*0.15; }
-          if (pos==='bottom-left'){ x = canvas.width*0.15; y = canvas.height*0.85; }
-          if (pos==='bottom-right'){ x = canvas.width*0.85; y = canvas.height*0.85; }
+          let x = canvas.width / 2;
+          let y = canvas.height / 2;
+          if (pos === 'top-left') { x = canvas.width * 0.15; y = canvas.height * 0.15; }
+          if (pos === 'top-right') { x = canvas.width * 0.85; y = canvas.height * 0.15; }
+          if (pos === 'bottom-left') { x = canvas.width * 0.15; y = canvas.height * 0.85; }
+          if (pos === 'bottom-right') { x = canvas.width * 0.85; y = canvas.height * 0.85; }
           ctx.fillText(text, x, y);
         }
-        ctx.restore(); resolve();
+        ctx.restore();
+        resolve();
       } else {
         if (!uploadedImageDataUrl) return resolve();
-        const img = new Image(); img.crossOrigin='anonymous'; img.src = uploadedImageDataUrl;
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.src = uploadedImageDataUrl;
         img.onload = () => {
-          ctx.save(); ctx.globalAlpha = opacity;
-          const maxW = canvas.width * 0.5; const maxH = canvas.height * 0.5;
-          let drawW = maxW; let drawH = (img.height / img.width) * drawW;
+          ctx.save();
+          ctx.globalAlpha = opacity;
+          const maxW = canvas.width * 0.5;
+          const maxH = canvas.height * 0.5;
+          let drawW = maxW;
+          let drawH = (img.height / img.width) * drawW;
           if (drawH > maxH) { drawH = maxH; drawW = (img.width / img.height) * drawH; }
           if (pos === 'diagonal') {
-            const stepX = drawW * 1.8; const stepY = drawH * 1.8;
+            const stepX = drawW * 1.8;
+            const stepY = drawH * 1.8;
             ctx.translate(canvas.width/2, canvas.height/2);
-            ctx.rotate(-30 * Math.PI/180);
-            for (let x=-canvas.width*2; x<canvas.width*2; x+=stepX) for (let y=-canvas.height*2; y<canvas.height*2; y+=stepY) ctx.drawImage(img, x - drawW/2, y - drawH/2, drawW, drawH);
+            ctx.rotate(-30 * Math.PI / 180);
+            for (let x = -canvas.width*2; x < canvas.width*2; x += stepX) {
+              for (let y = -canvas.height*2; y < canvas.height*2; y += stepY) {
+                ctx.drawImage(img, x - drawW/2, y - drawH/2, drawW, drawH);
+              }
+            }
             ctx.setTransform(1,0,0,1,0,0);
           } else {
-            let x = (canvas.width - drawW) / 2; let y = (canvas.height - drawH) / 2;
-            if (pos==='top-left'){ x = canvas.width*0.05; y = canvas.height*0.05; }
-            if (pos==='top-right'){ x = canvas.width - drawW - canvas.width*0.05; y = canvas.height*0.05; }
-            if (pos==='bottom-left'){ x = canvas.width*0.05; y = canvas.height - drawH - canvas.height*0.05; }
-            if (pos==='bottom-right'){ x = canvas.width - drawW - canvas.width*0.05; y = canvas.height - drawH - canvas.height*0.05; }
+            let x = (canvas.width - drawW) / 2;
+            let y = (canvas.height - drawH) / 2;
+            if (pos === 'top-left') { x = canvas.width * 0.05; y = canvas.height * 0.05; }
+            if (pos === 'top-right') { x = canvas.width - drawW - canvas.width * 0.05; y = canvas.height * 0.05; }
+            if (pos === 'bottom-left') { x = canvas.width * 0.05; y = canvas.height - drawH - canvas.height * 0.05; }
+            if (pos === 'bottom-right') { x = canvas.width - drawW - canvas.width * 0.05; y = canvas.height - drawH - canvas.height * 0.05; }
             ctx.drawImage(img, x, y, drawW, drawH);
           }
-          ctx.restore(); resolve();
+          ctx.restore();
+          resolve();
         };
         img.onerror = () => resolve();
       }
     });
   }
 
-  // Build final PDF using jsPDF from each canvas after applying watermark to full-resolution render
   async function processWithJsPdf() {
     if (!selectedFile) { showStatus('Please select a PDF file first', 'error'); return; }
-    if (!env.pdfJsAvailable || !window.pdfjsLib) {
-      showStatus('pdf.js not available — cannot render pages to images for the final PDF.', 'error'); return;
-    }
-    if (!env.jsPdfAvailable || !window.jspdf) {
-      showStatus('jsPDF not available — cannot create final PDF.', 'error'); return;
-    }
+    if (!env.pdfJsAvailable || !window.pdfjsLib) { showStatus('pdf.js not available — cannot render pages for final PDF.', 'error'); return; }
+    if (!env.jsPdfAvailable || !window.jspdf) { showStatus('jsPDF not available — cannot create final PDF.', 'error'); return; }
 
     try {
       progressWrap.style.display = 'block';
@@ -426,30 +466,23 @@ function startApp(env = { pdfJsAvailable: true, jsPdfAvailable: true }) {
       const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
       const pdfDoc = await loadingTask.promise;
       const total = pdfDoc.numPages;
-      // jsPDF UMD is exported as window.jspdf.jsPDF
       const { jsPDF } = window.jspdf;
-      // create jsPDF - orientation and unit will be set per page
       let doc = null;
       for (let p = 1; p <= total; p++) {
         progressStage.textContent = `Rendering page ${p} / ${total}`;
         setProgress(10 + (p / total) * 70);
         const page = await pdfDoc.getPage(p);
-        // render at reasonable resolution (scale)
-        const scale = 2; // higher scale yields better quality but larger size
+        const scale = 2;
         const viewport = page.getViewport({ scale });
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = Math.floor(viewport.width);
         canvas.height = Math.floor(viewport.height);
         await page.render({ canvasContext: ctx, viewport }).promise;
-        // apply watermark to canvas (same logic as preview but on high-res)
         await applyCanvasWatermark(canvas, ctx);
-        // convert canvas to image data
         const imgData = canvas.toDataURL('image/jpeg', 0.92);
-        // create jsPDF page with same orientation and size
         const orientation = (viewport.width > viewport.height) ? 'l' : 'p';
-        // size in mm
-        const pxToMm = (px) => (px * 25.4) / (96 * scale); // 96 DPI assumed, adjusted by scale
+        const pxToMm = (px) => (px * 25.4) / (96 * scale);
         const pageW = pxToMm(viewport.width);
         const pageH = pxToMm(viewport.height);
         if (p === 1) {
@@ -459,12 +492,9 @@ function startApp(env = { pdfJsAvailable: true, jsPdfAvailable: true }) {
           doc.addPage([pageW, pageH], orientation);
           doc.addImage(imgData, 'JPEG', 0, 0, pageW, pageH);
         }
-        // small yield so UI updates smoothly
         await new Promise(r => setTimeout(r, 50));
       }
-      setProgress(95);
-      progressStage.textContent = 'Finalizing';
-      // save
+      setProgress(95); progressStage.textContent = 'Finalizing';
       doc.save(`watermarked-${selectedFile.name}`);
       setProgress(100);
       showStatus('Watermarked PDF generated and downloaded', 'success');
@@ -476,19 +506,15 @@ function startApp(env = { pdfJsAvailable: true, jsPdfAvailable: true }) {
     }
   }
 
-  // helpers
-  function dataURLToUint8Array(dataURL) { const parts = dataURL.split(','); const base64 = parts[1]; const binaryString = atob(base64); const len = binaryString.length; const bytes = new Uint8Array(len); for (let i=0;i<len;i++) bytes[i]=binaryString.charCodeAt(i); return bytes; }
   function formatFileSize(bytes) { if (bytes===0) return '0 Bytes'; const k=1024; const sizes=['Bytes','KB','MB','GB']; const i=Math.floor(Math.log(bytes)/Math.log(k)); return parseFloat((bytes/Math.pow(k,i)).toFixed(2)) + ' ' + sizes[i]; }
-  function setProgress(percent) { document.getElementById('progressBar').style.width = `${percent}%`; document.getElementById('progressText').textContent = `${Math.round(percent)}%`; }
-  function resetTool() { fileInput.value=''; document.getElementById('selectedFileContainer').style.display='none'; watermarkText.value='Confidential'; watermarkColor.value='#cccccc'; watermarkSize.value='medium'; watermarkOpacity.value=50; watermarkPosition.value='center'; watermarkType.value='text'; uploadedImageDataUrl=null; watermarkImageInput.value=''; watermarkFont.value='Helvetica'; textOptions.style.display='block'; imageOptions.style.display='none'; addWatermarkBtn.disabled=true; updateColorText(); updateOpacityValue(); previewGrid.innerHTML=''; showStatus('Tool reset','success'); }
+  function resetTool() { document.getElementById('fileInput').value=''; document.getElementById('selectedFileContainer').style.display='none'; watermarkText.value='Confidential'; watermarkColor.value='#cccccc'; watermarkSize.value='medium'; watermarkOpacity.value=50; watermarkPosition.value='center'; watermarkType.value='text'; uploadedImageDataUrl=null; watermarkImageInput.value=''; watermarkFont.value='Helvetica'; document.getElementById('textOptions').style.display='block'; document.getElementById('imageOptions').style.display='none'; addWatermarkBtn.disabled=true; updateColorText(); updateOpacityValue(); document.getElementById('previewGrid').innerHTML=''; showStatus('Tool reset','success'); }
 
-  // small utility functions
   function handleDragOver(e){ e.preventDefault(); e.stopPropagation(); uploadArea.classList.add('dragover'); }
   function handleDragLeave(e){ e.preventDefault(); e.stopPropagation(); uploadArea.classList.remove('dragover'); }
 
-  function showStatus(msg, type){ const el = document.getElementById('statusMessage'); el.textContent = msg; el.classList.remove('status-success','status-error'); if(type==='success') el.classList.add('status-success'); if(type==='error') el.classList.add('status-error'); el.style.display='block'; if(type!=='info') setTimeout(()=>el.style.display='none',5000); }
-  function updateColorText(){ document.getElementById('watermarkColorText').value = watermarkColor.value.toUpperCase(); }
-  function updateOpacityValue(){ document.getElementById('opacityValue').textContent = `${watermarkOpacity.value}%`; }
+  function showStatus(msg, type){ const el=document.getElementById('statusMessage'); el.textContent=msg; el.classList.remove('status-success','status-error'); if(type==='success') el.classList.add('status-success'); if(type==='error') el.classList.add('status-error'); el.style.display='block'; if(type!=='info') setTimeout(()=>el.style.display='none',5000); }
+  function updateColorText(){ document.getElementById('watermarkColorText').value = document.getElementById('watermarkColor').value.toUpperCase(); }
+  function updateOpacityValue(){ document.getElementById('opacityValue').textContent = `${document.getElementById('watermarkOpacity').value}%`; }
 }
 </script>
 </body>
