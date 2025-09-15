@@ -1,242 +1,217 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Password Protect PDF - Smarttool Hub</title>
-  <meta name="description" content="Add password protection to your PDF files. 100% browser-based, private and fast."/>
-  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
-  <style>
-    :root{
-      --bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;
-      --primary:#22d3ee;--muted:#9fb3c8;--radius:12px;
-    }
-    body.light{
-      --bg:#f6f8fb;--text:#0b1220;--card:#ffffff;--border:#e6eefc;
-      --primary:#0b74ff;--muted:#556677;
-    }
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{
-      font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
-      background:var(--bg);color:var(--text);transition:background .25s,color .25s;
-      min-height:100vh;display:flex;flex-direction:column;
-    }
-    .container{max-width:1200px;margin:0 auto;padding:20px;width:100%}
-    header{
-      display:flex;align-items:center;justify-content:space-between;gap:12px;
-      background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;
-    }
-    .brand{display:flex;gap:12px;align-items:center}
-    .brand img{width:46px;height:46px;border-radius:10px}
-    .brand .title{font-size:1.25rem;font-weight:700;color:var(--primary);margin:0}
-    .brand .tag{font-size:.9rem;color:var(--muted)}
-    .header-actions{display:flex;gap:10px;align-items:center}
-    .btn-header{
-      border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;
-      color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;font-weight:600
-    }
-    .btn-header:hover{border-color:var(--primary);color:var(--primary)}
-    
-    .tool-content {
-      background:var(--card);border-radius:var(--radius);border:1px solid var(--border);
-      padding:25px;margin-top:20px;
-    }
-    .tool-title {
-      font-size:1.8rem;margin-bottom:5px;color:var(--primary);
-    }
-    .tool-description {
-      color:var(--muted);margin-bottom:25px;
-    }
-    .upload-area {
-      border:2px dashed var(--border);border-radius:var(--radius);padding:40px;
-      text-align:center;margin-bottom:25px;transition:all 0.3s;cursor:pointer;
-      background:var(--bg);
-    }
-    .upload-area:hover, .upload-area.dragover {
-      border-color:var(--primary);background:rgba(34,211,238,0.05);
-    }
-    .upload-icon {font-size:3rem;color:var(--muted);margin-bottom:15px;}
-    .upload-text {color:var(--text);margin-bottom:15px;font-weight:600;}
-    .upload-subtext {color:var(--muted);font-size:0.9rem;}
-    .file-input {display:none;}
-    .selected-file {
-      display:flex;align-items:center;gap:12px;padding:15px;
-      background:var(--bg);border-radius:var(--radius);border:1px solid var(--border);
-      margin-bottom:25px;
-    }
-    .file-icon {font-size:1.5rem;color:var(--primary);}
-    .file-info {flex:1;}
-    .file-name {font-weight:600;margin-bottom:4px;color:var(--text);}
-    .file-size {color:var(--muted);font-size:0.9rem;}
-    .remove-file {background:transparent;border:none;color:var(--muted);cursor:pointer;padding:5px;border-radius:4px;}
-    .remove-file:hover {color:#ef4444;}
-    .option-group {margin-bottom:15px;}
-    .option-group label {display:block;margin-bottom:8px;font-weight:500;color:var(--text);}
-    .option-group input {width:100%;padding:10px 12px;border-radius:var(--radius);background:var(--bg);border:1px solid var(--border);color:var(--text);}
-    .password-strength {margin-top:8px;height:6px;border-radius:3px;background:var(--border);overflow:hidden;}
-    .password-strength-meter {height:100%;width:0%;transition:width 0.3s;}
-    .password-strength-weak { background:#ef4444; width: 33%; }
-    .password-strength-medium { background:#f59e0b; width: 66%; }
-    .password-strength-strong { background:#10b981; width: 100%; }
-    .password-feedback {font-size:0.8rem;color:var(--muted);margin-top:5px;}
-    .encryption-options h3 {margin-bottom:15px;color:var(--primary);font-size:1.1rem;}
-    .encryption-types {display:flex;gap:15px;flex-wrap:wrap;}
-    .encryption-type {
-      flex:1;min-width:200px;background:var(--bg);border:1px solid var(--border);
-      border-radius:var(--radius);padding:15px;cursor:pointer;transition:all 0.2s;
-    }
-    .encryption-type.active {border-color:var(--primary);background:rgba(34,211,238,0.05);border-width:2px;}
-    .encryption-type h4 {margin:0 0 8px 0;color:var(--text);font-size:1rem;}
-    .encryption-type p {margin:0;color:var(--muted);font-size:0.9rem;}
-    .action-buttons {display:flex;gap:12px;flex-wrap:wrap;}
-    .btn {padding:12px 20px;border-radius:var(--radius);border:none;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;}
-    .btn-primary {background:var(--primary);color:#00131f;}
-    .btn-secondary {background:var(--card);color:var(--text);border:1px solid var(--border);}
-    .btn:disabled {opacity:0.6;cursor:not-allowed;}
-    .btn:hover:not(:disabled) {opacity:0.9;}
-    .status-message {margin-top:15px;padding:10px;border-radius:var(--radius);background:var(--bg);border:1px solid var(--border);color:var(--muted);font-size:0.9rem;display:none;}
-    .status-success {border-color:#10b981;color:#10b981;}
-    .status-error {border-color:#ef4444;color:#ef4444;}
-    footer{margin-top:auto;padding:18px 0;background:var(--card);border-top:1px solid var(--border)}
-    .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-    .footer-links{display:flex;gap:14px;flex-wrap:wrap}
-    .footer-links a{color:var(--primary);text-decoration:none;font-weight:600}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Client-side PDF Encrypt / Decrypt (No API Key)</title>
+<style>
+  body{font-family:Inter,Arial,Helvetica,sans-serif;background:#0b1220;color:#eaf2ff;padding:20px}
+  .card{background:#132034;padding:18px;border-radius:10px;max-width:900px;margin:18px auto;border:1px solid #223248}
+  h1{color:#22d3ee;margin:0 0 12px}
+  label{display:block;margin:10px 0 6px;color:#bcd6ec}
+  input[type="file"]{display:block}
+  input[type="password"], input[type="text"]{width:100%;padding:10px;border-radius:8px;border:1px solid #2b3c55;background:#08101a;color:#eaf2ff}
+  button{padding:10px 14px;border-radius:8px;border:none;background:#22d3ee;color:#00131f;font-weight:700;cursor:pointer;margin-right:8px}
+  .muted{color:#93adca;font-size:0.9rem}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .col{flex:1;min-width:240px}
+  pre{background:#07101a;padding:10px;border-radius:6px;overflow:auto;color:#a7c7e6}
+  .note{background:#071a1a;padding:10px;border-radius:8px;margin-top:12px;color:#9fd8c9}
+</style>
 </head>
 <body>
-<header class="container">
-  <div class="brand">
-    <a href="index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
-      <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub Logo">
-      <div>
-        <div class="title">Smarttool Hub</div>
-        <div class="tag">Fast • Private • 100% Client-side</div>
-      </div>
-    </a>
-  </div>
-  <div class="header-actions">
-    <a href="index.html" class="btn-header"><i class="fa-solid fa-house"></i> Home</a>
-    <button class="btn-header" id="themeToggle" title="Toggle dark/light mode"><i class="fa-solid fa-moon"></i></button>
-  </div>
-</header>
+  <div class="card">
+    <h1>Offline PDF Encrypt / Decrypt (Client-side)</h1>
+    <p class="muted">No API key, no server — everything runs in your browser. Note: result is an encrypted blob (.enc), not an Adobe password-protected PDF.</p>
 
-<main class="container">
-  <div class="tool-content">
-    <h1 class="tool-title">Password Protect PDF</h1>
-    <p class="tool-description">Add password protection to your PDF files. Uses PDF.co API for encryption.</p>
-    
-    <div class="upload-area" id="uploadArea">
-      <div class="upload-icon"><i class="fas fa-file-pdf"></i></div>
-      <div class="upload-text">Drop your PDF file here or click to browse</div>
-      <input type="file" id="fileInput" class="file-input" accept=".pdf">
-    </div>
-    
-    <div id="selectedFileContainer" style="display:none;">
-      <div class="selected-file">
-        <div class="file-icon"><i class="fas fa-file-pdf"></i></div>
-        <div class="file-info">
-          <div class="file-name" id="fileName"></div>
-          <div class="file-size" id="fileSize"></div>
-        </div>
-        <button class="remove-file" id="removeFile"><i class="fas fa-times"></i></button>
+    <h3>Encrypt PDF</h3>
+    <label>Select PDF to encrypt</label>
+    <input id="encFile" type="file" accept="application/pdf">
+    <div class="row" style="margin-top:8px">
+      <div class="col">
+        <label>Password (to encrypt)</label>
+        <input id="encPassword" type="password" placeholder="Enter a strong password">
+      </div>
+      <div class="col">
+        <label>Output filename</label>
+        <input id="encFilename" type="text" placeholder="encrypted-file.enc">
       </div>
     </div>
-    
-    <div class="option-group">
-      <label for="passwordInput">Set Password</label>
-      <input type="password" id="passwordInput" placeholder="Enter password">
+    <div style="margin-top:12px">
+      <button id="encryptBtn">Encrypt & Download</button>
+      <button id="clearEnc">Clear</button>
     </div>
-    <div class="option-group">
-      <label for="confirmPasswordInput">Confirm Password</label>
-      <input type="password" id="confirmPasswordInput" placeholder="Confirm password">
-    </div>
-    
-    <div class="encryption-options">
-      <h3>Encryption Level</h3>
-      <div class="encryption-types">
-        <div class="encryption-type active" data-level="AES_128bit">
-          <h4>128-bit AES</h4><p>Standard</p>
-        </div>
-        <div class="encryption-type" data-level="AES_256bit">
-          <h4>256-bit AES</h4><p>Stronger</p>
-        </div>
-      </div>
-    </div>
-    
-    <div class="action-buttons">
-      <button class="btn btn-primary" id="protectBtn" disabled><i class="fas fa-lock"></i> Protect PDF</button>
-      <button class="btn btn-secondary" id="downloadBtn" disabled><i class="fas fa-download"></i> Download</button>
-    </div>
-    
-    <div id="statusMessage" class="status-message"></div>
-  </div>
-</main>
 
-<footer class="container">
-  <div class="footer-inner">
-    <div>© <span id="year"></span> Smarttool Hub</div>
-    <div class="footer-links">
-      <a href="privacy.html">Privacy</a>
-      <a href="terms.html">Terms</a>
-      <a href="contact.html">Contact</a>
+    <hr style="border-color:#1f344a;margin:18px 0">
+
+    <h3>Decrypt file</h3>
+    <label>Select .enc file to decrypt</label>
+    <input id="decFile" type="file" accept=".enc,application/octet-stream">
+    <div class="row" style="margin-top:8px">
+      <div class="col">
+        <label>Password (to decrypt)</label>
+        <input id="decPassword" type="password" placeholder="Enter password used for encryption">
+      </div>
+      <div class="col">
+        <label>Output filename (e.g., document.pdf)</label>
+        <input id="decFilename" type="text" placeholder="original.pdf">
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <button id="decryptBtn">Decrypt & Download</button>
+      <button id="clearDec">Clear</button>
+    </div>
+
+    <div class="note" id="noteArea">
+      <strong>How it works:</strong>
+      <ul>
+        <li>We derive a key from your password (PBKDF2) and encrypt the PDF with AES-GCM.</li>
+        <li>The encrypted file stores (salt || iv || ciphertext) as binary so it can be decrypted later.</li>
+        <li>This is NOT a PDF password — to open the PDF you must first decrypt it using the correct password (we provide the decrypt utility above).</li>
+      </ul>
+    </div>
+
+    <div style="margin-top:14px">
+      <strong>Logs / status:</strong>
+      <pre id="log" style="height:140px">Ready.</pre>
     </div>
   </div>
-</footer>
 
 <script>
-  const PDFCO_API_KEY = 'kinjalpatni2025@gmail.com_koZu81RANcqlxrd2aIqhggnzR8c3S0rDhAqF00QB0GArXu6dr8ulZRFO9lr2rpgR';
-  document.getElementById('year').textContent = new Date().getFullYear();
+/*
+ Client-side AES-GCM encrypt/decrypt using Web Crypto (SubtleCrypto)
+ Format of stored file: [ 8 bytes salt length (uint32 BE) | salt | 12 bytes IV | ciphertext... ]
+ Simpler: we store: salt(16 bytes) + iv(12 bytes) + ciphertext
+ For easier parsing, we'll prefix with 4-byte salt length.
+*/
 
-  let selectedFile=null, protectedFileUrl=null, currentEncryption="AES_128bit";
+const logEl = document.getElementById('log');
+function log(msg){
+  const t = new Date().toLocaleTimeString();
+  logEl.textContent = `[${t}] ${msg}\\n` + logEl.textContent;
+}
 
-  const fileInput=document.getElementById("fileInput");
-  const uploadArea=document.getElementById("uploadArea");
-  const fileName=document.getElementById("fileName");
-  const fileSize=document.getElementById("fileSize");
-  const selectedFileContainer=document.getElementById("selectedFileContainer");
-  const removeFile=document.getElementById("removeFile");
-  const passwordInput=document.getElementById("passwordInput");
-  const confirmPasswordInput=document.getElementById("confirmPasswordInput");
-  const encryptionTypes=document.querySelectorAll(".encryption-type");
-  const protectBtn=document.getElementById("protectBtn");
-  const downloadBtn=document.getElementById("downloadBtn");
-  const statusMessage=document.getElementById("statusMessage");
+// util: convert string to ArrayBuffer
+function str2ab(str){ return new TextEncoder().encode(str); }
+function ab2str(ab){ return new TextDecoder().decode(ab); }
 
-  uploadArea.onclick=()=>fileInput.click();
-  fileInput.onchange=e=>{
-    const file=e.target.files[0];
-    if(file && file.type==="application/pdf"){handleFile(file);}
+// derive key from password + salt using PBKDF2
+async function deriveKey(password, salt, iterations=200000, keyLen=256){
+  const pwKey = await crypto.subtle.importKey('raw', str2ab(password), {name:'PBKDF2'}, false, ['deriveKey']);
+  const derived = await crypto.subtle.deriveKey({
+    name:'PBKDF2',
+    salt: salt,
+    iterations: iterations,
+    hash: 'SHA-256'
+  }, pwKey, {name:'AES-GCM', length: keyLen}, false, ['encrypt','decrypt']);
+  return derived;
+}
+
+// generate random bytes
+function randBytes(length){ return crypto.getRandomValues(new Uint8Array(length)); }
+
+// encrypt ArrayBuffer with password, returns Uint8Array packaged (salt + iv + ciphertext)
+async function encryptBuffer(buffer, password){
+  const salt = randBytes(16); // 128-bit salt
+  const iv = randBytes(12);   // 96-bit IV for AES-GCM
+  const key = await deriveKey(password, salt);
+  const cipher = await crypto.subtle.encrypt({name:'AES-GCM', iv: iv}, key, buffer);
+  const cipherU8 = new Uint8Array(cipher);
+
+  // Package: [salt (16)] [iv (12)] [ciphertext]
+  const out = new Uint8Array(salt.byteLength + iv.byteLength + cipherU8.byteLength);
+  out.set(salt, 0);
+  out.set(iv, salt.byteLength);
+  out.set(cipherU8, salt.byteLength + iv.byteLength);
+  return out;
+}
+
+// decrypt packaged Uint8Array with password -> returns ArrayBuffer plaintext
+async function decryptBuffer(packedU8, password){
+  if (packedU8.length < 28) throw new Error('File too small or corrupted');
+  const salt = packedU8.slice(0,16);
+  const iv = packedU8.slice(16,28);
+  const ciphertext = packedU8.slice(28);
+  const key = await deriveKey(password, salt);
+  const plain = await crypto.subtle.decrypt({name:'AES-GCM', iv: iv}, key, ciphertext);
+  return plain;
+}
+
+// Download helper
+function downloadBlob(blob, filename){
+  const a = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  a.href = url; a.download = filename || 'file';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
+}
+
+// ========== Encrypt UI ==========
+const encFileEl = document.getElementById('encFile');
+const encPassEl = document.getElementById('encPassword');
+const encNameEl = document.getElementById('encFilename');
+const encryptBtn = document.getElementById('encryptBtn');
+const clearEnc = document.getElementById('clearEnc');
+
+encryptBtn.addEventListener('click', async ()=>{
+  try{
+    const file = encFileEl.files[0];
+    const password = encPassEl.value;
+    if(!file) { alert('Please select a PDF file to encrypt'); return; }
+    if(!password || password.length < 4) { alert('Please enter a password (min 4 chars recommended)'); return; }
+
+    log('Reading file: ' + file.name);
+    const arrayBuffer = await file.arrayBuffer();
+    log('Deriving key and encrypting (this may take a moment)...');
+    const packed = await encryptBuffer(arrayBuffer, password);
+    const outName = encNameEl.value ? encNameEl.value.trim() : (file.name + '.enc');
+    const blob = new Blob([packed], {type: 'application/octet-stream'});
+    downloadBlob(blob, outName);
+    log('Encryption complete. Downloaded: ' + outName);
+  }catch(err){
+    console.error(err);
+    log('Error during encryption: ' + err.message);
+    alert('Encryption failed: ' + err.message);
   }
-  removeFile.onclick=()=>{selectedFile=null;selectedFileContainer.style.display="none";protectBtn.disabled=true;downloadBtn.disabled=true;}
-  encryptionTypes.forEach(t=>t.onclick=()=>{encryptionTypes.forEach(x=>x.classList.remove("active"));t.classList.add("active");currentEncryption=t.dataset.level;});
-  passwordInput.oninput=confirmPasswordInput.oninput=()=>{protectBtn.disabled=!(selectedFile&&passwordInput.value&&passwordInput.value===confirmPasswordInput.value);};
-  protectBtn.onclick=protectPDF;downloadBtn.onclick=downloadProtectedPDF;
+});
 
-  function handleFile(file){selectedFile=file;fileName.textContent=file.name;fileSize.textContent=(file.size/1024).toFixed(1)+" KB";selectedFileContainer.style.display="block";protectBtn.disabled=!(passwordInput.value&&passwordInput.value===confirmPasswordInput.value);}
-  function showStatus(msg,type){statusMessage.textContent=msg;statusMessage.style.display="block";statusMessage.className="status-message "+(type==="error"?"status-error":"status-success");}
+clearEnc.addEventListener('click', ()=>{
+  encFileEl.value=''; encPassEl.value=''; encNameEl.value=''; log('Encryption inputs cleared');
+});
 
-  async function protectPDF(){
-    try{
-      showStatus("Uploading...","info");
-      const presigned=await fetch("https://api.pdf.co/v1/file/upload/get-presigned-url",{method:"POST",headers:{"x-api-key":PDFCO_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({name:selectedFile.name})});
-      const presignedJson=await presigned.json();
-      const uploadUrl=presignedJson.presignedUrl, fileUrl=presignedJson.url;
-      await fetch(uploadUrl,{method:"PUT",headers:{"Content-Type":"application/pdf"},body:selectedFile});
-      const protect=await fetch("https://api.pdf.co/v1/pdf/security/add",{method:"POST",headers:{"x-api-key":PDFCO_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({url:fileUrl,userPassword:passwordInput.value,ownerPassword:passwordInput.value,EncryptionAlgorithm:currentEncryption})});
-      const protectJson=await protect.json();
-      protectedFileUrl=protectJson.url;
-      downloadBtn.disabled=false;
-      showStatus("PDF protected successfully","success");
-    }catch(e){showStatus("Error: "+e,"error");}
+// ========== Decrypt UI ==========
+const decFileEl = document.getElementById('decFile');
+const decPassEl = document.getElementById('decPassword');
+const decNameEl = document.getElementById('decFilename');
+const decryptBtn = document.getElementById('decryptBtn');
+const clearDec = document.getElementById('clearDec');
+
+decryptBtn.addEventListener('click', async ()=>{
+  try{
+    const file = decFileEl.files[0];
+    const password = decPassEl.value;
+    if(!file) { alert('Please select an encrypted (.enc) file to decrypt'); return; }
+    if(!password) { alert('Please enter the password'); return; }
+    log('Reading encrypted file: ' + file.name);
+    const packed = new Uint8Array(await file.arrayBuffer());
+    log('Attempting decryption (this may take a moment)...');
+    const plain = await decryptBuffer(packed, password);
+    // try to detect MIME — we'll assume PDF; let user set filename
+    const outName = decNameEl.value ? decNameEl.value.trim() : 'decrypted.pdf';
+    const blob = new Blob([plain], {type: 'application/pdf'});
+    downloadBlob(blob, outName);
+    log('Decryption complete. Downloaded: ' + outName);
+  }catch(err){
+    console.error(err);
+    log('Decryption failed: ' + err.message);
+    alert('Decryption failed — wrong password or corrupted file.');
   }
+});
 
-  async function downloadProtectedPDF(){
-    const r=await fetch(protectedFileUrl);const b=await r.blob();
-    const url=URL.createObjectURL(b);const a=document.createElement("a");
-    a.href=url;a.download="protected-"+selectedFile.name;document.body.appendChild(a);a.click();
-    setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},100);
-  }
+clearDec.addEventListener('click', ()=>{
+  decFileEl.value=''; decPassEl.value=''; decNameEl.value=''; log('Decryption inputs cleared');
+});
+
 </script>
 </body>
 </html>
