@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>PDF to Image Converter - Smarttool Hub</title>
+  <title>PDF to Image Converter - Smarttool Hub (Fixed)</title>
   <meta name="description" content="Convert PDF files to high-quality images in PNG, JPG, or WebP format. 100% browser-based, private and fast."/>
   <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
@@ -265,8 +265,10 @@
 </footer>
 
 <!-- Libraries -->
-<!-- PDF.js (mozilla) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.10.140/pdf.min.js"></script>
+<!-- PDF.js (stable, exposes pdfjsLib globally) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"></script>
+
 <!-- JSZip and FileSaver for ZIP download -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -292,6 +294,15 @@
     }
   };
 
+  // Ensure pdfjsLib is available (stable versions expose window.pdfjsLib)
+  const pdfjsLib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+  if (!pdfjsLib) {
+    alert('PDF.js failed to load. Please check internet connection or CDN blocking.');
+    throw new Error('pdfjsLib not found');
+  }
+  // Point workerSrc to the cdn worker we included
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
   // Elements
   const uploadArea = document.getElementById('uploadArea');
   const fileInput = document.getElementById('fileInput');
@@ -313,11 +324,6 @@
   const statusMessage = document.getElementById('statusMessage');
   const resultsContainer = document.getElementById('resultsContainer');
   const resultsGrid = document.getElementById('resultsGrid');
-
-  // PDF.js worker setup (uses the same CDN file)
-  if (window.pdfjsLib) {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.10.140/pdf.worker.min.js';
-  }
 
   let selectedFile = null;
   let convertedImages = []; // {page, filename, blobUrl, blob}
