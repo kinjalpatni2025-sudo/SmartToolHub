@@ -1,22 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>PDF Watermark Tool - Smarttool Hub</title>
   <meta name="description" content="Add watermark text or logo to your PDF files. 100% browser-based, private and fast."/>
   <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
   <style>
-    :root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8;--radius:12px;}
-    body.light{--bg:#f6f8fb;--text:#0b1220;--card:#ffffff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677;}
+    :root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8;--radius:12px}
+    body.light{--bg:#f6f8fb;--text:#0b1220;--card:#ffffff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:var(--text);transition:background .25s,color .25s;min-height:100vh;display:flex;flex-direction:column;}
+    body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
     .container{max-width:1200px;margin:0 auto;padding:20px;width:100%}
     header{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px}
     .brand{display:flex;gap:12px;align-items:center}.brand img{width:46px;height:46px;border-radius:10px}
-    .brand .title{font-size:1.25rem;font-weight:700;color:var(--primary);margin:0}
-    .brand .tag{font-size:.9rem;color:var(--muted)}
+    .brand .title{font-size:1.25rem;font-weight:700;color:var(--primary);margin:0}.brand .tag{font-size:.9rem;color:var(--muted)}
     .header-actions{display:flex;gap:10px;align-items:center}
     .btn-header{border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;font-weight:600}
     .tool-content{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:25px;margin-top:20px}
@@ -36,8 +35,6 @@
     .option-group{margin-bottom:15px}
     .option-group label{display:block;margin-bottom:8px;font-weight:500;color:var(--text)}
     .option-group input,.option-group select,.option-group textarea{width:100%;padding:10px 12px;border-radius:var(--radius);background:var(--bg);border:1px solid var(--border);color:var(--text)}
-    .option-group textarea{min-height:80px;resize:vertical}
-    .color-input{display:flex;align-items:center;gap:10px}
     .preview-area{border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:16px;background:var(--bg);min-height:200px;position:relative}
     .preview-grid{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;max-height:420px;overflow:auto;padding:6px}
     .page-thumb{background:var(--card);border-radius:8px;padding:8px;border:1px solid var(--border);min-width:180px;display:flex;flex-direction:column;gap:8px;align-items:center}
@@ -74,6 +71,7 @@
   <div class="tool-content">
     <h1 class="tool-title">PDF Watermark Tool</h1>
     <p class="tool-description">Add watermark text or logo to your PDF files. Your files are processed entirely in your browser—no server uploads.</p>
+
     <div class="upload-area" id="uploadArea">
       <div class="upload-icon"><i class="fas fa-file-pdf"></i></div>
       <div class="upload-text">Drop your PDF file here or click to browse</div>
@@ -106,7 +104,18 @@
     </div>
 
     <div class="preview-area" id="previewArea">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><div style="font-weight:600;color:var(--muted)">Page preview (click to enlarge)</div><div style="display:flex;gap:10px;align-items:center;"><div style="font-size:0.85rem;color:var(--muted)">Preview scale:</div><select id="previewScale" style="padding:6px;border-radius:6px;background:var(--bg);color:var(--text);border:1px solid var(--border);"><option value="0.8">80%</option><option value="1" selected>100%</option><option value="1.25">125%</option><option value="1.5">150%</option></select></div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-weight:600;color:var(--muted)">Page preview (click to enlarge)</div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <div style="font-size:0.85rem;color:var(--muted)">Preview scale:</div>
+          <select id="previewScale" style="padding:6px;border-radius:6px;background:var(--bg);color:var(--text);border:1px solid var(--border);">
+            <option value="0.8">80%</option>
+            <option value="1" selected>100%</option>
+            <option value="1.25">125%</option>
+            <option value="1.5">150%</option>
+          </select>
+        </div>
+      </div>
       <div class="preview-grid" id="previewGrid"></div>
     </div>
 
@@ -128,62 +137,13 @@
 <footer class="container"><div class="footer-inner"><div>© <span id="year"></span> Smarttool Hub</div><div class="footer-links"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="contact.html">Contact</a><a href="comments.html">Comments</a><a href="faq.html">FAQ</a></div></div></footer>
 
 <script>
-/*
-  Robust library loader:
-  - tries several CDN URLs for pdf-lib and pdf.js
-  - gives a helpful message with recovery steps if all fail
+/* Try multiple CDNs for pdf.js and jsPDF. If both load, use them.
+   Approach:
+   - pdf.js: render pages to canvases (previews)
+   - draw watermark onto canvases
+   - jsPDF: create a new PDF from canvas images and download
 */
-(async function robustLoader() {
-  // helper: attempt multiple URLs sequentially with timeout
-  async function tryLoadScript(urls, globalCheckName, timeoutMs = 10000) {
-    for (const url of urls) {
-      try {
-        await loadScriptWithTimeout(url, timeoutMs);
-        // short delay to ensure global is set
-        await new Promise(r => setTimeout(r, 50));
-        if (!globalCheckName || window[globalCheckName] || (globalCheckName === 'pdfjsLib' && window.pdfjsLib)) {
-          return { ok: true, url };
-        }
-      } catch (err) {
-        // continue to next url
-        console.warn('Failed to load', url, err);
-      }
-    }
-    return { ok: false };
-  }
-
-  function loadScriptWithTimeout(src, timeoutMs) {
-    return new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      let done = false;
-      const t = setTimeout(() => {
-        if (!done) {
-          done = true;
-          s.onerror = s.onload = null;
-          // remove script tag
-          if (s.parentNode) s.parentNode.removeChild(s);
-          reject(new Error('Timeout loading ' + src));
-        }
-      }, timeoutMs);
-
-      s.onload = () => {
-        if (!done) { done = true; clearTimeout(t); resolve(); }
-      };
-      s.onerror = (e) => {
-        if (!done) { done = true; clearTimeout(t); reject(new Error('Error loading ' + src)); }
-      };
-      s.src = src;
-      s.async = true;
-      document.head.appendChild(s);
-    });
-  }
-
-  // CDN lists
-  const pdfLibCDNs = [
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/2.26.0/pdf-lib.min.js',
-    'https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js',
-    'https://unpkg.com/pdf-lib/dist/pdf-lib.min.js'
-  ];
+(async function loader() {
   const pdfJsCDNs = [
     'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js',
     'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js',
@@ -194,51 +154,63 @@
     'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js',
     'https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js'
   ];
+  const jsPdfCDNs = [
+    'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+    'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+    'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js'
+  ];
 
-  // Try pdf-lib first
-  let pdfLibLoaded = false;
-  try {
-    const res = await tryLoadScript(pdfLibCDNs, 'PDFLib', 9000);
-    pdfLibLoaded = !!res.ok;
-    if (!pdfLibLoaded) console.warn('All pdf-lib CDNs failed');
-  } catch (e) {
-    console.warn(e);
-    pdfLibLoaded = false;
-  }
-
-  // Try pdf.js (optional — previews)
-  let pdfJsLoaded = false;
-  try {
-    const res = await tryLoadScript(pdfJsCDNs, 'pdfjsLib', 9000);
-    pdfJsLoaded = !!res.ok;
-    if (pdfJsLoaded) {
-      // worker
-      const wk = await tryLoadScript(pdfWorkerCDNs, null, 9000);
-      if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerCDNs.find(u => true);
-    } else {
-      console.warn('All pdf.js CDNs failed');
+  async function tryLoad(urls, globalCheckName, timeout=9000) {
+    for (const url of urls) {
+      try {
+        await loadScriptWithTimeout(url, timeout);
+        await new Promise(r => setTimeout(r, 50));
+        if (!globalCheckName || window[globalCheckName] || (globalCheckName === 'pdfjsLib' && window.pdfjsLib) || (globalCheckName === 'jspdf' && window.jspdf)) {
+          return true;
+        }
+      } catch(e) {
+        console.warn('Failed to load', url, e);
+      }
     }
-  } catch (e) {
-    console.warn('pdf.js load error', e);
-    pdfJsLoaded = false;
+    return false;
   }
 
-  // If pdf-lib failed entirely, show help and still initialize the UI but disable the primary action
-  if (!pdfLibLoaded) {
-    alert('Failed to load pdf-lib library from CDN. Check internet connection or allowlist the CDN domains, or host pdf-lib locally.');
-    const help = document.getElementById('libraryHelp');
-    help.style.display = 'block';
-    help.innerHTML = '<strong>pdf-lib failed to load from CDNs.</strong><br>Possible fixes:<ol style="margin:6px 0 0 18px"><li>Allow requests to CDN domains (cdnjs.cloudflare.com, cdn.jsdelivr.net, unpkg.com).</li><li>Run this page locally and place a copy of <code>pdf-lib.min.js</code> beside this HTML, then add: <code>&lt;script src="pdf-lib.min.js"&gt;&lt;/script&gt;</code></li><li>If you are on a corporate network, try from a different network or enable those CDNs.</li></ol>If you want, upload the console errors here and I will help.</div>';
-    // still call startApp but mark pdf-lib absent
+  function loadScriptWithTimeout(src, timeoutMs) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      let done = false;
+      const t = setTimeout(() => {
+        if (!done) { done = true; s.onerror = s.onload = null; if (s.parentNode) s.parentNode.removeChild(s); reject(new Error('Timeout ' + src)); }
+      }, timeoutMs);
+      s.onload = () => { if (!done) { done = true; clearTimeout(t); resolve(); } };
+      s.onerror = (e) => { if (!done) { done = true; clearTimeout(t); reject(e); } };
+      s.src = src; s.async = true; document.head.appendChild(s);
+    });
   }
 
-  // start app (it handles absence of pdf-lib or pdf.js gracefully)
-  startApp({ pdfLibAvailable: pdfLibLoaded, pdfJsAvailable: pdfJsLoaded });
+  const pdfJsOk = await tryLoad(pdfJsCDNs, 'pdfjsLib', 9000);
+  if (pdfJsOk && window.pdfjsLib) {
+    // set worker
+    const worker = pdfWorkerCDNs[0];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = worker;
+  }
+
+  const jsPdfOk = await tryLoad(jsPdfCDNs, 'jspdf', 9000);
+
+  if (!pdfJsOk && !jsPdfOk) {
+    alert('Required libraries (pdf.js and jsPDF) failed to load from CDNs. See help box on the page for options.');
+    document.getElementById('libraryHelp').style.display = 'block';
+    document.getElementById('libraryHelp').innerHTML = '<strong>Libraries failed to load.</strong><br>Possible fixes:<ol style="margin:6px 0 0 18px"><li>Allow requests to CDN domains (cdnjs.cloudflare.com, cdn.jsdelivr.net, unpkg.com).</li><li>Host <code>pdf.min.js</code>, <code>pdf.worker.min.js</code>, and <code>jspdf.umd.min.js</code> locally and add local &lt;script&gt; tags.</li></ol>If you want, paste console errors here and I will help.';
+  }
+
+  // Start main app with info which libraries are available
+  startApp({ pdfJsAvailable: pdfJsOk && !!window.pdfjsLib, jsPdfAvailable: jsPdfOk && !!window.jspdf });
 })(); // end loader
 
-// --- application code (same features) ---
-function startApp(env = { pdfLibAvailable: true, pdfJsAvailable: true }) {
+function startApp(env = { pdfJsAvailable: true, jsPdfAvailable: true }) {
   document.getElementById('year').textContent = new Date().getFullYear();
+
+  // elements
   const uploadArea = document.getElementById('uploadArea');
   const fileInput = document.getElementById('fileInput');
   const selectedFileContainer = document.getElementById('selectedFileContainer');
@@ -268,29 +240,23 @@ function startApp(env = { pdfLibAvailable: true, pdfJsAvailable: true }) {
   const progressStage = document.getElementById('progressStage');
   const themeToggle = document.getElementById('themeToggle');
 
-  // Theme restore
+  // theme
   if (localStorage.getItem('sth_theme') === 'light') {
-    document.body.classList.add('light');
-    themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+    document.body.classList.add('light'); themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
   }
   themeToggle.onclick = () => {
     document.body.classList.toggle('light');
-    if (document.body.classList.contains('light')) {
-      themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
-      localStorage.setItem('sth_theme', 'light');
-    } else {
-      themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
-      localStorage.removeItem('sth_theme');
-    }
+    if (document.body.classList.contains('light')) { themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; localStorage.setItem('sth_theme','light'); }
+    else { themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); }
   };
 
   let selectedFile = null;
   let pdfDocForPreview = null;
   let uploadedImageDataUrl = null;
 
-  updateColorText();
-  updateOpacityValue();
+  updateColorText(); updateOpacityValue();
 
+  // listeners
   uploadArea.addEventListener('click', () => fileInput.click());
   uploadArea.addEventListener('dragover', handleDragOver);
   uploadArea.addEventListener('dragleave', handleDragLeave);
@@ -298,8 +264,8 @@ function startApp(env = { pdfLibAvailable: true, pdfJsAvailable: true }) {
   fileInput.addEventListener('change', handleFileSelect);
   removeFile.addEventListener('click', removeSelectedFile);
   watermarkType.addEventListener('change', () => {
-    if (watermarkType.value === 'text') { textOptions.style.display = 'block'; imageOptions.style.display = 'none'; }
-    else { textOptions.style.display = 'none'; imageOptions.style.display = 'block'; }
+    if (watermarkType.value === 'text') { textOptions.style.display='block'; imageOptions.style.display='none'; }
+    else { textOptions.style.display='none'; imageOptions.style.display='block'; }
     renderPreviewPages();
   });
   watermarkText.addEventListener('input', renderPreviewPages);
@@ -309,7 +275,10 @@ function startApp(env = { pdfLibAvailable: true, pdfJsAvailable: true }) {
   watermarkPosition.addEventListener('change', renderPreviewPages);
   watermarkImageInput.addEventListener('change', handleWatermarkImage);
   previewScale.addEventListener('change', renderPreviewPages);
-  addWatermarkBtn.addEventListener('click', () => { if (!env.pdfLibAvailable) { alert('pdf-lib not loaded — cannot add watermark. See message on page for fixes.'); return; } processWatermark(); });
+  addWatermarkBtn.addEventListener('click', () => {
+    if (!env.jsPdfAvailable || !window.jspdf) { alert('jsPDF not available — cannot build the final PDF. See help box on the page.'); return; }
+    processWithJsPdf();
+  });
   resetBtn.addEventListener('click', resetTool);
 
   function handleDragOver(e) { e.preventDefault(); e.stopPropagation(); uploadArea.classList.add('dragover'); }
@@ -327,7 +296,7 @@ function startApp(env = { pdfLibAvailable: true, pdfJsAvailable: true }) {
     showStatus('PDF file selected', 'success');
 
     if (!env.pdfJsAvailable || !window.pdfjsLib) {
-      showStatus('pdf.js not available — previews disabled, watermarking still works (if pdf-lib loaded).', 'error');
+      showStatus('pdf.js not available — previews disabled. You can still add watermark if jsPDF is available.', 'error');
       return;
     }
 
@@ -338,7 +307,7 @@ function startApp(env = { pdfLibAvailable: true, pdfJsAvailable: true }) {
       const arrayBuffer = await file.arrayBuffer();
       setProgress(15);
       pdfDocForPreview = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      setProgress(30);
+      setProgress(35);
       await renderPreviewPages();
       setProgress(100);
       setTimeout(()=> { progressWrap.style.display = 'none'; }, 400);
@@ -351,18 +320,18 @@ function startApp(env = { pdfLibAvailable: true, pdfJsAvailable: true }) {
 
   function removeSelectedFile() { selectedFile = null; fileInput.value = ''; selectedFileContainer.style.display = 'none'; addWatermarkBtn.disabled = true; resetPreviewGrid(); }
   function handleWatermarkImage(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => { uploadedImageDataUrl = ev.target.result; renderPreviewPages(); showStatus('Watermark image loaded', 'success'); }; reader.readAsDataURL(file); }
-  function updateColorText() { document.getElementById('watermarkColorText').value = watermarkColor.value.toUpperCase(); }
+  function updateColorText() { watermarkColorText.value = watermarkColor.value.toUpperCase(); }
   function updateOpacityValue() { opacityValue.textContent = `${watermarkOpacity.value}%`; }
   function setProgress(percent) { progressBar.style.width = `${percent}%`; progressText.textContent = `${Math.round(percent)}%`; }
-  function showStatus(message, type) { statusMessage.textContent = message; statusMessage.classList.remove('status-success','status-error'); if (type === 'success') statusMessage.classList.add('status-success'); if (type === 'error') statusMessage.classList.add('status-error'); statusMessage.style.display = 'block'; if (type !== 'info') setTimeout(()=> { statusMessage.style.display = 'none'; }, 5000); }
-  function resetPreviewGrid() { previewGrid.innerHTML = ''; pdfDocForPreview = null; }
+  function showStatus(message, type) { statusMessage.textContent = message; statusMessage.classList.remove('status-success','status-error'); if (type==='success') statusMessage.classList.add('status-success'); if (type==='error') statusMessage.classList.add('status-error'); statusMessage.style.display='block'; if (type!=='info') setTimeout(()=>{ statusMessage.style.display='none'; },5000); }
+  function resetPreviewGrid(){ previewGrid.innerHTML=''; pdfDocForPreview=null; }
 
   async function renderPreviewPages() {
     previewGrid.innerHTML = '';
     if (!pdfDocForPreview) return;
     const scaleSetting = parseFloat(previewScale.value) || 1;
     const pageCount = pdfDocForPreview.numPages;
-    for (let p = 1; p <= pageCount; p++) {
+    for (let p=1; p<=pageCount; p++){
       try {
         const page = await pdfDocForPreview.getPage(p);
         const viewport = page.getViewport({ scale: 1 * scaleSetting });
@@ -371,46 +340,47 @@ function startApp(env = { pdfLibAvailable: true, pdfJsAvailable: true }) {
         canvas.width = Math.floor(viewport.width);
         canvas.height = Math.floor(viewport.height);
         await page.render({ canvasContext: ctx, viewport }).promise;
-        await applyCanvasWatermark(canvas, ctx);
-        const thumb = document.createElement('div'); thumb.className = 'page-thumb';
-        const canvasCopy = document.createElement('canvas'); canvasCopy.width = canvas.width; canvasCopy.height = canvas.height; canvasCopy.getContext('2d').drawImage(canvas,0,0);
-        canvasCopy.style.maxWidth = '100%'; canvasCopy.style.height = 'auto'; thumb.appendChild(canvasCopy);
-        const label = document.createElement('div'); label.className = 'thumb-label'; label.textContent = `Page ${p}`; thumb.appendChild(label);
-        thumb.style.cursor = 'pointer'; thumb.addEventListener('click', () => {
-          const dataUrl = canvasCopy.toDataURL('image/png'); const w = window.open(''); if (w) { w.document.write(`<title>Page ${p} preview</title><img src="${dataUrl}" style="max-width:100%;">`); } else showStatus('Popup blocked — allow popups for full preview', 'error');
-        });
+        await applyCanvasWatermark(canvas, ctx); // draw visual watermark on preview
+        const thumb = document.createElement('div'); thumb.className='page-thumb';
+        const canvasCopy = document.createElement('canvas'); canvasCopy.width=canvas.width; canvasCopy.height=canvas.height; canvasCopy.getContext('2d').drawImage(canvas,0,0);
+        canvasCopy.style.maxWidth='100%'; canvasCopy.style.height='auto'; thumb.appendChild(canvasCopy);
+        const label = document.createElement('div'); label.className='thumb-label'; label.textContent=`Page ${p}`; thumb.appendChild(label);
+        thumb.style.cursor='pointer';
+        thumb.addEventListener('click',()=>{ const dataUrl = canvasCopy.toDataURL('image/png'); const w=window.open(''); if(w){ w.document.write(`<title>Page ${p} preview</title><img src="${dataUrl}" style="max-width:100%;">`);} else showStatus('Popup blocked — allow popups for preview', 'error'); });
         previewGrid.appendChild(thumb);
-      } catch (err) { console.error('Preview render error page', p, err); }
+      } catch(e){ console.error('Preview render error page',p,e); }
     }
   }
 
   function applyCanvasWatermark(canvas, ctx) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const pos = watermarkPosition.value;
       const opacity = watermarkOpacity.value / 100;
       const sizeChoice = watermarkSize.value;
       let fontSizePx = 36;
-      switch(sizeChoice) { case 'small': fontSizePx = 18; break; case 'medium': fontSizePx = 28; break; case 'large': fontSizePx = 42; break; case 'xlarge': fontSizePx = 60; break; }
+      switch(sizeChoice){ case 'small': fontSizePx=18; break; case 'medium': fontSizePx=28; break; case 'large': fontSizePx=42; break; case 'xlarge': fontSizePx=60; break; }
       if (watermarkType.value === 'text') {
         const text = watermarkText.value || 'Confidential';
-        let canvasFont = 'Helvetica'; if (watermarkFont.value === 'TimesRoman') canvasFont = 'Times New Roman'; if (watermarkFont.value === 'Courier') canvasFont = 'Courier New';
-        ctx.save(); ctx.globalAlpha = opacity; ctx.fillStyle = watermarkColor.value; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = `${fontSizePx}px ${canvasFont}`;
-        if (pos === 'diagonal') {
-          const step = fontSizePx * 6; ctx.translate(canvas.width/2, canvas.height/2); ctx.rotate(-30 * Math.PI/180);
-          for (let y = -canvas.height; y < canvas.height * 2; y += step) ctx.fillText(text, 0, y);
+        let canvasFont = 'Helvetica'; if (watermarkFont.value==='TimesRoman') canvasFont='Times New Roman'; if (watermarkFont.value==='Courier') canvasFont='Courier New';
+        ctx.save(); ctx.globalAlpha = opacity; ctx.fillStyle = watermarkColor.value; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font = `${fontSizePx}px ${canvasFont}`;
+        if (pos==='diagonal') {
+          const step = fontSizePx * 6;
+          ctx.translate(canvas.width/2, canvas.height/2);
+          ctx.rotate(-30 * Math.PI/180);
+          for (let y=-canvas.height; y<canvas.height*2; y+=step) ctx.fillText(text,0,y);
           ctx.setTransform(1,0,0,1,0,0);
         } else {
           let x = canvas.width/2; let y = canvas.height/2;
-          if (pos === 'top-left') { x = canvas.width * 0.15; y = canvas.height * 0.15; }
-          if (pos === 'top-right') { x = canvas.width * 0.85; y = canvas.height * 0.15; }
-          if (pos === 'bottom-left') { x = canvas.width * 0.15; y = canvas.height * 0.85; }
-          if (pos === 'bottom-right') { x = canvas.width * 0.85; y = canvas.height * 0.85; }
+          if (pos==='top-left'){ x = canvas.width*0.15; y = canvas.height*0.15; }
+          if (pos==='top-right'){ x = canvas.width*0.85; y = canvas.height*0.15; }
+          if (pos==='bottom-left'){ x = canvas.width*0.15; y = canvas.height*0.85; }
+          if (pos==='bottom-right'){ x = canvas.width*0.85; y = canvas.height*0.85; }
           ctx.fillText(text, x, y);
         }
         ctx.restore(); resolve();
       } else {
         if (!uploadedImageDataUrl) return resolve();
-        const img = new Image(); img.crossOrigin = 'anonymous'; img.src = uploadedImageDataUrl;
+        const img = new Image(); img.crossOrigin='anonymous'; img.src = uploadedImageDataUrl;
         img.onload = () => {
           ctx.save(); ctx.globalAlpha = opacity;
           const maxW = canvas.width * 0.5; const maxH = canvas.height * 0.5;
@@ -418,15 +388,16 @@ function startApp(env = { pdfLibAvailable: true, pdfJsAvailable: true }) {
           if (drawH > maxH) { drawH = maxH; drawW = (img.width / img.height) * drawH; }
           if (pos === 'diagonal') {
             const stepX = drawW * 1.8; const stepY = drawH * 1.8;
-            ctx.translate(canvas.width/2, canvas.height/2); ctx.rotate(-30 * Math.PI/180);
-            for (let x = -canvas.width*2; x < canvas.width*2; x += stepX) for (let y = -canvas.height*2; y < canvas.height*2; y += stepY) ctx.drawImage(img, x - drawW/2, y - drawH/2, drawW, drawH);
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.rotate(-30 * Math.PI/180);
+            for (let x=-canvas.width*2; x<canvas.width*2; x+=stepX) for (let y=-canvas.height*2; y<canvas.height*2; y+=stepY) ctx.drawImage(img, x - drawW/2, y - drawH/2, drawW, drawH);
             ctx.setTransform(1,0,0,1,0,0);
           } else {
             let x = (canvas.width - drawW) / 2; let y = (canvas.height - drawH) / 2;
-            if (pos === 'top-left') { x = canvas.width * 0.05; y = canvas.height * 0.05; }
-            if (pos === 'top-right') { x = canvas.width - drawW - canvas.width * 0.05; y = canvas.height * 0.05; }
-            if (pos === 'bottom-left') { x = canvas.width * 0.05; y = canvas.height - drawH - canvas.height * 0.05; }
-            if (pos === 'bottom-right') { x = canvas.width - drawW - canvas.width * 0.05; y = canvas.height - drawH - canvas.height * 0.05; }
+            if (pos==='top-left'){ x = canvas.width*0.05; y = canvas.height*0.05; }
+            if (pos==='top-right'){ x = canvas.width - drawW - canvas.width*0.05; y = canvas.height*0.05; }
+            if (pos==='bottom-left'){ x = canvas.width*0.05; y = canvas.height - drawH - canvas.height*0.05; }
+            if (pos==='bottom-right'){ x = canvas.width - drawW - canvas.width*0.05; y = canvas.height - drawH - canvas.height*0.05; }
             ctx.drawImage(img, x, y, drawW, drawH);
           }
           ctx.restore(); resolve();
@@ -436,96 +407,88 @@ function startApp(env = { pdfLibAvailable: true, pdfJsAvailable: true }) {
     });
   }
 
-  async function processWatermark() {
+  // Build final PDF using jsPDF from each canvas after applying watermark to full-resolution render
+  async function processWithJsPdf() {
     if (!selectedFile) { showStatus('Please select a PDF file first', 'error'); return; }
-    if (!env.pdfLibAvailable || !window.PDFLib) { showStatus('pdf-lib library not loaded — cannot process. See instructions at top of page.', 'error'); return; }
-    showStatus('Processing watermark — this happens in your browser...', 'info');
-    progressWrap.style.display = 'block'; progressStage.textContent = 'Loading PDF'; setProgress(5);
+    if (!env.pdfJsAvailable || !window.pdfjsLib) {
+      showStatus('pdf.js not available — cannot render pages to images for the final PDF.', 'error'); return;
+    }
+    if (!env.jsPdfAvailable || !window.jspdf) {
+      showStatus('jsPDF not available — cannot create final PDF.', 'error'); return;
+    }
+
     try {
+      progressWrap.style.display = 'block';
+      progressStage.textContent = 'Loading PDF';
+      setProgress(5);
       const arrayBuffer = await selectedFile.arrayBuffer();
-      const { PDFDocument, degrees } = window.PDFLib;
-      setProgress(10); progressStage.textContent = 'Preparing PDF document';
-      const pdfDoc = await PDFDocument.load(arrayBuffer);
-      const pages = pdfDoc.getPages();
-      setProgress(15);
-      let embeddedImage = null; let imgDims = null;
-      if (watermarkType.value === 'image' && uploadedImageDataUrl) {
-        progressStage.textContent = 'Embedding image';
-        const imgBytes = dataURLToUint8Array(uploadedImageDataUrl);
-        if (uploadedImageDataUrl.indexOf('data:image/png') === 0) embeddedImage = await pdfDoc.embedPng(imgBytes);
-        else embeddedImage = await pdfDoc.embedJpg(imgBytes);
-        imgDims = { width: embeddedImage.width, height: embeddedImage.height };
-      }
-      let pdfFont = null;
-      if (watermarkType.value === 'text') {
-        progressStage.textContent = 'Embedding font';
-        if (watermarkFont.value === 'Helvetica') pdfFont = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-        if (watermarkFont.value === 'TimesRoman') pdfFont = await pdfDoc.embedFont(PDFLib.StandardFonts.TimesRoman);
-        if (watermarkFont.value === 'Courier') pdfFont = await pdfDoc.embedFont(PDFLib.StandardFonts.Courier);
-      }
-      const total = pages.length;
-      for (let i = 0; i < total; i++) {
-        const page = pages[i]; const { width, height } = page.getSize();
-        const opacity = Number(watermarkOpacity.value) / 100; const pos = watermarkPosition.value;
-        const sizeChoice = watermarkSize.value; let baseScale = 1; switch(sizeChoice){ case 'small': baseScale = 0.7; break; case 'medium': baseScale = 1; break; case 'large': baseScale = 1.6; break; case 'xlarge': baseScale = 2.4; break; }
-        if (watermarkType.value === 'text') {
-          const text = watermarkText.value || 'Confidential'; const fontSize = 36 * baseScale; const rotation = pos === 'diagonal' ? degrees(-30) : degrees(0);
-          const textWidthEst = (text.length * fontSize * 0.5);
-          if (pos === 'diagonal') {
-            const step = fontSize * 6;
-            for (let y = -height; y < height * 2; y += step) {
-              page.drawText(text, { x: -width, y, size: fontSize, font: pdfFont, color: hexToRgb(watermarkColor.value), rotate: rotation, opacity });
-            }
-          } else {
-            let x = (width - textWidthEst) / 2; let y = (height - fontSize) / 2;
-            if (pos === 'top-left') { x = 40; y = height - fontSize - 40; }
-            if (pos === 'top-right') { x = width - textWidthEst - 40; y = height - fontSize - 40; }
-            if (pos === 'bottom-left') { x = 40; y = 40; }
-            if (pos === 'bottom-right') { x = width - textWidthEst - 40; y = 40; }
-            page.drawText(text, { x, y, size: fontSize, font: pdfFont, color: hexToRgb(watermarkColor.value), opacity, rotate: rotation });
-          }
+      setProgress(10);
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      const pdfDoc = await loadingTask.promise;
+      const total = pdfDoc.numPages;
+      // jsPDF UMD is exported as window.jspdf.jsPDF
+      const { jsPDF } = window.jspdf;
+      // create jsPDF - orientation and unit will be set per page
+      let doc = null;
+      for (let p = 1; p <= total; p++) {
+        progressStage.textContent = `Rendering page ${p} / ${total}`;
+        setProgress(10 + (p / total) * 70);
+        const page = await pdfDoc.getPage(p);
+        // render at reasonable resolution (scale)
+        const scale = 2; // higher scale yields better quality but larger size
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = Math.floor(viewport.width);
+        canvas.height = Math.floor(viewport.height);
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        // apply watermark to canvas (same logic as preview but on high-res)
+        await applyCanvasWatermark(canvas, ctx);
+        // convert canvas to image data
+        const imgData = canvas.toDataURL('image/jpeg', 0.92);
+        // create jsPDF page with same orientation and size
+        const orientation = (viewport.width > viewport.height) ? 'l' : 'p';
+        // size in mm
+        const pxToMm = (px) => (px * 25.4) / (96 * scale); // 96 DPI assumed, adjusted by scale
+        const pageW = pxToMm(viewport.width);
+        const pageH = pxToMm(viewport.height);
+        if (p === 1) {
+          doc = new jsPDF({ unit: 'mm', format: [pageW, pageH], orientation });
+          doc.addImage(imgData, 'JPEG', 0, 0, pageW, pageH);
         } else {
-          if (!embeddedImage) continue;
-          const imgRatio = imgDims.width / imgDims.height;
-          const maxImageWidth = width * 0.5 * baseScale; const maxImageHeight = height * 0.5 * baseScale;
-          let drawWidth = maxImageWidth; let drawHeight = maxImageWidth / imgRatio;
-          if (drawHeight > maxImageHeight) { drawHeight = maxImageHeight; drawWidth = maxImageHeight * imgRatio; }
-          if (pos === 'diagonal') {
-            const stepX = drawWidth * 1.8; const stepY = drawHeight * 1.8;
-            for (let x = -width; x < width * 2; x += stepX) for (let y = -height; y < height * 2; y += stepY) page.drawImage(embeddedImage, { x, y, width: drawWidth, height: drawHeight, rotate: degrees(-30), opacity });
-          } else {
-            let x = (width - drawWidth) / 2; let y = (height - drawHeight) / 2;
-            if (pos === 'top-left') { x = 40; y = height - drawHeight - 40; }
-            if (pos === 'top-right') { x = width - drawWidth - 40; y = height - drawHeight - 40; }
-            if (pos === 'bottom-left') { x = 40; y = 40; }
-            if (pos === 'bottom-right') { x = width - drawWidth - 40; y = 40; }
-            page.drawImage(embeddedImage, { x, y, width: drawWidth, height: drawHeight, opacity });
-          }
+          doc.addPage([pageW, pageH], orientation);
+          doc.addImage(imgData, 'JPEG', 0, 0, pageW, pageH);
         }
-        const percent = 15 + ((i + 1) / total) * 70;
-        setProgress(percent);
-        await new Promise(res => setTimeout(res, 20));
+        // small yield so UI updates smoothly
+        await new Promise(r => setTimeout(r, 50));
       }
-      progressStage.textContent = 'Finalizing'; setProgress(90);
-      const modifiedPdfBytes = await (window.PDFLib).PDFDocument.save ? (await pdfDoc.save()) : await pdfDoc.save();
+      setProgress(95);
+      progressStage.textContent = 'Finalizing';
+      // save
+      doc.save(`watermarked-${selectedFile.name}`);
       setProgress(100);
-      const blob = new Blob([modifiedPdfBytes], { type: 'application/pdf' }); const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = `watermarked-${selectedFile.name}`; document.body.appendChild(a); a.click();
-      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
       showStatus('Watermarked PDF generated and downloaded', 'success');
       setTimeout(()=> { progressWrap.style.display = 'none'; setProgress(0); }, 700);
     } catch (err) {
       console.error(err);
-      showStatus('Error processing PDF: ' + (err.message || err), 'error');
+      showStatus('Error generating PDF: ' + (err.message || err), 'error');
       progressWrap.style.display = 'none';
     }
   }
 
-  // Utility helpers
-  function dataURLToUint8Array(dataURL) { const parts = dataURL.split(','); const base64 = parts[1]; const binaryString = atob(base64); const len = binaryString.length; const bytes = new Uint8Array(len); for (let i = 0; i < len; i++) bytes[i] = binaryString.charCodeAt(i); return bytes; }
-  function hexToRgb(hex) { const h = hex.replace('#',''); const bigint = parseInt(h, 16); const r = ((bigint >> 16) & 255) / 255; const g = ((bigint >> 8) & 255) / 255; const b = (bigint & 255) / 255; return (window.PDFLib && window.PDFLib.rgb) ? window.PDFLib.rgb(r,g,b) : { r,g,b }; }
-  function formatFileSize(bytes) { if (bytes === 0) return '0 Bytes'; const k = 1024; const sizes = ['Bytes','KB','MB','GB']; const i = Math.floor(Math.log(bytes) / Math.log(k)); return parseFloat((bytes / Math.pow(k,i)).toFixed(2)) + ' ' + sizes[i]; }
-  function resetTool() { document.getElementById('fileInput').value = ''; document.getElementById('selectedFileContainer').style.display = 'none'; watermarkText.value = 'Confidential'; watermarkColor.value = '#cccccc'; watermarkSize.value = 'medium'; watermarkOpacity.value = 50; watermarkPosition.value = 'center'; watermarkType.value = 'text'; uploadedImageDataUrl = null; watermarkImageInput.value = ''; watermarkFont.value = 'Helvetica'; textOptions.style.display = 'block'; imageOptions.style.display = 'none'; addWatermarkBtn.disabled = true; updateColorText(); updateOpacityValue(); previewGrid.innerHTML = ''; showStatus('Tool reset', 'success'); }
+  // helpers
+  function dataURLToUint8Array(dataURL) { const parts = dataURL.split(','); const base64 = parts[1]; const binaryString = atob(base64); const len = binaryString.length; const bytes = new Uint8Array(len); for (let i=0;i<len;i++) bytes[i]=binaryString.charCodeAt(i); return bytes; }
+  function formatFileSize(bytes) { if (bytes===0) return '0 Bytes'; const k=1024; const sizes=['Bytes','KB','MB','GB']; const i=Math.floor(Math.log(bytes)/Math.log(k)); return parseFloat((bytes/Math.pow(k,i)).toFixed(2)) + ' ' + sizes[i]; }
+  function setProgress(percent) { document.getElementById('progressBar').style.width = `${percent}%`; document.getElementById('progressText').textContent = `${Math.round(percent)}%`; }
+  function resetTool() { fileInput.value=''; document.getElementById('selectedFileContainer').style.display='none'; watermarkText.value='Confidential'; watermarkColor.value='#cccccc'; watermarkSize.value='medium'; watermarkOpacity.value=50; watermarkPosition.value='center'; watermarkType.value='text'; uploadedImageDataUrl=null; watermarkImageInput.value=''; watermarkFont.value='Helvetica'; textOptions.style.display='block'; imageOptions.style.display='none'; addWatermarkBtn.disabled=true; updateColorText(); updateOpacityValue(); previewGrid.innerHTML=''; showStatus('Tool reset','success'); }
+
+  // small utility functions
+  function handleDragOver(e){ e.preventDefault(); e.stopPropagation(); uploadArea.classList.add('dragover'); }
+  function handleDragLeave(e){ e.preventDefault(); e.stopPropagation(); uploadArea.classList.remove('dragover'); }
+
+  function showStatus(msg, type){ const el = document.getElementById('statusMessage'); el.textContent = msg; el.classList.remove('status-success','status-error'); if(type==='success') el.classList.add('status-success'); if(type==='error') el.classList.add('status-error'); el.style.display='block'; if(type!=='info') setTimeout(()=>el.style.display='none',5000); }
+  function updateColorText(){ document.getElementById('watermarkColorText').value = watermarkColor.value.toUpperCase(); }
+  function updateOpacityValue(){ document.getElementById('opacityValue').textContent = `${watermarkOpacity.value}%`; }
 }
 </script>
 </body>
