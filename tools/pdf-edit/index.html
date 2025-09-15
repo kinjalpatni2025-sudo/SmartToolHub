@@ -1,614 +1,715 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>PDF Editor - Smarttool Hub</title>
-  <meta name="description" content="Client-side PDF editor (add text, images, watermark) — works in-browser."/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PDF Edit Tool - Smarttool Hub</title>
+  <meta name="description" content="Edit PDF pages (reorder, rotate, delete) in your browser. No server uploads."/>
   <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
   <style>
+    /* Theme variables (same as watermark tool) */
     :root{
-      --bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;
-      --primary:#22d3ee;--muted:#9fb3c8;--radius:12px;
+      --bg:#0b1220;
+      --text:#eaf2ff;
+      --card:#182335;
+      --border:#2a3b55;
+      --primary:#22d3ee;
+      --muted:#9fb3c8;
+      --accent:#7ee7ff;
+      --radius:12px;
+      --input-bg: #09111a;
     }
     body.light{
-      --bg:#f6f8fb;--text:#0b1220;--card:#ffffff;--border:#e6eefc;
-      --primary:#0b74ff;--muted:#556677;
+      --bg:#f6f8fb;
+      --text:#0b1220;
+      --card:#ffffff;
+      --border:#e6eefc;
+      --primary:#0b74ff;
+      --muted:#556677;
+      --accent:#7aa8ff;
+      --input-bg: #ffffff;
     }
+
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+    html,body{height:100%}
+    body{
+      font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;
+    }
+    a{color:var(--primary)}
     .container{max-width:1200px;margin:0 auto;padding:20px;width:100%}
-    header{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;}
+
+    header{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;
+    }
     .brand{display:flex;gap:12px;align-items:center}
     .brand img{width:46px;height:46px;border-radius:10px}
-    .brand .title{font-size:1.25rem;font-weight:700;color:var(--primary)}
+    .brand .title{font-size:1.25rem;font-weight:700;color:var(--primary);margin:0}
+    .brand .tag{font-size:.9rem;color:var(--muted)}
     .header-actions{display:flex;gap:10px;align-items:center}
     .btn-header{border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;font-weight:600}
-    .tool-content{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:18px;margin-top:20px;display:flex;gap:18px}
-    .left-panel{width:320px}
-    .right-panel{flex:1;min-height:60vh;overflow:auto;padding:8px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent)}
-    .tool-title{font-size:1.5rem;margin-bottom:6px;color:var(--primary)}
-    .tool-description{color:var(--muted);margin-bottom:14px}
-    .upload-area{border:2px dashed var(--border);border-radius:var(--radius);padding:20px;text-align:center;cursor:pointer;background:transparent}
-    .upload-area:hover{border-color:var(--primary)}
-    .actions{display:flex;flex-direction:column;gap:8px;margin-top:12px}
-    .btn{padding:10px 12px;border-radius:10px;border:none;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
-    .btn-primary{background:var(--primary);color:#00131f}
-    .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
-    .small{padding:8px 10px;font-size:0.95rem}
-    .pdf-canvas-wrap{display:flex;flex-direction:column;gap:24px;align-items:center;padding:12px}
-    .page-wrapper{position:relative;background:#0f1724;padding:8px;border-radius:8px}
-    .page-canvas{display:block;border-radius:3px;box-shadow:0 6px 20px rgba(0,0,0,0.5)}
-    .overlay{position:absolute;left:8px;top:8px;right:8px;bottom:8px;pointer-events:auto}
-    /* annotation elements */
-    .ann {position:absolute;cursor:move;user-select:none;touch-action:none}
-    .ann .content{display:inline-block;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.9);color:#000}
-    .ann .resizer{position:absolute;width:10px;height:10px;background:var(--primary);right:-5px;bottom:-5px;border-radius:2px;cursor:nwse-resize}
-    /* watermark preview */
-    .watermark-preview{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);font-size:40px;opacity:0.06;color:var(--text);pointer-events:none;display:none}
-    .status{margin-top:12px;color:var(--muted);font-size:0.9rem}
-    footer{margin-top:auto;padding:14px 20px;background:var(--card);border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-    .controls-group{background:var(--bg);border:1px solid var(--border);padding:12px;border-radius:10px}
-    input[type="file"]{display:none}
-    label.file-btn{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px dashed var(--border);cursor:pointer}
-    @media (max-width:920px){.tool-content{flex-direction:column}.left-panel{width:100%}.right-panel{width:100%}}
+
+    /* Card */
+    .tool-content{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:25px;margin-top:20px;}
+    .tool-title{ font-size:2rem; margin-bottom:8px; color:var(--text); font-weight:800; }
+    .tool-description{ color:var(--muted); margin-bottom:18px; font-size:1rem; }
+
+    /* Upload area */
+    .upload-area{border:2px dashed var(--border);border-radius:var(--radius);padding:48px 28px;text-align:center;margin-bottom:20px;background:var(--bg);color:var(--muted)}
+    .upload-area.dragover{border-color:var(--primary);background:rgba(34,211,238,0.03)}
+    .upload-icon{font-size:56px;color:var(--muted);margin-bottom:12px}
+    .upload-text{color:var(--text);font-weight:700;margin-bottom:6px}
+    .upload-subtext{color:var(--muted)}
+
+    .selected-file{display:flex;align-items:center;gap:12px;padding:12px;background:var(--input-bg);border-radius:10px;border:1px solid var(--border);margin-bottom:18px}
+    .file-icon{font-size:18px;color:var(--primary)}
+    .file-info{flex:1}
+    .file-name{font-weight:700;color:var(--text)}
+    .file-size{color:var(--muted);font-size:0.9rem}
+    .remove-file{background:transparent;border:none;color:var(--muted);cursor:pointer}
+
+    /* Controls + preview */
+    .editor-layout{display:grid;grid-template-columns: 360px 1fr; gap:18px}
+    @media (max-width:980px){ .editor-layout{grid-template-columns:1fr} }
+
+    .panel{
+      background:var(--input-bg); border:1px solid var(--border); border-radius:12px; padding:14px;
+    }
+    .panel h3{margin-bottom:8px;color:var(--text);font-size:1.05rem}
+    .panel p{color:var(--muted);font-size:0.92rem;margin-bottom:12px}
+
+    /* Thumbnails list */
+    .thumb-list{ display:flex; flex-direction:column; gap:10px; max-height:560px; overflow:auto; padding-right:6px }
+    .thumb-item{
+      display:flex; gap:10px; align-items:center; padding:8px; border-radius:10px; border:1px solid var(--border); background:var(--card);
+    }
+    .thumb-preview{ width:86px; height:110px; background:#fff;border-radius:6px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    .thumb-preview canvas{ width:100%; height:auto; display:block; }
+    .thumb-meta{ flex:1 }
+    .thumb-meta .label{ font-weight:700; color:var(--text); margin-bottom:6px; font-size:0.95rem }
+    .thumb-meta .actions{ display:flex; gap:6px; flex-wrap:wrap }
+    .small-btn{ padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text); cursor:pointer; font-weight:700 }
+
+    .thumb-order{ display:flex; gap:6px; align-items:center }
+
+    /* Preview area */
+    .preview-area{ border:1px solid var(--border); border-radius:var(--radius); padding:12px; background:var(--bg); min-height:300px; overflow:auto }
+    .preview-grid{ display:flex; gap:12px; flex-wrap:wrap; align-items:flex-start; padding:6px }
+
+    .preview-card{ background:var(--card); border-radius:10px; padding:8px; border:1px solid var(--border); min-width:200px; display:flex; flex-direction:column; gap:8px; align-items:center; }
+    .preview-card canvas{ background:#fff; border-radius:6px; display:block; max-width:100% }
+
+    /* action area */
+    .action-buttons{ display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; align-items:center }
+    .btn{ padding:10px 14px; border-radius:10px; border:none; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px }
+    .btn-primary{ background:linear-gradient(90deg,var(--primary),var(--accent)); color:#00131f }
+    .btn-secondary{ background:var(--input-bg); color:var(--text); border:1px solid var(--border) }
+
+    .status-message{ margin-top:8px; padding:10px; border-radius:10px; background:transparent; border:1px solid var(--border); color:var(--muted); display:none }
+    .status-success{ border-color:#10b981; color:#10b981 }
+    .status-error{ border-color:#ef4444; color:#ef4444 }
+
+    .progress{ width:100%; height:12px; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden; margin-top:8px; border:1px solid var(--border) }
+    .progress-bar{ height:100%; width:0%; background:linear-gradient(90deg,var(--primary),var(--accent)); transition:width .25s }
+
+    footer{ margin-top:auto; padding:18px 0; background:var(--card); border-top:1px solid var(--border) }
+    .footer-inner{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap }
+    .footer-inner div{ color:var(--muted) }
+    .footer-links{ display:flex; gap:14px; flex-wrap:wrap }
+    .footer-links a{ color:var(--primary); font-weight:700 }
+
+    @media (max-width:720px){
+      header{ flex-direction:column; align-items:flex-start; gap:8px }
+    }
   </style>
 </head>
 <body>
 <header class="container">
   <div class="brand">
-    <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="logo">
-    <div>
-      <div class="title">Smarttool Hub</div>
-      <div style="color:var(--muted);font-size:0.9rem">PDF Editor — client-side</div>
-    </div>
+    <a href="index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+      <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub Logo">
+      <div>
+        <div class="title">Smarttool Hub</div>
+        <div class="tag">Fast • Private • 100% Client-side</div>
+      </div>
+    </a>
   </div>
   <div class="header-actions">
-    <a class="btn-header" href="#"><i class="fa-solid fa-house"></i> Home</a>
+    <a href="index.html" class="btn-header"><i class="fa-solid fa-house"></i> Home</a>
+    <button class="btn-header" id="themeToggle" title="Toggle dark/light mode"><i class="fa-solid fa-moon"></i></button>
   </div>
 </header>
 
 <main class="container">
   <div class="tool-content">
-    <!-- left controls -->
-    <div class="left-panel">
-      <div class="tool-title">PDF Editor</div>
-      <div class="tool-description">Open a PDF, add text/images/watermark, then export a new PDF. Files stay in your browser.</div>
+    <h1 class="tool-title">PDF Edit Tool</h1>
+    <p class="tool-description">Edit PDF pages in your browser — reorder, rotate, delete, then download the updated PDF. No files leave your device.</p>
 
-      <div class="controls-group">
-        <div style="margin-bottom:10px;font-weight:600;color:var(--muted)">Open / Save</div>
-        <label class="file-btn" id="openLabel"><i class="fa-solid fa-file-import"></i> Open PDF
-          <input type="file" id="openFile" accept=".pdf">
-        </label>
-        <div style="display:flex;gap:8px;margin-top:10px">
-          <button class="btn btn-primary small" id="savePdfBtn"><i class="fa-solid fa-download"></i> Save PDF</button>
-          <button class="btn btn-ghost small" id="exportImageBtn"><i class="fa-solid fa-image"></i> Export Page Image</button>
-        </div>
-        <div class="status" id="openStatus">No document loaded</div>
-      </div>
-
-      <div class="controls-group" style="margin-top:12px">
-        <div style="font-weight:600;color:var(--muted);margin-bottom:8px">Annotation Tools</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn small btn-ghost" id="addTextBtn"><i class="fa-solid fa-font"></i> Add Text</button>
-          <button class="btn small btn-ghost" id="addImageBtn"><i class="fa-solid fa-image"></i> Add Image</button>
-          <label class="file-btn" id="imgInputLabel"><i class="fa-solid fa-upload"></i> Image
-            <input type="file" id="imgInput" accept="image/*">
-          </label>
-        </div>
-
-        <div style="margin-top:12px">
-          <label style="display:block;margin-bottom:6px;color:var(--muted)">Font size</label>
-          <input id="fontSize" type="number" value="20" min="8" style="width:100%;padding:8px;border-radius:8px;background:var(--bg);border:1px solid var(--border);color:var(--text)">
-        </div>
-
-        <div style="margin-top:10px">
-          <label style="display:block;margin-bottom:6px;color:var(--muted)">Text color</label>
-          <input id="fontColor" type="color" value="#000000" style="width:100%;padding:6px;border-radius:8px;border:1px solid var(--border);background:#fff">
-        </div>
-      </div>
-
-      <div class="controls-group" style="margin-top:12px">
-        <div style="font-weight:600;color:var(--muted);margin-bottom:8px">Watermark</div>
-        <input id="wmText" placeholder="Watermark text" style="width:100%;padding:8px;border-radius:8px;background:var(--bg);border:1px solid var(--border);color:var(--text)">
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <input id="wmOpacity" type="range" min="0" max="100" value="8" style="flex:1">
-          <span id="wmVal" style="width:34px;text-align:center;color:var(--muted)"></span>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button class="btn small btn-ghost" id="applyWmBtn"><i class="fa-solid fa-water"></i> Apply</button>
-          <button class="btn small btn-ghost" id="clearWmBtn"><i class="fa-solid fa-trash-alt"></i> Clear</button>
-        </div>
-      </div>
-
-      <div class="controls-group" style="margin-top:12px">
-        <div style="font-weight:600;color:var(--muted);margin-bottom:8px">Page Controls</div>
-        <div style="display:flex;gap:8px">
-          <label class="file-btn" id="addPageBtn"><i class="fa-solid fa-plus"></i> Add Blank</label>
-          <button class="btn small btn-ghost" id="removePageBtn"><i class="fa-solid fa-trash"></i> Remove Page</button>
-        </div>
-        <div style="margin-top:8px;color:var(--muted);font-size:0.9rem">Select a page by clicking its canvas</div>
-      </div>
-
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon"><i class="fas fa-file-pdf"></i></div>
+      <div class="upload-text">Drop your PDF file here or click to browse</div>
+      <div class="upload-subtext">Maximum file size: 100MB</div>
+      <input type="file" id="fileInput" class="file-input" accept=".pdf">
     </div>
 
-    <!-- right area: pages -->
-    <div class="right-panel" id="rightPanel">
-      <div id="pdfCanvasWrap" class="pdf-canvas-wrap">
-        <!-- pages will be appended here -->
-        <div style="color:var(--muted);text-align:center">No document open — upload a PDF to begin editing.</div>
+    <div id="selectedFileContainer" style="display:none;" class="selected-file">
+      <div class="file-icon"><i class="fas fa-file-pdf"></i></div>
+      <div class="file-info">
+        <div class="file-name" id="fileName"></div>
+        <div class="file-size" id="fileSize"></div>
+      </div>
+      <button class="remove-file" id="removeFile" title="Remove file"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="editor-layout" style="margin-top:12px;">
+      <!-- left panel: page thumbnails & controls -->
+      <div class="panel">
+        <h3>Pages</h3>
+        <p>Manage pages: rotate, move or delete. Click a thumbnail to open a larger preview.</p>
+        <div class="thumb-list" id="thumbList" aria-live="polite"></div>
+
+        <div class="action-buttons" style="margin-top:12px;">
+          <button class="btn btn-primary" id="downloadBtn" disabled><i class="fas fa-download"></i> Download Edited PDF</button>
+          <button class="btn btn-secondary" id="resetBtn"><i class="fas fa-redo"></i> Reset</button>
+        </div>
+
+        <div id="progressWrap" style="display:none;margin-top:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-size:0.95rem;color:var(--muted)">Processing: <span id="progressText">0%</span></div>
+            <div style="font-size:0.9rem;color:var(--muted)"><span id="progressStage">Idle</span></div>
+          </div>
+          <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+        </div>
+
+        <div id="statusMessage" class="status-message" style="margin-top:12px;"></div>
+      </div>
+
+      <!-- right panel: page preview large -->
+      <div class="panel preview-area">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div style="font-weight:700;color:var(--muted)">Preview</div>
+          <div style="font-size:0.92rem;color:var(--muted)">Click a thumbnail to open full-size</div>
+        </div>
+        <div class="preview-grid" id="previewGrid"></div>
       </div>
     </div>
+
   </div>
 </main>
 
-<div class="watermark-preview" id="wmPreview"></div>
-
-<footer>
-  <div style="color:var(--muted)">© <span id="year"></span> Smarttool Hub</div>
-  <div style="color:var(--muted)">Client-side — No uploads</div>
+<footer class="container">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> Smarttool Hub</div>
+    <div class="footer-links">
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="contact.html">Contact</a>
+      <a href="comments.html">Comments</a>
+      <a href="faq.html">FAQ</a>
+    </div>
+  </div>
 </footer>
 
-<!-- Libraries -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
 
 <script>
-  // --- Setup & globals ---
-  document.getElementById('year').textContent = new Date().getFullYear();
-  const pdfjsLib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
-  if (!pdfjsLib) { alert('PDF.js failed to load'); throw new Error('pdfjsLib not found'); }
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+/* Multi-CDN loader for pdf.js and jsPDF (same robust pattern used previously) */
+(async function loader() {
+  const pdfJsCDNs = [
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js',
+    'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js',
+    'https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.min.js'
+  ];
+  const pdfWorkerCDNs = [
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js',
+    'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js',
+    'https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js'
+  ];
+  const jsPdfCDNs = [
+    'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+    'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+    'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js'
+  ];
 
-  const openFile = document.getElementById('openFile');
-  const pdfCanvasWrap = document.getElementById('pdfCanvasWrap');
-  const openStatus = document.getElementById('openStatus');
-  const savePdfBtn = document.getElementById('savePdfBtn');
-  const exportImageBtn = document.getElementById('exportImageBtn');
-  const addTextBtn = document.getElementById('addTextBtn');
-  const imgInput = document.getElementById('imgInput');
-  const imgInputLabel = document.getElementById('imgInputLabel');
-  const addImageBtn = document.getElementById('addImageBtn');
-  const fontSizeInput = document.getElementById('fontSize');
-  const fontColorInput = document.getElementById('fontColor');
-  const wmText = document.getElementById('wmText');
-  const wmOpacity = document.getElementById('wmOpacity');
-  const wmVal = document.getElementById('wmVal');
-  const applyWmBtn = document.getElementById('applyWmBtn');
-  const clearWmBtn = document.getElementById('clearWmBtn');
-  const wmPreview = document.getElementById('wmPreview');
-  const addPageBtn = document.getElementById('addPageBtn');
-  const removePageBtn = document.getElementById('removePageBtn');
-
-  let pdfDoc = null;
-  let currentFileName = 'document.pdf';
-  let pages = []; // {pageNum, canvas, viewport, overlay}
-  let selectedPageIndex = null;
-  let annotationId = 0;
-
-  // small helper for pointer drag + resize
-  function makeDraggable(el) {
-    el.style.touchAction = 'none';
-    let dragging = false, startX=0, startY=0, origX=0, origY=0;
-    el.addEventListener('pointerdown', (e)=>{
-      if (e.target.classList.contains('resizer')) return; // resize handled separately
-      dragging = true; el.setPointerCapture(e.pointerId);
-      startX = e.clientX; startY = e.clientY;
-      const rect = el.getBoundingClientRect();
-      origX = rect.left; origY = rect.top;
-    });
-    window.addEventListener('pointermove', (e)=>{
-      if (!dragging) return;
-      const dx = e.clientX - startX, dy = e.clientY - startY;
-      const parentRect = el.parentElement.getBoundingClientRect();
-      // compute new pos relative to parent
-      const left = (origX + dx) - parentRect.left;
-      const top = (origY + dy) - parentRect.top;
-      el.style.left = Math.max(0, left) + 'px';
-      el.style.top = Math.max(0, top) + 'px';
-    });
-    window.addEventListener('pointerup', (e)=>{
-      dragging = false;
-    });
-
-    // resizer
-    const resizer = el.querySelector('.resizer');
-    if (resizer) {
-      let resizing=false, sx=0, sy=0, ow=0, oh=0;
-      resizer.addEventListener('pointerdown', (e)=>{
-        resizing=true; resizer.setPointerCapture(e.pointerId);
-        sx = e.clientX; sy = e.clientY;
-        ow = el.offsetWidth; oh = el.offsetHeight;
-        e.stopPropagation();
-      });
-      window.addEventListener('pointermove', (e)=>{
-        if (!resizing) return;
-        const dx = e.clientX - sx, dy = e.clientY - sy;
-        el.style.width = Math.max(30, ow + dx) + 'px';
-        el.style.height = Math.max(20, oh + dy) + 'px';
-      });
-      window.addEventListener('pointerup', ()=>{resizing=false});
+  async function tryLoad(urls, globalName, timeout=9000) {
+    for (const url of urls) {
+      try {
+        await loadScriptWithTimeout(url, timeout);
+        await new Promise(r=>setTimeout(r,50));
+        if (!globalName || window[globalName] || (globalName==='pdfjsLib' && window.pdfjsLib) || (globalName==='jspdf' && window.jspdf)) return true;
+      } catch(e) {
+        console.warn('Failed to load', url, e);
+      }
     }
+    return false;
+  }
+  function loadScriptWithTimeout(src, timeoutMs) {
+    return new Promise((resolve,reject) => {
+      const s = document.createElement('script');
+      let done = false;
+      const t = setTimeout(()=>{ if(!done){ done=true; s.onerror=s.onload=null; if(s.parentNode) s.parentNode.removeChild(s); reject(new Error('Timeout ' + src)); }}, timeoutMs);
+      s.onload = ()=>{ if(!done){ done=true; clearTimeout(t); resolve(); } };
+      s.onerror = (e)=>{ if(!done){ done=true; clearTimeout(t); reject(e); } };
+      s.src = src; s.async = true; document.head.appendChild(s);
+    });
   }
 
-  // create a new annotation element (text or image)
-  function createAnnotation(type, options = {}) {
-    if (selectedPageIndex === null) {
-      alert('Select a page canvas first by clicking it.');
+  const pdfOk = await tryLoad(pdfJsCDNs, 'pdfjsLib', 9000);
+  if (pdfOk && window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerCDNs[0];
+  const jsOk = await tryLoad(jsPdfCDNs, 'jspdf', 9000);
+
+  if (!pdfOk && !jsOk) {
+    alert('Required libraries (pdf.js and jsPDF) failed to load from CDNs. See help box on the page for options.');
+    const libHelp = document.getElementById('statusMessage');
+    libHelp.style.display = 'block';
+    libHelp.className = 'status-message';
+    libHelp.innerHTML = '<strong>Libraries failed to load.</strong><br>Allowlist CDN domains (cdnjs.cloudflare.com, cdn.jsdelivr.net, unpkg.com) or host <code>pdf.min.js</code>, <code>pdf.worker.min.js</code>, and <code>jspdf.umd.min.js</code> locally.';
+  }
+
+  startApp({ pdfAvailable: pdfOk && !!window.pdfjsLib, jsAvailable: jsOk && !!window.jspdf });
+})();
+
+/* Main app */
+function startApp(env = { pdfAvailable:true, jsAvailable:true }) {
+  // DOM refs
+  const uploadArea = document.getElementById('uploadArea');
+  const fileInput = document.getElementById('fileInput');
+  const selectedFileContainer = document.getElementById('selectedFileContainer');
+  const fileNameEl = document.getElementById('fileName');
+  const fileSizeEl = document.getElementById('fileSize');
+  const removeFileBtn = document.getElementById('removeFile');
+  const thumbList = document.getElementById('thumbList');
+  const previewGrid = document.getElementById('previewGrid');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressBar = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
+  const progressStage = document.getElementById('progressStage');
+  const statusMessage = document.getElementById('statusMessage');
+  const themeToggle = document.getElementById('themeToggle');
+
+  if (localStorage.getItem('sth_theme') === 'light') { document.body.classList.add('light'); themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; }
+  themeToggle.onclick = () => { document.body.classList.toggle('light'); if(document.body.classList.contains('light')){ themeToggle.innerHTML='<i class="fa-solid fa-sun"></i>'; localStorage.setItem('sth_theme','light'); } else { themeToggle.innerHTML='<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); } };
+
+  let selectedFile = null;
+  let pdfDoc = null;
+  let pages = []; // page objects: { pageNum, rotation (deg), canvasThumb (canvas), viewport, renderedCanvasFull (canvas) }
+
+  // listeners
+  uploadArea.addEventListener('click', ()=>fileInput.click());
+  uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+  uploadArea.addEventListener('dragleave', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); });
+  uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); const f = e.dataTransfer.files[0]; if (f && f.type==='application/pdf') handleFile(f); else showStatus('Please drop a PDF file','error'); });
+  fileInput.addEventListener('change', e => { const f = e.target.files[0]; if (f && f.type==='application/pdf') handleFile(f); else if (f) showStatus('Please select a PDF file','error'); });
+  removeFileBtn.addEventListener('click', resetAll);
+  resetBtn.addEventListener('click', resetAll);
+  downloadBtn.addEventListener('click', downloadEditedPdf);
+
+  function showStatus(msg, type='info') {
+    statusMessage.textContent = msg;
+    statusMessage.style.display = 'block';
+    statusMessage.className = 'status-message';
+    if (type === 'success') statusMessage.classList.add('status-success');
+    if (type === 'error') statusMessage.classList.add('status-error');
+    if (type !== 'info') setTimeout(()=> statusMessage.style.display='none', 4500);
+  }
+  function setProgress(p){ progressBar.style.width = `${p}%`; progressText.textContent = `${Math.round(p)}%`; }
+
+  async function handleFile(file) {
+    resetUI();
+    selectedFile = file;
+    fileNameEl.textContent = file.name;
+    fileSizeEl.textContent = formatFileSize(file.size);
+    selectedFileContainer.style.display = 'flex';
+    downloadBtn.disabled = false;
+    showStatus('PDF selected', 'success');
+
+    if (!env.pdfAvailable || !window.pdfjsLib) {
+      showStatus('pdf.js not available — previews disabled. Cannot edit without pdf.js.', 'error');
+      downloadBtn.disabled = true;
       return;
     }
-    const page = pages[selectedPageIndex];
-    const overlay = page.overlay;
 
-    const ann = document.createElement('div');
-    ann.className = 'ann';
-    ann.dataset.type = type;
-    ann.dataset.id = ++annotationId;
-    ann.style.left = (options.left ?? 20) + 'px';
-    ann.style.top = (options.top ?? 20) + 'px';
-    ann.style.width = (options.width ?? 140) + 'px';
-    ann.style.height = (options.height ?? 40) + 'px';
-    ann.style.zIndex = 1000 + annotationId;
-
-    const content = document.createElement('div');
-    content.className = 'content';
-    content.style.fontSize = (options.fontSize ?? fontSizeInput.value) + 'px';
-    content.style.color = options.color ?? fontColorInput.value;
-    content.contentEditable = type === 'text' ? 'true' : 'false';
-    content.style.wordBreak = 'break-word';
-    content.style.minHeight = '20px';
-    content.innerText = options.text ?? (type === 'text' ? 'Double-click to edit' : '');
-
-    ann.appendChild(content);
-
-    if (type === 'image') {
-      content.contentEditable = 'false';
-      content.style.background = 'transparent';
-      content.style.padding = '0';
-      const img = document.createElement('img');
-      img.src = options.src;
-      img.style.maxWidth = '100%';
-      img.style.maxHeight = '100%';
-      img.style.display = 'block';
-      content.innerHTML = '';
-      content.appendChild(img);
-      // adjust size to image natural size if provided
-      if (options.naturalWidth) {
-        ann.style.width = Math.min(options.naturalWidth, page.canvas.width * 0.8) + 'px';
-        ann.style.height = (ann.style.width.replace('px','') * (options.naturalHeight/options.naturalWidth)) + 'px';
-      }
+    try {
+      progressWrap.style.display = 'block';
+      progressStage.textContent = 'Loading PDF';
+      setProgress(5);
+      const arrayBuffer = await file.arrayBuffer();
+      setProgress(15);
+      pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      setProgress(30);
+      await loadPagesToThumbnails(pdfDoc);
+      setProgress(100);
+      setTimeout(()=> progressWrap.style.display='none', 300);
+    } catch (err) {
+      console.error(err);
+      showStatus('Error loading PDF: ' + (err.message || err), 'error');
+      progressWrap.style.display = 'none';
     }
-
-    // add resizer handle
-    const resizer = document.createElement('div');
-    resizer.className = 'resizer';
-    ann.appendChild(resizer);
-
-    // attach to overlay and enable drag/resize
-    overlay.appendChild(ann);
-    makeDraggable(ann);
-
-    // double click to edit text focus
-    if (type === 'text') {
-      content.addEventListener('dblclick', ()=> { content.focus(); });
-    }
-
-    // select page when clicking annotation
-    ann.addEventListener('pointerdown', ()=> {
-      highlightPage(selectedPageIndex);
-    });
-
-    return ann;
   }
 
-  // ---- Render PDF pages ----
-  async function loadPdfFromFile(file) {
-    if (!file) return;
-    currentFileName = file.name || 'document.pdf';
-    const ab = await file.arrayBuffer();
-    const loadingTask = pdfjsLib.getDocument({ data: ab });
-    pdfDoc = await loadingTask.promise;
-    renderAllPages();
-    openStatus.textContent = `Loaded: ${currentFileName} — ${pdfDoc.numPages} page(s)`;
-  }
-
-  async function renderAllPages() {
-    pdfCanvasWrap.innerHTML = '';
+  async function loadPagesToThumbnails(pdf) {
     pages = [];
-    selectedPageIndex = null;
-    for (let p = 1; p <= pdfDoc.numPages; p++) {
-      const page = await pdfDoc.getPage(p);
-      const viewport = page.getViewport({ scale: 1.5 }); // decent resolution
+    thumbList.innerHTML = '';
+    previewGrid.innerHTML = '';
+    const total = pdf.numPages;
+    for (let p=1;p<=total;p++) {
+      progressStage.textContent = `Rendering page ${p} / ${total}`;
+      setProgress(30 + (p/total)*50);
+      try {
+        const page = await pdf.getPage(p);
+        const viewport = page.getViewport({ scale: 1.0 });
+        // create thumbnail canvas (small)
+        const thumbScale = Math.min(160 / viewport.width, 110 / viewport.height);
+        const thumbViewport = page.getViewport({ scale: thumbScale });
+        const thumbCanvas = document.createElement('canvas');
+        thumbCanvas.width = Math.round(thumbViewport.width);
+        thumbCanvas.height = Math.round(thumbViewport.height);
+        await page.render({ canvasContext: thumbCanvas.getContext('2d'), viewport: thumbViewport }).promise;
+
+        // store page state (rotation degrees 0,90,180,270)
+        const pg = { pageNum: p, rotation: 0, thumbCanvas, viewport, renderedCanvasFull: null };
+        pages.push(pg);
+
+        // create thumbnail element
+        addThumbElement(pg);
+      } catch (err) {
+        console.error('Page render error', p, err);
+      }
+      await new Promise(r=>setTimeout(r,30));
+    }
+    setProgress(95);
+    showPreviewGrid();
+    setTimeout(()=> setProgress(100), 120);
+  }
+
+  function addThumbElement(pg) {
+    const item = document.createElement('div');
+    item.className = 'thumb-item';
+    item.dataset.p = pg.pageNum;
+
+    const previewWrap = document.createElement('div');
+    previewWrap.className = 'thumb-preview';
+    previewWrap.appendChild(pg.thumbCanvas);
+
+    const meta = document.createElement('div');
+    meta.className = 'thumb-meta';
+    const label = document.createElement('div'); label.className = 'label'; label.textContent = `Page ${pg.pageNum}`;
+    const actions = document.createElement('div'); actions.className = 'actions';
+
+    const btnRotate = document.createElement('button'); btnRotate.className = 'small-btn'; btnRotate.title = 'Rotate 90° clockwise'; btnRotate.innerHTML = '<i class="fas fa-rotate-right"></i>';
+    btnRotate.onclick = () => rotatePage(pg.pageNum);
+
+    const btnDel = document.createElement('button'); btnDel.className = 'small-btn'; btnDel.title = 'Delete page'; btnDel.innerHTML = '<i class="fas fa-trash"></i>';
+    btnDel.onclick = () => deletePage(pg.pageNum);
+
+    const btnLeft = document.createElement('button'); btnLeft.className = 'small-btn'; btnLeft.title = 'Move left'; btnLeft.innerHTML = '<i class="fas fa-arrow-left"></i>';
+    btnLeft.onclick = () => movePageLeft(pg.pageNum);
+
+    const btnRight = document.createElement('button'); btnRight.className = 'small-btn'; btnRight.title = 'Move right'; btnRight.innerHTML = '<i class="fas fa-arrow-right"></i>';
+    btnRight.onclick = () => movePageRight(pg.pageNum);
+
+    actions.appendChild(btnLeft);
+    actions.appendChild(btnRight);
+    actions.appendChild(btnRotate);
+    actions.appendChild(btnDel);
+
+    meta.appendChild(label);
+    meta.appendChild(actions);
+
+    item.appendChild(previewWrap);
+    item.appendChild(meta);
+
+    // clicking thumbnail opens full preview of this page
+    previewWrap.addEventListener('click', () => openFullPreview(pg.pageNum));
+
+    thumbList.appendChild(item);
+  }
+
+  function showPreviewGrid() {
+    previewGrid.innerHTML = '';
+    for (const pg of pages) {
+      const card = document.createElement('div');
+      card.className = 'preview-card';
       const canvas = document.createElement('canvas');
-      canvas.className = 'page-canvas';
-      canvas.width = Math.floor(viewport.width);
-      canvas.height = Math.floor(viewport.height);
-      canvas.style.width = canvas.width + 'px';
-      canvas.style.height = canvas.height + 'px';
+      // use thumb canvas scaled up for preview OR render full-size later
+      canvas.width = pg.thumbCanvas.width * 2;
+      canvas.height = pg.thumbCanvas.height * 2;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(pg.thumbCanvas, 0, 0, canvas.width, canvas.height);
+      card.appendChild(canvas);
+      const lbl = document.createElement('div'); lbl.style.color='var(--muted)'; lbl.style.fontSize='0.9rem'; lbl.textContent = `Page ${pg.pageNum}`;
+      card.appendChild(lbl);
+      previewGrid.appendChild(card);
+      // click to open full preview
+      card.addEventListener('click', () => openFullPreview(pg.pageNum));
+    }
+  }
 
-      const pageWrapper = document.createElement('div');
-      pageWrapper.className = 'page-wrapper';
-      pageWrapper.style.display = 'inline-block';
-      pageWrapper.style.maxWidth = '100%';
+  async function openFullPreview(pageNum) {
+    // find page state
+    const pgIndex = pages.findIndex(p => p.pageNum === pageNum);
+    if (pgIndex === -1) return;
+    const state = pages[pgIndex];
 
-      const overlay = document.createElement('div');
-      overlay.className = 'overlay';
-      overlay.style.width = canvas.style.width;
-      overlay.style.height = canvas.style.height;
-      // set relative size container so overlay absolute coords match
-      overlay.style.pointerEvents = 'auto';
+    // If we already rendered a full-resolution canvas for this page and rotation hasn't changed, show it; otherwise render full
+    if (state.renderedCanvasFull && state.renderedCanvasFull.rotation === state.rotation) {
+      showPopupImage(state.renderedCanvasFull.canvas.toDataURL());
+      return;
+    }
 
-      // draw PDF page into canvas
+    // render full page using pdf.js at higher scale
+    try {
+      progressWrap.style.display = 'block';
+      progressStage.textContent = 'Rendering full page';
+      setProgress(10);
+      const page = await pdfDoc.getPage(state.pageNum);
+      setProgress(30);
+      const scale = 1.6; // scale for full preview
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(viewport.width);
+      canvas.height = Math.round(viewport.height);
       const ctx = canvas.getContext('2d');
       await page.render({ canvasContext: ctx, viewport }).promise;
-
-      // clicking canvas selects page
-      canvas.addEventListener('click', ()=>{
-        selectedPageIndex = pages.findIndex(item => item.canvas === canvas);
-        highlightPage(selectedPageIndex);
-      });
-
-      pageWrapper.appendChild(canvas);
-      pageWrapper.appendChild(overlay);
-      pdfCanvasWrap.appendChild(pageWrapper);
-
-      pages.push({ pageNum: p, canvas, viewport, overlay, wrapper: pageWrapper });
-    }
-    // by default select first page if exists
-    if (pages.length) {
-      selectedPageIndex = 0;
-      highlightPage(0);
+      // apply rotation visually on canvas for preview
+      if (state.rotation % 360 !== 0) {
+        const rotated = rotateCanvasCanvas(canvas, state.rotation);
+        state.renderedCanvasFull = { canvas: rotated, rotation: state.rotation };
+        showPopupImage(rotated.toDataURL());
+      } else {
+        state.renderedCanvasFull = { canvas, rotation: state.rotation };
+        showPopupImage(canvas.toDataURL());
+      }
+      setProgress(100);
+      setTimeout(()=> progressWrap.style.display='none', 300);
+    } catch (err) {
+      console.error(err);
+      showStatus('Error rendering full page: ' + (err.message || err),'error');
+      progressWrap.style.display = 'none';
     }
   }
 
-  function highlightPage(index) {
-    pages.forEach((p, i) => {
-      p.wrapper.style.boxShadow = i === index ? '0 10px 30px rgba(34,211,238,0.12)' : 'none';
-      p.wrapper.style.border = i === index ? '1px solid rgba(34,211,238,0.15)' : 'none';
-    });
+  function rotateCanvasCanvas(srcCanvas, degrees) {
+    const d = ((degrees % 360) + 360) % 360;
+    if (d === 0) return srcCanvas;
+    const w = srcCanvas.width, h = srcCanvas.height;
+    const out = document.createElement('canvas');
+    if (d === 90 || d === 270) { out.width = h; out.height = w; } else { out.width = w; out.height = h; }
+    const ctx = out.getContext('2d');
+    ctx.translate(out.width/2, out.height/2);
+    ctx.rotate(d * Math.PI / 180);
+    ctx.drawImage(srcCanvas, -w/2, -h/2);
+    return out;
   }
 
-  // --- Save (compose) PDF using jsPDF by drawing page canvas and overlay annotations ---
-  async function saveEditedPdf() {
-    if (!pdfDoc && pages.length===0) { alert('No document to save'); return; }
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'pt' }); // points will match canvas px approximations
-    for (let i = 0; i < pages.length; i++) {
-      const p = pages[i];
-      // create an offscreen canvas to composite base page + annotations
-      const w = p.canvas.width, h = p.canvas.height;
-      const off = document.createElement('canvas');
-      off.width = w; off.height = h;
-      const ctx = off.getContext('2d');
+  function rotatePage(pageNum) {
+    const idx = pages.findIndex(p => p.pageNum === pageNum);
+    if (idx === -1) return;
+    pages[idx].rotation = (pages[idx].rotation + 90) % 360;
+    // update thumbnail visually by rotating its canvas copy
+    const thumbCanvas = pages[idx].thumbCanvas;
+    const rotated = rotateCanvasCanvas(thumbCanvas, 90);
+    pages[idx].thumbCanvas = rotated;
+    // update thumb DOM
+    refreshThumbnailsUI();
+    showPreviewGrid();
+  }
 
-      // draw the rendered PDF page
-      ctx.drawImage(p.canvas, 0, 0);
+  function deletePage(pageNum) {
+    const idx = pages.findIndex(p => p.pageNum === pageNum);
+    if (idx === -1) return;
+    pages.splice(idx, 1);
+    refreshNumbering();
+    refreshThumbnailsUI();
+    showPreviewGrid();
+  }
 
-      // draw annotations from overlay children
-      const anns = Array.from(p.overlay.children);
-      for (const ann of anns) {
-        const rect = ann.getBoundingClientRect();
-        const parentRect = p.overlay.getBoundingClientRect();
-        const left = (rect.left - parentRect.left) * (w / parentRect.width);
-        const top = (rect.top - parentRect.top) * (h / parentRect.height);
-        const aw = rect.width * (w / parentRect.width);
-        const ah = rect.height * (h / parentRect.height);
+  function movePageLeft(pageNum) {
+    const idx = pages.findIndex(p => p.pageNum === pageNum);
+    if (idx > 0) {
+      const temp = pages[idx-1];
+      pages[idx-1] = pages[idx];
+      pages[idx] = temp;
+      refreshNumbering();
+      refreshThumbnailsUI();
+      showPreviewGrid();
+    }
+  }
 
-        if (ann.dataset.type === 'text') {
-          // draw text box
-          const contentEl = ann.querySelector('.content');
-          // use computed styles for font size/color
-          const style = window.getComputedStyle(contentEl);
-          const fontSize = parseFloat(style.fontSize) * (w / parentRect.width);
-          ctx.font = `${fontSize}px sans-serif`;
-          ctx.fillStyle = style.color || '#000';
-          // simple wrapping:
-          const txt = contentEl.innerText || '';
-          const lines = wrapText(ctx, txt, aw - 8);
-          ctx.textBaseline = 'top';
-          const padding = 4;
-          ctx.fillStyle = '#ffffffcc';
-          ctx.fillRect(left, top, aw, ah);
-          ctx.fillStyle = style.color || '#000';
-          lines.forEach((line, idx) => {
-            ctx.fillText(line, left + padding, top + padding + idx * (fontSize * 1.15));
-          });
-        } else if (ann.dataset.type === 'image') {
-          const imgEl = ann.querySelector('img');
-          // draw the image element onto the offscreen canvas
-          // ensure image is loaded
-          await ensureImageLoaded(imgEl);
-          ctx.drawImage(imgEl, left, top, aw, ah);
+  function movePageRight(pageNum) {
+    const idx = pages.findIndex(p => p.pageNum === pageNum);
+    if (idx !== -1 && idx < pages.length - 1) {
+      const temp = pages[idx+1];
+      pages[idx+1] = pages[idx];
+      pages[idx] = temp;
+      refreshNumbering();
+      refreshThumbnailsUI();
+      showPreviewGrid();
+    }
+  }
+
+  function refreshNumbering() {
+    // reset pageNum to their position index+1 to preserve order for final PDF
+    for (let i=0;i<pages.length;i++) pages[i].pageNum = i+1;
+  }
+
+  function refreshThumbnailsUI() {
+    // clear and rebuild thumb list (keeps click handlers simple)
+    thumbList.innerHTML = '';
+    for (const pg of pages) addThumbElement(pg);
+  }
+
+  async function downloadEditedPdf() {
+    if (!env.jsAvailable || !window.jspdf) { showStatus('jsPDF not available — cannot create final PDF.','error'); return; }
+    if (!pages.length) { showStatus('No pages to save', 'error'); return; }
+
+    try {
+      progressWrap.style.display = 'block';
+      progressStage.textContent = 'Rendering pages';
+      setProgress(5);
+      const { jsPDF } = window.jspdf;
+      let doc = null;
+      const total = pages.length;
+      for (let i=0;i<total;i++) {
+        const pg = pages[i];
+        setProgress(5 + ((i+1)/total)*80);
+        // render full page (if not cached) at scale for print quality
+        let canvas = pg.renderedCanvasFull ? pg.renderedCanvasFull.canvas : null;
+        if (!canvas) {
+          const srcPage = await pdfDoc.getPage(pg.pageNum); // note: pageNum is now ordering index (but pdfDoc pages are original indices)
+          // IMPORTANT: original pdfDoc.getPage expects original page number. We must map to original page numbers.
+          // To preserve original mapping, when we reordered pages we updated pageNum; but pdfDoc pages are based on original order.
+          // To handle this, store originalIndex in pages initial load. We'll revise: pages must have originalIndex property.
+          // but we didn't store it earlier — fix: pages array initial load should include originalIndex; implement by checking for origIndex.
         }
       }
+      // OOPS: we need original page mapping to request correct pages from pdfDoc.
+      // To fix, rebuild pages to include originalIndex when pages were first loaded.
+      // We'll re-implement: if pages[].originalIndex is missing, assume pageNum maps to original index at load time.
+    } catch (err) {
+      console.error(err);
+      showStatus('Error creating PDF: ' + (err.message || err), 'error');
+      progressWrap.style.display = 'none';
+    }
 
-      // watermark: if global watermark text exists and preview visible, draw center watermark
-      if (wmText.value.trim()) {
-        ctx.save();
-        ctx.globalAlpha = parseInt(wmOpacity.value,10)/100;
-        ctx.fillStyle = '#000';
-        ctx.font = `${Math.floor(w/10)}px sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.translate(w/2,h/2);
-        ctx.rotate(-Math.PI/6);
-        ctx.fillText(wmText.value, 0, 0);
-        ctx.restore();
+    // Because of above mapping nuance we re-implement the download logic from scratch below (complete version).
+    return downloadEditedPdf_v2();
+  }
+
+  // Updated, complete download builder handling original page mapping
+  async function downloadEditedPdf_v2() {
+    try {
+      // Ensure pages have originalIndex property (set at load time). If not present, assume initial mapping: originalIndex==indexAtLoad
+      if (!pages.length) { showStatus('No pages to save','error'); return; }
+      // If originalIndex missing, construct from current order by assuming initial load order - but we must have saved originalIndex when loading.
+      // We'll attempt to use stored originalIndex; otherwise best-effort: treat pageNum as original index.
+      progressWrap.style.display = 'block';
+      progressStage.textContent = 'Preparing final PDF';
+      setProgress(5);
+      const { jsPDF } = window.jspdf;
+      let doc = null;
+      const total = pages.length;
+      for (let i=0;i<total;i++) {
+        const pg = pages[i];
+        progressStage.textContent = `Rendering page ${i+1} / ${total}`;
+        // Render the page at scale 2.0 for decent quality if canvas not cached or rotation changed
+        let canvas = null;
+        if (pg.renderedCanvasFull && pg.renderedCanvasFull.rotation === pg.rotation) {
+          canvas = pg.renderedCanvasFull.canvas;
+        } else {
+          // We need to fetch the original PDF page by its original index.
+          const origIndex = (typeof pg.originalIndex === 'number') ? pg.originalIndex : pg.pageNum; // fallback
+          const page = await pdfDoc.getPage(origIndex);
+          const scale = 2.0;
+          const viewport = page.getViewport({ scale });
+          const c = document.createElement('canvas');
+          c.width = Math.round(viewport.width);
+          c.height = Math.round(viewport.height);
+          await page.render({ canvasContext: c.getContext('2d'), viewport }).promise;
+          // apply rotation
+          if (pg.rotation % 360 !== 0) {
+            const rotated = rotateCanvasCanvas(c, pg.rotation);
+            canvas = rotated;
+          } else {
+            canvas = c;
+          }
+          pg.renderedCanvasFull = { canvas: canvas, rotation: pg.rotation };
+        }
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.92);
+        const orientation = (canvas.width > canvas.height) ? 'l' : 'p';
+        const scaleForPdf = 96 * 2.0; // 96dpi assumption times render scale
+        const pxToMm = (px) => (px * 25.4) / scaleForPdf;
+        const wmm = pxToMm(canvas.width);
+        const hmm = pxToMm(canvas.height);
+
+        if (i === 0) {
+          doc = new jsPDF({ unit: 'mm', format: [wmm, hmm], orientation });
+          doc.addImage(imgData, 'JPEG', 0, 0, wmm, hmm);
+        } else {
+          doc.addPage([wmm, hmm], orientation);
+          doc.addImage(imgData, 'JPEG', 0, 0, wmm, hmm);
+        }
+        setProgress(5 + ((i+1)/total)*85);
+        await new Promise(r=>setTimeout(r,50));
       }
-
-      // convert offscreen canvas to data URL and add to PDF
-      const dataUrl = off.toDataURL('image/png');
-      const imgProps = doc.getImageProperties(dataUrl);
-      const pdfWidth = doc.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      if (i > 0) doc.addPage();
-      doc.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      progressStage.textContent = 'Finalizing';
+      setProgress(95);
+      doc.save(`edited-${selectedFile.name}`);
+      setProgress(100);
+      showStatus('Edited PDF downloaded', 'success');
+      setTimeout(()=>{ progressWrap.style.display='none'; setProgress(0); }, 700);
+    } catch (err) {
+      console.error(err);
+      showStatus('Error generating edited PDF: ' + (err.message || err),'error');
+      progressWrap.style.display = 'none';
     }
-    doc.save(currentFileName.replace(/\.pdf$/i,'') + '_edited.pdf');
   }
 
-  // helper: wrap text for canvas
-  function wrapText(ctx, text, maxWidth) {
-    const words = text.split(/\s+/);
-    const lines = [];
-    let cur = '';
-    for (let w of words) {
-      const test = cur ? cur + ' ' + w : w;
-      const m = ctx.measureText(test).width;
-      if (m > maxWidth && cur) { lines.push(cur); cur = w; } else { cur = test; }
-    }
-    if (cur) lines.push(cur);
-    return lines;
+  // Reset UI & state
+  function resetAll() {
+    selectedFile = null;
+    pdfDoc = null;
+    pages = [];
+    thumbList.innerHTML = '';
+    previewGrid.innerHTML = '';
+    selectedFileContainer.style.display = 'none';
+    downloadBtn.disabled = true;
+    fileInput.value = '';
+    showStatus('Editor reset', 'success');
   }
 
-  function ensureImageLoaded(img) {
-    return new Promise((res)=> {
-      if (!img.complete) img.onload = ()=>res();
-      else res();
-    });
-  }
+  // Utility helpers
+  function formatFileSize(bytes){ if(!bytes) return '0 Bytes'; const k=1024; const sizes=['Bytes','KB','MB','GB']; const i=Math.floor(Math.log(bytes)/Math.log(k)); return parseFloat((bytes/Math.pow(k,i)).toFixed(2)) + ' ' + sizes[i]; }
 
-  // --- Export current selected page as PNG ---
-  function exportCurrentPageAsImage() {
-    if (selectedPageIndex === null) { alert('Select a page first'); return; }
-    const p = pages[selectedPageIndex];
-    const off = document.createElement('canvas');
-    off.width = p.canvas.width; off.height = p.canvas.height;
-    const ctx = off.getContext('2d');
-    ctx.drawImage(p.canvas, 0, 0);
-    // draw overlay (annotations) onto off canvas similarly to save
-    const anns = Array.from(p.overlay.children);
-    const parentRect = p.overlay.getBoundingClientRect();
-    anns.forEach(ann=>{
-      const rect = ann.getBoundingClientRect();
-      const left = (rect.left - parentRect.left) * (off.width / parentRect.width);
-      const top = (rect.top - parentRect.top) * (off.height / parentRect.height);
-      const aw = rect.width * (off.width / parentRect.width);
-      const ah = rect.height * (off.height / parentRect.height);
-      if (ann.dataset.type === 'text') {
-        const contentEl = ann.querySelector('.content');
-        const style = window.getComputedStyle(contentEl);
-        const fontSize = parseFloat(style.fontSize) * (off.width / parentRect.width);
-        ctx.font = `${fontSize}px sans-serif`;
-        ctx.fillStyle = '#ffffffcc';
-        ctx.fillRect(left, top, aw, ah);
-        ctx.fillStyle = style.color || '#000';
-        const lines = wrapText(ctx, contentEl.innerText || '', aw - 8);
-        lines.forEach((line, idx)=>ctx.fillText(line, left+4, top+4 + idx * (fontSize * 1.15)));
-      } else if (ann.dataset.type === 'image') {
-        const imgEl = ann.querySelector('img');
-        ctx.drawImage(imgEl, left, top, aw, ah);
-      }
-    });
-    off.toBlob((blob)=>{
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = (currentFileName.replace(/\.pdf$/i,'')||'page') + '_page.png';
-      document.body.appendChild(a); a.click(); a.remove();
-      URL.revokeObjectURL(url);
-    }, 'image/png');
-  }
+  // When first loading pages, store originalIndex property so we can reference original PDF pages later
+  // Modify loadPagesToThumbnails to set originalIndex when creating pg object
+  // But we already did above; fix by adjusting pages creation here:
+  // To ensure pages have originalIndex, override loadPagesToThumbnails with a wrapper that sets originalIndex
+  // However since loadPagesToThumbnails already pushed pg.pageNum=p, we need to update pages[].originalIndex
+  // We'll attach originalIndex after load (if missing).
+  // Do that now after loadPagesToThumbnails completes in handleFile: ensure pages[i].originalIndex = originalOrderIndex
 
-  // --- Add page / Remove page (blank) ---
-  function addBlankPage() {
-    // create a blank canvas size similar to first page or default
-    let baseW = 612, baseH = 792; // default letter pt approximations
-    if (pages.length) {
-      baseW = pages[0].canvas.width;
-      baseH = pages[0].canvas.height;
-    }
-    const canvas = document.createElement('canvas');
-    canvas.className = 'page-canvas';
-    canvas.width = baseW; canvas.height = baseH;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    const pageWrapper = document.createElement('div');
-    pageWrapper.className = 'page-wrapper';
-
-    const overlay = document.createElement('div');
-    overlay.className = 'overlay';
-    overlay.style.width = canvas.style.width;
-    overlay.style.height = canvas.style.height;
-
-    canvas.addEventListener('click', ()=>{
-      selectedPageIndex = pages.findIndex(item => item.canvas === canvas);
-      highlightPage(selectedPageIndex);
-    });
-
-    pageWrapper.appendChild(canvas); pageWrapper.appendChild(overlay);
-    pdfCanvasWrap.appendChild(pageWrapper);
-    pages.push({ pageNum: pages.length+1, canvas, viewport: { width: canvas.width, height: canvas.height, scale:1 }, overlay, wrapper: pageWrapper });
-    selectedPageIndex = pages.length-1;
-    highlightPage(selectedPageIndex);
-  }
-
-  function removeCurrentPage() {
-    if (selectedPageIndex === null) return alert('Select a page to remove');
-    const p = pages[selectedPageIndex];
-    p.wrapper.remove();
-    pages.splice(selectedPageIndex,1);
-    // renumber
-    pages.forEach((pg, idx)=>pg.pageNum = idx+1);
-    selectedPageIndex = pages.length ? Math.max(0, selectedPageIndex-1) : null;
-    if (selectedPageIndex !== null) highlightPage(selectedPageIndex);
-  }
-
-  // ---- Event wiring ----
-  openFile.addEventListener('change', (e)=> loadPdfFromFile(e.target.files[0]));
-  savePdfBtn.addEventListener('click', saveEditedPdf);
-  exportImageBtn.addEventListener('click', exportCurrentPageAsImage);
-  addTextBtn.addEventListener('click', ()=> createAnnotation('text'));
-  imgInput.addEventListener('change', async (e)=>{
-    const f = e.target.files[0]; if (!f) return;
-    const url = URL.createObjectURL(f);
-    const img = new Image();
-    img.src = url;
-    img.onload = ()=> {
-      createAnnotation('image', { src: url, naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight });
-      URL.revokeObjectURL(url);
+  // Small fix: attach originalIndex after pages created
+  // We'll monkey-patch loadPagesToThumbnails call to set originalIndex. Update: implement a small wrapper above.
+  // To keep code flow clean, after pdf loaded and pages array built, set originalIndex values:
+  (function ensureOriginalIndex() {
+    // This closure will run every time pages array changes via loadPagesToThumbnails.
+    // We will patch addThumbElement to set pg.originalIndex if missing.
+    const origAddThumb = addThumbElement;
+    addThumbElement = function(pg) {
+      if (typeof pg.originalIndex === 'undefined') pg.originalIndex = pg.pageNum; // initial mapping
+      origAddThumb(pg);
     };
-  });
-  addImageBtn.addEventListener('click', ()=> imgInput.click());
-
-  // watermark controls
-  wmVal.textContent = wmOpacity.value;
-  wmOpacity.addEventListener('input', ()=> wmVal.textContent = wmOpacity.value);
-  applyWmBtn.addEventListener('click', ()=> {
-    const txt = wmText.value.trim();
-    if (!txt) return alert('Enter watermark text');
-    wmPreview.style.display = 'block';
-    wmPreview.style.opacity = (wmOpacity.value/100);
-    wmPreview.innerText = txt;
-    // small transform to mimic rotated watermark
-    wmPreview.style.transform = 'translate(-50%,-50%) rotate(-12deg) scale(1.0)';
-  });
-  clearWmBtn.addEventListener('click', ()=> { wmPreview.style.display = 'none'; wmText.value = ''; });
-
-  // add/remove page
-  addPageBtn.addEventListener('click', addBlankPage);
-  removePageBtn.addEventListener('click', removeCurrentPage);
-
-  // small helper: clicking outside annotation deselects
-  document.addEventListener('click', (e)=>{
-    // nothing for now
-  });
-
-  // utility: simple load sample for quick testing (optional)
-  // You can remove or comment the following block in production
-  // fetch a small sample PDF from a public URL — commented out.
-  /*
-  (async function sampleLoad(){
-    const resp = await fetch('https://cors-anywhere.herokuapp.com/https://arxiv.org/pdf/quant-ph/0410100.pdf');
-    const buf = await resp.arrayBuffer();
-    const file = new File([buf],"sample.pdf",{type:"application/pdf"});
-    await loadPdfFromFile(file);
   })();
-  */
 
-  // helper for debugging: log pages
-  console.log('PDF Editor ready');
+  // End startApp
+} // end startApp
 </script>
 </body>
 </html>
