@@ -38,7 +38,6 @@
     }
     .btn-header:hover{border-color:var(--primary);color:var(--primary)}
     
-    /* Tool-specific styles */
     .tool-content {
       background:var(--card);border-radius:var(--radius);border:1px solid var(--border);
       padding:25px;margin-top:20px;
@@ -57,137 +56,52 @@
     .upload-area:hover, .upload-area.dragover {
       border-color:var(--primary);background:rgba(34,211,238,0.05);
     }
-    .upload-icon {
-      font-size:3rem;color:var(--muted);margin-bottom:15px;
-    }
-    .upload-text {
-      color:var(--text);margin-bottom:15px;font-weight:600;
-    }
-    .upload-subtext {
-      color:var(--muted);font-size:0.9rem;
-    }
-    .file-input {
-      display:none;
-    }
+    .upload-icon {font-size:3rem;color:var(--muted);margin-bottom:15px;}
+    .upload-text {color:var(--text);margin-bottom:15px;font-weight:600;}
+    .upload-subtext {color:var(--muted);font-size:0.9rem;}
+    .file-input {display:none;}
     .selected-file {
       display:flex;align-items:center;gap:12px;padding:15px;
       background:var(--bg);border-radius:var(--radius);border:1px solid var(--border);
       margin-bottom:25px;
     }
-    .file-icon {
-      font-size:1.5rem;color:var(--primary);
-    }
-    .file-info {
-      flex:1;
-    }
-    .file-name {
-      font-weight:600;margin-bottom:4px;color:var(--text);
-    }
-    .file-size {
-      color:var(--muted);font-size:0.9rem;
-    }
-    .remove-file {
-      background:transparent;border:none;color:var(--muted);cursor:pointer;
-      padding:5px;border-radius:4px;
-    }
-    .remove-file:hover {
-      color:#ef4444;
-    }
-    .password-options {
-      display:grid;grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
-      gap:20px;margin-bottom:25px;
-    }
-    .option-group {
-      margin-bottom:15px;
-    }
-    .option-group label {
-      display:block;margin-bottom:8px;font-weight:500;color:var(--text);
-    }
-    .option-group input {
-      width:100%;padding:10px 12px;border-radius:var(--radius);
-      background:var(--bg);border:1px solid var(--border);color:var(--text);
-    }
-    .password-strength {
-      margin-top:8px;height:6px;border-radius:3px;background:var(--border);
-      position:relative;overflow:hidden;
-    }
-    .password-strength-meter {
-      height:100%;width:0%;transition:width 0.3s;
-    }
+    .file-icon {font-size:1.5rem;color:var(--primary);}
+    .file-info {flex:1;}
+    .file-name {font-weight:600;margin-bottom:4px;color:var(--text);}
+    .file-size {color:var(--muted);font-size:0.9rem;}
+    .remove-file {background:transparent;border:none;color:var(--muted);cursor:pointer;padding:5px;border-radius:4px;}
+    .remove-file:hover {color:#ef4444;}
+    .option-group {margin-bottom:15px;}
+    .option-group label {display:block;margin-bottom:8px;font-weight:500;color:var(--text);}
+    .option-group input {width:100%;padding:10px 12px;border-radius:var(--radius);background:var(--bg);border:1px solid var(--border);color:var(--text);}
+    .password-strength {margin-top:8px;height:6px;border-radius:3px;background:var(--border);overflow:hidden;}
+    .password-strength-meter {height:100%;width:0%;transition:width 0.3s;}
     .password-strength-weak { background:#ef4444; width: 33%; }
     .password-strength-medium { background:#f59e0b; width: 66%; }
     .password-strength-strong { background:#10b981; width: 100%; }
-    .password-feedback {
-      font-size:0.8rem;color:var(--muted);margin-top:5px;
-    }
-    .encryption-options {
-      margin-bottom:25px;
-    }
-    .encryption-options h3 {
-      margin-bottom:15px;color:var(--primary);font-size:1.1rem;
-    }
-    .encryption-types {
-      display:flex;gap:15px;flex-wrap:wrap;
-    }
+    .password-feedback {font-size:0.8rem;color:var(--muted);margin-top:5px;}
+    .encryption-options h3 {margin-bottom:15px;color:var(--primary);font-size:1.1rem;}
+    .encryption-types {display:flex;gap:15px;flex-wrap:wrap;}
     .encryption-type {
       flex:1;min-width:200px;background:var(--bg);border:1px solid var(--border);
       border-radius:var(--radius);padding:15px;cursor:pointer;transition:all 0.2s;
     }
-    .encryption-type:hover, .encryption-type.active {
-      border-color:var(--primary);background:rgba(34,211,238,0.05);
-    }
-    .encryption-type.active {
-      border-width:2px;
-    }
-    .encryption-type h4 {
-      margin:0 0 8px 0;color:var(--text);font-size:1rem;
-    }
-    .encryption-type p {
-      margin:0;color:var(--muted);font-size:0.9rem;
-    }
-    .action-buttons {
-      display:flex;gap:12px;flex-wrap:wrap;
-    }
-    .btn {
-      padding:12px 20px;border-radius:var(--radius);border:none;
-      font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;
-    }
-    .btn-primary {
-      background:var(--primary);color:#00131f;
-    }
-    .btn-secondary {
-      background:var(--card);color:var(--text);border:1px solid var(--border);
-    }
-    .btn:disabled {
-      opacity:0.6;cursor:not-allowed;
-    }
-    .btn:hover:not(:disabled) {
-      opacity:0.9;
-    }
-    .status-message {
-      margin-top:15px;padding:10px;border-radius:var(--radius);
-      background:var(--bg);border:1px solid var(--border);
-      color:var(--muted);font-size:0.9rem;display:none;
-    }
-    .status-success {
-      border-color:#10b981;color:#10b981;
-    }
-    .status-error {
-      border-color:#ef4444;color:#ef4444;
-    }
-    
+    .encryption-type.active {border-color:var(--primary);background:rgba(34,211,238,0.05);border-width:2px;}
+    .encryption-type h4 {margin:0 0 8px 0;color:var(--text);font-size:1rem;}
+    .encryption-type p {margin:0;color:var(--muted);font-size:0.9rem;}
+    .action-buttons {display:flex;gap:12px;flex-wrap:wrap;}
+    .btn {padding:12px 20px;border-radius:var(--radius);border:none;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;}
+    .btn-primary {background:var(--primary);color:#00131f;}
+    .btn-secondary {background:var(--card);color:var(--text);border:1px solid var(--border);}
+    .btn:disabled {opacity:0.6;cursor:not-allowed;}
+    .btn:hover:not(:disabled) {opacity:0.9;}
+    .status-message {margin-top:15px;padding:10px;border-radius:var(--radius);background:var(--bg);border:1px solid var(--border);color:var(--muted);font-size:0.9rem;display:none;}
+    .status-success {border-color:#10b981;color:#10b981;}
+    .status-error {border-color:#ef4444;color:#ef4444;}
     footer{margin-top:auto;padding:18px 0;background:var(--card);border-top:1px solid var(--border)}
     .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
     .footer-links{display:flex;gap:14px;flex-wrap:wrap}
     .footer-links a{color:var(--primary);text-decoration:none;font-weight:600}
-    @media (max-width:720px){
-      header{flex-direction:column;align-items:flex-start;gap:10px}
-      .header-actions{align-self:flex-end}
-      .password-options{grid-template-columns:1fr;}
-      .encryption-types{flex-direction:column;}
-      .action-buttons{flex-direction:column;}
-      .btn{width:100%;justify-content:center;}
-    }
   </style>
 </head>
 <body>
@@ -210,76 +124,49 @@
 <main class="container">
   <div class="tool-content">
     <h1 class="tool-title">Password Protect PDF</h1>
-    <p class="tool-description">Add password protection to your PDF files. Your files are processed entirely in your browser—no server uploads by default. (To actually encrypt PDFs we call a secure PDF API.)</p>
+    <p class="tool-description">Add password protection to your PDF files. Uses PDF.co API for encryption.</p>
     
     <div class="upload-area" id="uploadArea">
-      <div class="upload-icon">
-        <i class="fas fa-file-pdf"></i>
-      </div>
+      <div class="upload-icon"><i class="fas fa-file-pdf"></i></div>
       <div class="upload-text">Drop your PDF file here or click to browse</div>
-      <div class="upload-subtext">Maximum file size: 50MB</div>
       <input type="file" id="fileInput" class="file-input" accept=".pdf">
     </div>
     
-    <div id="selectedFileContainer" style="display: none;">
+    <div id="selectedFileContainer" style="display:none;">
       <div class="selected-file">
-        <div class="file-icon">
-          <i class="fas fa-file-pdf"></i>
-        </div>
+        <div class="file-icon"><i class="fas fa-file-pdf"></i></div>
         <div class="file-info">
-          <div class="file-name" id="fileName">document.pdf</div>
-          <div class="file-size" id="fileSize">0 KB</div>
+          <div class="file-name" id="fileName"></div>
+          <div class="file-size" id="fileSize"></div>
         </div>
-        <button class="remove-file" id="removeFile">
-          <i class="fas fa-times"></i>
-        </button>
+        <button class="remove-file" id="removeFile"><i class="fas fa-times"></i></button>
       </div>
     </div>
     
-    <div class="password-options">
-      <div class="option-column">
-        <div class="option-group">
-          <label for="passwordInput">Set Password (user password)</label>
-          <input type="password" id="passwordInput" placeholder="Enter a strong password">
-          <div class="password-strength">
-            <div class="password-strength-meter" id="passwordStrengthMeter"></div>
-          </div>
-          <div class="password-feedback" id="passwordFeedback">Password strength</div>
-        </div>
-      </div>
-      <div class="option-column">
-        <div class="option-group">
-          <label for="confirmPasswordInput">Confirm Password</label>
-          <input type="password" id="confirmPasswordInput" placeholder="Confirm your password">
-          <div class="password-feedback" id="confirmPasswordFeedback"></div>
-        </div>
-      </div>
+    <div class="option-group">
+      <label for="passwordInput">Set Password</label>
+      <input type="password" id="passwordInput" placeholder="Enter password">
+    </div>
+    <div class="option-group">
+      <label for="confirmPasswordInput">Confirm Password</label>
+      <input type="password" id="confirmPasswordInput" placeholder="Confirm password">
     </div>
     
     <div class="encryption-options">
       <h3>Encryption Level</h3>
       <div class="encryption-types">
         <div class="encryption-type active" data-level="AES_128bit">
-          <h4>128-bit AES Encryption</h4>
-          <p>Standard security level. Compatible with most PDF viewers.</p>
+          <h4>128-bit AES</h4><p>Standard</p>
         </div>
         <div class="encryption-type" data-level="AES_256bit">
-          <h4>256-bit AES Encryption</h4>
-          <p>Higher security level. May not be supported by older PDF viewers.</p>
+          <h4>256-bit AES</h4><p>Stronger</p>
         </div>
       </div>
     </div>
     
     <div class="action-buttons">
-      <button class="btn btn-primary" id="protectBtn" disabled>
-        <i class="fas fa-lock"></i> Protect PDF
-      </button>
-      <button class="btn btn-secondary" id="downloadBtn" disabled>
-        <i class="fas fa-download"></i> Download Protected PDF
-      </button>
-      <button class="btn btn-secondary" id="resetBtn">
-        <i class="fas fa-redo"></i> Reset
-      </button>
+      <button class="btn btn-primary" id="protectBtn" disabled><i class="fas fa-lock"></i> Protect PDF</button>
+      <button class="btn btn-secondary" id="downloadBtn" disabled><i class="fas fa-download"></i> Download</button>
     </div>
     
     <div id="statusMessage" class="status-message"></div>
@@ -293,403 +180,62 @@
       <a href="privacy.html">Privacy</a>
       <a href="terms.html">Terms</a>
       <a href="contact.html">Contact</a>
-      <a href="comments.html">Comments</a>
-      <a href="faq.html">FAQ</a>
     </div>
   </div>
 </footer>
 
 <script>
-  // === IMPORTANT: Replace with your PDF.co API Key ===
-  const PDFCO_API_KEY = 'REPLACE_WITH_YOUR_PDFCO_API_KEY';
-
-  // Set current year
+  const PDFCO_API_KEY = 'kinjalpatni2025@gmail.com_koZu81RANcqlxrd2aIqhggnzR8c3S0rDhAqF00QB0GArXu6dr8ulZRFO9lr2rpgR';
   document.getElementById('year').textContent = new Date().getFullYear();
-  
-  // Theme toggle functionality
-  const themeToggle = document.getElementById('themeToggle');
-  if (localStorage.getItem('sth_theme') === 'light') {
-    document.body.classList.add('light');
-    themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
-  }
-  
-  themeToggle.onclick = () => {
-    document.body.classList.toggle('light');
-    if (document.body.classList.contains('light')) {
-      themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
-      localStorage.setItem('sth_theme', 'light');
-    } else {
-      themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
-      localStorage.removeItem('sth_theme');
-    }
-  };
-  
-  // Elements
-  const uploadArea = document.getElementById('uploadArea');
-  const fileInput = document.getElementById('fileInput');
-  const selectedFileContainer = document.getElementById('selectedFileContainer');
-  const fileName = document.getElementById('fileName');
-  const fileSize = document.getElementById('fileSize');
-  const removeFile = document.getElementById('removeFile');
-  const passwordInput = document.getElementById('passwordInput');
-  const confirmPasswordInput = document.getElementById('confirmPasswordInput');
-  const passwordStrengthMeter = document.getElementById('passwordStrengthMeter');
-  const passwordFeedback = document.getElementById('passwordFeedback');
-  const confirmPasswordFeedback = document.getElementById('confirmPasswordFeedback');
-  const encryptionTypes = document.querySelectorAll('.encryption-type');
-  const protectBtn = document.getElementById('protectBtn');
-  const downloadBtn = document.getElementById('downloadBtn');
-  const resetBtn = document.getElementById('resetBtn');
-  const statusMessage = document.getElementById('statusMessage');
 
-  let selectedFile = null;
-  let currentEncryption = 'AES_128bit';
-  let isPasswordValid = false;
-  let isPasswordConfirmed = false;
-  let protectedFileUrl = null; // URL to the protected file returned by API
-  
-  // Initialize
-  updateButtonState();
-  
-  // Events
-  uploadArea.addEventListener('click', () => fileInput.click());
-  uploadArea.addEventListener('dragover', handleDragOver);
-  uploadArea.addEventListener('dragleave', handleDragLeave);
-  uploadArea.addEventListener('drop', handleDrop);
-  fileInput.addEventListener('change', handleFileSelect);
-  removeFile.addEventListener('click', removeSelectedFile);
-  
-  passwordInput.addEventListener('input', checkPasswordStrength);
-  confirmPasswordInput.addEventListener('input', checkPasswordConfirmation);
-  
-  encryptionTypes.forEach(type => {
-    type.addEventListener('click', () => {
-      encryptionTypes.forEach(t => t.classList.remove('active'));
-      type.classList.add('active');
-      currentEncryption = type.getAttribute('data-level');
-    });
-  });
-  
-  protectBtn.addEventListener('click', protectPDF);
-  downloadBtn.addEventListener('click', downloadProtectedPDF);
-  resetBtn.addEventListener('click', resetTool);
-  
-  function handleDragOver(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    uploadArea.classList.add('dragover');
+  let selectedFile=null, protectedFileUrl=null, currentEncryption="AES_128bit";
+
+  const fileInput=document.getElementById("fileInput");
+  const uploadArea=document.getElementById("uploadArea");
+  const fileName=document.getElementById("fileName");
+  const fileSize=document.getElementById("fileSize");
+  const selectedFileContainer=document.getElementById("selectedFileContainer");
+  const removeFile=document.getElementById("removeFile");
+  const passwordInput=document.getElementById("passwordInput");
+  const confirmPasswordInput=document.getElementById("confirmPasswordInput");
+  const encryptionTypes=document.querySelectorAll(".encryption-type");
+  const protectBtn=document.getElementById("protectBtn");
+  const downloadBtn=document.getElementById("downloadBtn");
+  const statusMessage=document.getElementById("statusMessage");
+
+  uploadArea.onclick=()=>fileInput.click();
+  fileInput.onchange=e=>{
+    const file=e.target.files[0];
+    if(file && file.type==="application/pdf"){handleFile(file);}
   }
-  
-  function handleDragLeave(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    uploadArea.classList.remove('dragover');
-  }
-  
-  function handleDrop(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    uploadArea.classList.remove('dragover');
-    
-    const files = e.dataTransfer.files;
-    if (files.length > 0 && files[0].type === 'application/pdf') {
-      handleFile(files[0]);
-    } else {
-      showStatus('Please drop a PDF file', 'error');
-    }
-  }
-  
-  function handleFileSelect(e) {
-    const file = e.target.files[0];
-    if (file && file.type === 'application/pdf') {
-      handleFile(file);
-    } else if (file) {
-      showStatus('Please select a PDF file', 'error');
-    }
-  }
-  
-  function handleFile(file) {
-    selectedFile = file;
-    fileName.textContent = file.name;
-    fileSize.textContent = formatFileSize(file.size);
-    selectedFileContainer.style.display = 'block';
-    updateButtonState();
-    showStatus('PDF file selected', 'success');
-  }
-  
-  function removeSelectedFile() {
-    selectedFile = null;
-    fileInput.value = '';
-    selectedFileContainer.style.display = 'none';
-    protectedFileUrl = null;
-    downloadBtn.disabled = true;
-    updateButtonState();
-  }
-  
-  function checkPasswordStrength() {
-    const password = passwordInput.value;
-    let strength = 0;
-    let feedback = '';
-    
-    if (password.length > 0) {
-      if (password.length < 6) {
-        strength = 1;
-        feedback = 'Too short';
-      } else if (password.length < 8) {
-        strength = 2;
-        feedback = 'Weak';
-      } else if (password.length < 10) {
-        strength = 3;
-        feedback = 'Medium';
-      } else {
-        const hasUpperCase = /[A-Z]/.test(password);
-        const hasLowerCase = /[a-z]/.test(password);
-        const hasNumbers = /\d/.test(password);
-        const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-        const complexity = [hasUpperCase, hasLowerCase, hasNumbers, hasSpecial].filter(Boolean).length;
-        if (complexity >= 3) {
-          strength = 5;
-          feedback = 'Very strong';
-        } else if (complexity >= 2) {
-          strength = 4;
-          feedback = 'Strong';
-        } else {
-          strength = 3;
-          feedback = 'Medium';
-        }
-      }
-    }
-    
-    passwordStrengthMeter.className = 'password-strength-meter';
-    if (strength === 0) {
-      passwordFeedback.textContent = 'Password strength';
-      isPasswordValid = false;
-    } else if (strength <= 2) {
-      passwordStrengthMeter.classList.add('password-strength-weak');
-      passwordFeedback.textContent = feedback;
-      passwordFeedback.style.color = '#ef4444';
-      isPasswordValid = false;
-    } else if (strength <= 3) {
-      passwordStrengthMeter.classList.add('password-strength-medium');
-      passwordFeedback.textContent = feedback;
-      passwordFeedback.style.color = '#f59e0b';
-      isPasswordValid = true;
-    } else {
-      passwordStrengthMeter.classList.add('password-strength-strong');
-      passwordFeedback.textContent = feedback;
-      passwordFeedback.style.color = '#10b981';
-      isPasswordValid = true;
-    }
-    
-    checkPasswordConfirmation();
-    updateButtonState();
-  }
-  
-  function checkPasswordConfirmation() {
-    const password = passwordInput.value;
-    const confirm = confirmPasswordInput.value;
-    
-    if (confirm.length === 0) {
-      confirmPasswordFeedback.textContent = '';
-      isPasswordConfirmed = false;
-    } else if (password !== confirm) {
-      confirmPasswordFeedback.textContent = 'Passwords do not match';
-      confirmPasswordFeedback.style.color = '#ef4444';
-      isPasswordConfirmed = false;
-    } else {
-      confirmPasswordFeedback.textContent = 'Passwords match';
-      confirmPasswordFeedback.style.color = '#10b981';
-      isPasswordConfirmed = true;
-    }
-    
-    updateButtonState();
-  }
-  
-  function updateButtonState() {
-    protectBtn.disabled = !(selectedFile && isPasswordValid && isPasswordConfirmed && PDFCO_API_KEY && PDFCO_API_KEY !== 'REPLACE_WITH_YOUR_PDFCO_API_KEY');
+  removeFile.onclick=()=>{selectedFile=null;selectedFileContainer.style.display="none";protectBtn.disabled=true;downloadBtn.disabled=true;}
+  encryptionTypes.forEach(t=>t.onclick=()=>{encryptionTypes.forEach(x=>x.classList.remove("active"));t.classList.add("active");currentEncryption=t.dataset.level;});
+  passwordInput.oninput=confirmPasswordInput.oninput=()=>{protectBtn.disabled=!(selectedFile&&passwordInput.value&&passwordInput.value===confirmPasswordInput.value);};
+  protectBtn.onclick=protectPDF;downloadBtn.onclick=downloadProtectedPDF;
+
+  function handleFile(file){selectedFile=file;fileName.textContent=file.name;fileSize.textContent=(file.size/1024).toFixed(1)+" KB";selectedFileContainer.style.display="block";protectBtn.disabled=!(passwordInput.value&&passwordInput.value===confirmPasswordInput.value);}
+  function showStatus(msg,type){statusMessage.textContent=msg;statusMessage.style.display="block";statusMessage.className="status-message "+(type==="error"?"status-error":"status-success");}
+
+  async function protectPDF(){
+    try{
+      showStatus("Uploading...","info");
+      const presigned=await fetch("https://api.pdf.co/v1/file/upload/get-presigned-url",{method:"POST",headers:{"x-api-key":PDFCO_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({name:selectedFile.name})});
+      const presignedJson=await presigned.json();
+      const uploadUrl=presignedJson.presignedUrl, fileUrl=presignedJson.url;
+      await fetch(uploadUrl,{method:"PUT",headers:{"Content-Type":"application/pdf"},body:selectedFile});
+      const protect=await fetch("https://api.pdf.co/v1/pdf/security/add",{method:"POST",headers:{"x-api-key":PDFCO_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({url:fileUrl,userPassword:passwordInput.value,ownerPassword:passwordInput.value,EncryptionAlgorithm:currentEncryption})});
+      const protectJson=await protect.json();
+      protectedFileUrl=protectJson.url;
+      downloadBtn.disabled=false;
+      showStatus("PDF protected successfully","success");
+    }catch(e){showStatus("Error: "+e,"error");}
   }
 
-  // ===== real protection flow using PDF.co API =====
-  async function protectPDF() {
-    if (!selectedFile || !isPasswordValid || !isPasswordConfirmed) {
-      showStatus('Please complete all required fields', 'error');
-      return;
-    }
-
-    if (!PDFCO_API_KEY || PDFCO_API_KEY === 'REPLACE_WITH_YOUR_PDFCO_API_KEY') {
-      showStatus('Please add your PDF.co API key in the code (PDFCO_API_KEY)', 'error');
-      return;
-    }
-
-    showStatus('Uploading file and requesting protected PDF...', 'info');
-
-    try {
-      // Step 1: get a presigned upload URL from PDF.co
-      // Endpoint: https://api.pdf.co/v1/file/upload/get-presigned-url
-      const presignedResp = await fetch('https://api.pdf.co/v1/file/upload/get-presigned-url', {
-        method: 'POST',
-        headers: {
-          'x-api-key': PDFCO_API_KEY,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name: selectedFile.name })
-      });
-
-      const presignedJson = await presignedResp.json();
-      if (presignedJson.error) {
-        throw new Error('Failed to get upload URL: ' + (presignedJson.message || JSON.stringify(presignedJson)));
-      }
-
-      const uploadUrl = presignedJson.presignedUrl || presignedJson.presignedUrlPost || presignedJson.presignedUrl || presignedJson.uploadUrl || presignedJson.url;
-      // PDF.co docs return a field named "presignedUrl" or similar; be resilient
-      if (!uploadUrl) {
-        throw new Error('Upload URL not returned by PDF.co');
-      }
-
-      // Step 2: upload the file bytes to the returned presigned URL
-      const uploadResp = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: {
-          // usually presigned PUT expects raw bytes without additional headers
-          'Content-Type': 'application/pdf'
-        },
-        body: selectedFile
-      });
-
-      if (!uploadResp.ok) {
-        throw new Error('Upload failed with status ' + uploadResp.status);
-      }
-
-      // The uploaded file is now available via the URL returned in presignedJson.url (or presignedJson.resourceUrl)
-      // PDF.co's get-presigned-url also usually returns a "url" that can be passed to processing endpoints.
-      // Try to get a usable file URL:
-      const uploadedFileUrl = presignedJson.url || presignedJson.resourceUrl || presignedJson.fileUrl || presignedJson.presignedUrlResource || null;
-      // If the above are missing, some setups require using a "url" from the response body; fallback to presignedJson
-      const usableFileUrl = uploadedFileUrl || presignedJson.presignedUrl;
-
-      if (!usableFileUrl) {
-        // In some PDF.co flows they return a temporary URL in "url" after presigned upload step.
-        // If not present, the API still may accept the "presignedUrl" (depends on PDF.co account). We'll attempt to use presignedJson.url if present:
-        throw new Error('Cannot determine uploaded file URL from PDF.co response');
-      }
-
-      // Step 3: call /pdf/security/add to create the protected PDF
-      const apiPayload = {
-        url: usableFileUrl,
-        ownerPassword: passwordInput.value,   // owner password (can be same or different)
-        userPassword: passwordInput.value,    // user password to open the PDF
-        EncryptionAlgorithm: currentEncryption === 'AES_256bit' ? 'AES_256bit' : 'AES_128bit',
-        AllowPrintDocument: true,
-        AllowFillForms: true,
-        AllowModifyDocument: false,
-        AllowContentExtraction: false,
-        AllowModifyAnnotations: false,
-        name: `protected-${selectedFile.name}`,
-        async: false
-      };
-
-      const protectResp = await fetch('https://api.pdf.co/v1/pdf/security/add', {
-        method: 'POST',
-        headers: {
-          'x-api-key': PDFCO_API_KEY,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(apiPayload)
-      });
-
-      const protectJson = await protectResp.json();
-      if (protectJson.error) {
-        throw new Error('Protection failed: ' + (protectJson.message || JSON.stringify(protectJson)));
-      }
-
-      // protectJson.url contains the URL of the protected PDF
-      protectedFileUrl = protectJson.url;
-      downloadBtn.disabled = false;
-      showStatus('PDF protected successfully — click Download to save the protected file.', 'success');
-
-    } catch (err) {
-      console.error(err);
-      showStatus('Error protecting PDF: ' + (err.message || err), 'error');
-    }
-  }
-
-  // Download the resulting protected PDF (from API)
-  async function downloadProtectedPDF() {
-    if (!protectedFileUrl) {
-      showStatus('No protected file available. Please Protect PDF first.', 'error');
-      return;
-    }
-
-    try {
-      showStatus('Downloading protected PDF...', 'info');
-
-      const resp = await fetch(protectedFileUrl);
-      if (!resp.ok) throw new Error('Download failed with status ' + resp.status);
-
-      const blob = await resp.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `protected-${selectedFile.name}`;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 150);
-
-      showStatus('Protected PDF downloaded successfully', 'success');
-    } catch (err) {
-      console.error(err);
-      showStatus('Error downloading protected PDF: ' + (err.message || err), 'error');
-    }
-  }
-
-  function resetTool() {
-    removeSelectedFile();
-    passwordInput.value = '';
-    confirmPasswordInput.value = '';
-    passwordStrengthMeter.className = 'password-strength-meter';
-    passwordFeedback.textContent = 'Password strength';
-    passwordFeedback.style.color = 'var(--muted)';
-    confirmPasswordFeedback.textContent = '';
-    downloadBtn.disabled = true;
-    protectedFileUrl = null;
-    
-    // Reset encryption to default
-    encryptionTypes.forEach(type => type.classList.remove('active'));
-    document.querySelector('.encryption-type[data-level="AES_128bit"]').classList.add('active');
-    currentEncryption = 'AES_128bit';
-    
-    showStatus('Tool reset', 'success');
-  }
-  
-  function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  }
-  
-  function showStatus(message, type) {
-    statusMessage.textContent = message;
-    statusMessage.classList.remove('status-success', 'status-error');
-    
-    if (type === 'success') {
-      statusMessage.classList.add('status-success');
-    } else if (type === 'error') {
-      statusMessage.classList.add('status-error');
-    }
-    
-    statusMessage.style.display = 'block';
-    
-    // Hide after 6 seconds (unless info)
-    if (type !== 'info') {
-      setTimeout(() => {
-        statusMessage.style.display = 'none';
-      }, 6000);
-    }
+  async function downloadProtectedPDF(){
+    const r=await fetch(protectedFileUrl);const b=await r.blob();
+    const url=URL.createObjectURL(b);const a=document.createElement("a");
+    a.href=url;a.download="protected-"+selectedFile.name;document.body.appendChild(a);a.click();
+    setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},100);
   }
 </script>
 </body>
