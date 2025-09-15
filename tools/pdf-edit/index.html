@@ -1,127 +1,89 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>PDF Edit Tool - Smarttool Hub</title>
-  <meta name="description" content="Edit PDF pages (reorder, rotate, delete) in your browser. No server uploads."/>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Edit PDF Online - Smarttool Hub (Real PDF.js + pdf-lib)</title>
+  <meta name="description" content="Edit PDF files online - add text, shapes, and annotations. 100% client-side, using PDF.js and pdf-lib."/>
   <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
   <style>
-    /* Theme variables (same as watermark tool) */
+    /* (kept your original theme & layout with slight adjustments) */
     :root{
-      --bg:#0b1220;
-      --text:#eaf2ff;
-      --card:#182335;
-      --border:#2a3b55;
-      --primary:#22d3ee;
-      --muted:#9fb3c8;
-      --accent:#7ee7ff;
-      --radius:12px;
-      --input-bg: #09111a;
+      --bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;
+      --primary:#22d3ee;--muted:#9fb3c8;--radius:12px;
     }
     body.light{
-      --bg:#f6f8fb;
-      --text:#0b1220;
-      --card:#ffffff;
-      --border:#e6eefc;
-      --primary:#0b74ff;
-      --muted:#556677;
-      --accent:#7aa8ff;
-      --input-bg: #ffffff;
+      --bg:#f6f8fb;--text:#0b1220;--card:#ffffff;--border:#e6eefc;
+      --primary:#0b74ff;--muted:#556677;
     }
-
     *{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%}
     body{
       font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
-      background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;
+      background:var(--bg);color:var(--text);transition:background .25s,color .25s;
+      min-height:100vh;display:flex;flex-direction:column;
     }
-    a{color:var(--primary)}
-    .container{max-width:1200px;margin:0 auto;padding:20px;width:100%}
-
+    .container{max-width:1400px;margin:0 auto;padding:20px;width:100%}
     header{
-      display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;
     }
     .brand{display:flex;gap:12px;align-items:center}
     .brand img{width:46px;height:46px;border-radius:10px}
     .brand .title{font-size:1.25rem;font-weight:700;color:var(--primary);margin:0}
     .brand .tag{font-size:.9rem;color:var(--muted)}
     .header-actions{display:flex;gap:10px;align-items:center}
-    .btn-header{border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;font-weight:600}
-
-    /* Card */
-    .tool-content{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:25px;margin-top:20px;}
-    .tool-title{ font-size:2rem; margin-bottom:8px; color:var(--text); font-weight:800; }
-    .tool-description{ color:var(--muted); margin-bottom:18px; font-size:1rem; }
-
-    /* Upload area */
-    .upload-area{border:2px dashed var(--border);border-radius:var(--radius);padding:48px 28px;text-align:center;margin-bottom:20px;background:var(--bg);color:var(--muted)}
-    .upload-area.dragover{border-color:var(--primary);background:rgba(34,211,238,0.03)}
-    .upload-icon{font-size:56px;color:var(--muted);margin-bottom:12px}
-    .upload-text{color:var(--text);font-weight:700;margin-bottom:6px}
-    .upload-subtext{color:var(--muted)}
-
-    .selected-file{display:flex;align-items:center;gap:12px;padding:12px;background:var(--input-bg);border-radius:10px;border:1px solid var(--border);margin-bottom:18px}
-    .file-icon{font-size:18px;color:var(--primary)}
-    .file-info{flex:1}
-    .file-name{font-weight:700;color:var(--text)}
-    .file-size{color:var(--muted);font-size:0.9rem}
-    .remove-file{background:transparent;border:none;color:var(--muted);cursor:pointer}
-
-    /* Controls + preview */
-    .editor-layout{display:grid;grid-template-columns: 360px 1fr; gap:18px}
-    @media (max-width:980px){ .editor-layout{grid-template-columns:1fr} }
-
-    .panel{
-      background:var(--input-bg); border:1px solid var(--border); border-radius:12px; padding:14px;
+    .btn-header{
+      border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;
+      color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;font-weight:600
     }
-    .panel h3{margin-bottom:8px;color:var(--text);font-size:1.05rem}
-    .panel p{color:var(--muted);font-size:0.92rem;margin-bottom:12px}
-
-    /* Thumbnails list */
-    .thumb-list{ display:flex; flex-direction:column; gap:10px; max-height:560px; overflow:auto; padding-right:6px }
-    .thumb-item{
-      display:flex; gap:10px; align-items:center; padding:8px; border-radius:10px; border:1px solid var(--border); background:var(--card);
+    .btn-header:hover{border-color:var(--primary);color:var(--primary)}
+    .tool-content {
+      background:var(--card);border-radius:var(--radius);border:1px solid var(--border);
+      padding:25px;margin-top:20px;
     }
-    .thumb-preview{ width:86px; height:110px; background:#fff;border-radius:6px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
-    .thumb-preview canvas{ width:100%; height:auto; display:block; }
-    .thumb-meta{ flex:1 }
-    .thumb-meta .label{ font-weight:700; color:var(--text); margin-bottom:6px; font-size:0.95rem }
-    .thumb-meta .actions{ display:flex; gap:6px; flex-wrap:wrap }
-    .small-btn{ padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text); cursor:pointer; font-weight:700 }
-
-    .thumb-order{ display:flex; gap:6px; align-items:center }
-
-    /* Preview area */
-    .preview-area{ border:1px solid var(--border); border-radius:var(--radius); padding:12px; background:var(--bg); min-height:300px; overflow:auto }
-    .preview-grid{ display:flex; gap:12px; flex-wrap:wrap; align-items:flex-start; padding:6px }
-
-    .preview-card{ background:var(--card); border-radius:10px; padding:8px; border:1px solid var(--border); min-width:200px; display:flex; flex-direction:column; gap:8px; align-items:center; }
-    .preview-card canvas{ background:#fff; border-radius:6px; display:block; max-width:100% }
-
-    /* action area */
-    .action-buttons{ display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; align-items:center }
-    .btn{ padding:10px 14px; border-radius:10px; border:none; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px }
-    .btn-primary{ background:linear-gradient(90deg,var(--primary),var(--accent)); color:#00131f }
-    .btn-secondary{ background:var(--input-bg); color:var(--text); border:1px solid var(--border) }
-
-    .status-message{ margin-top:8px; padding:10px; border-radius:10px; background:transparent; border:1px solid var(--border); color:var(--muted); display:none }
-    .status-success{ border-color:#10b981; color:#10b981 }
-    .status-error{ border-color:#ef4444; color:#ef4444 }
-
-    .progress{ width:100%; height:12px; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden; margin-top:8px; border:1px solid var(--border) }
-    .progress-bar{ height:100%; width:0%; background:linear-gradient(90deg,var(--primary),var(--accent)); transition:width .25s }
-
-    footer{ margin-top:auto; padding:18px 0; background:var(--card); border-top:1px solid var(--border) }
-    .footer-inner{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap }
-    .footer-inner div{ color:var(--muted) }
-    .footer-links{ display:flex; gap:14px; flex-wrap:wrap }
-    .footer-links a{ color:var(--primary); font-weight:700 }
-
-    @media (max-width:720px){
-      header{ flex-direction:column; align-items:flex-start; gap:8px }
-    }
+    .tool-title { font-size:1.8rem;margin-bottom:5px;color:var(--primary); }
+    .tool-description { color:var(--muted);margin-bottom:25px; }
+    .upload-area { border:2px dashed var(--border);border-radius:var(--radius);padding:40px;text-align:center;margin-bottom:25px;transition:all 0.3s;cursor:pointer;background:var(--bg); }
+    .upload-area.dragover { border-color:var(--primary);background:rgba(34,211,238,0.05); }
+    .upload-icon { font-size:3rem;color:var(--muted);margin-bottom:15px; }
+    .upload-text { color:var(--text);margin-bottom:15px;font-weight:600; }
+    .upload-subtext { color:var(--muted);font-size:0.9rem; }
+    .file-input { display:none; }
+    .selected-file { display:flex;align-items:center;gap:12px;padding:15px;background:var(--bg);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:25px; }
+    .file-icon { font-size:1.5rem;color:var(--primary); }
+    .file-info { flex:1; }
+    .file-name { font-weight:600;margin-bottom:4px;color:var(--text); }
+    .file-size { color:var(--muted);font-size:0.9rem; }
+    .remove-file { background:transparent;border:none;color:var(--muted);cursor:pointer;padding:5px;border-radius:4px; }
+    .remove-file:hover { color:#ef4444; }
+    .editor-container { display:grid;grid-template-columns:300px 1fr;gap:20px;margin-bottom:25px; }
+    .toolbar { background:var(--bg);border-radius:var(--radius);border:1px solid var(--border);padding:15px; }
+    .toolbar-section { margin-bottom:20px; }
+    .toolbar-section h3 { margin:0 0 12px 0;color:var(--primary);font-size:1rem; }
+    .tool-btn { display:flex;align-items:center;gap:10px;padding:10px;width:100%;text-align:left;background:transparent;border:1px solid var(--border);border-radius:var(--radius);color:var(--text);cursor:pointer;margin-bottom:8px;transition:all 0.2s; }
+    .tool-btn:hover, .tool-btn.active { background:var(--primary);color:#00131f;border-color:var(--primary); }
+    .tool-btn i { width:20px;text-align:center; }
+    .color-picker { display:grid;grid-template-columns:repeat(4, 1fr);gap:8px;margin-bottom:15px; }
+    .color-option { width:30px;height:30px;border-radius:50%;cursor:pointer;border:2px solid var(--border);transition:transform 0.2s; }
+    .color-option:hover, .color-option.active { transform:scale(1.12);border-color:var(--text); }
+    .viewer { background:var(--bg);border-radius:var(--radius);border:1px solid var(--border);padding:20px;position:relative; }
+    .pdf-page { position:relative;margin:0 auto 18px auto; box-shadow:0 6px 30px rgba(0,0,0,0.3); display:block; }
+    .page-controls { display:flex;justify-content:center;align-items:center;gap:15px;margin-top:5px; }
+    .page-btn { padding:8px 15px;border-radius:var(--radius);border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer; }
+    .action-buttons { display:flex;gap:12px;flex-wrap:wrap;margin-top:8px; }
+    .btn { padding:12px 20px;border-radius:var(--radius);border:none;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px; }
+    .btn-primary { background:var(--primary);color:#00131f; }
+    .btn-secondary { background:var(--card);color:var(--text);border:1px solid var(--border); }
+    .status-message { margin-top:15px;padding:10px;border-radius:var(--radius);background:var(--bg);border:1px solid var(--border);color:var(--muted);font-size:0.9rem;display:none; }
+    .status-success { border-color:#10b981;color:#10b981; }
+    .status-error { border-color:#ef4444;color:#ef4444; }
+    footer{margin-top:auto;padding:18px 0;background:var(--card);border-top:1px solid var(--border)}
+    .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap}
+    .footer-links a{color:var(--primary);text-decoration:none;font-weight:600}
+    @media (max-width:1024px){ .editor-container{grid-template-columns:1fr;} .toolbar{order:2;} .viewer{order:1;} }
+    @media (max-width:720px){ header{flex-direction:column;align-items:flex-start;gap:10px} .header-actions{align-self:flex-end} .action-buttons{flex-direction:column;} .btn{width:100%;justify-content:center;} }
   </style>
 </head>
 <body>
@@ -143,58 +105,93 @@
 
 <main class="container">
   <div class="tool-content">
-    <h1 class="tool-title">PDF Edit Tool</h1>
-    <p class="tool-description">Edit PDF pages in your browser — reorder, rotate, delete, then download the updated PDF. No files leave your device.</p>
+    <h1 class="tool-title">Edit PDF Online</h1>
+    <p class="tool-description">Edit PDF files by adding text, shapes, and annotations. Your files are processed entirely in your browser—no server uploads.</p>
 
     <div class="upload-area" id="uploadArea">
       <div class="upload-icon"><i class="fas fa-file-pdf"></i></div>
       <div class="upload-text">Drop your PDF file here or click to browse</div>
-      <div class="upload-subtext">Maximum file size: 100MB</div>
+      <div class="upload-subtext">Maximum file size: 200MB</div>
       <input type="file" id="fileInput" class="file-input" accept=".pdf">
     </div>
 
-    <div id="selectedFileContainer" style="display:none;" class="selected-file">
-      <div class="file-icon"><i class="fas fa-file-pdf"></i></div>
-      <div class="file-info">
-        <div class="file-name" id="fileName"></div>
-        <div class="file-size" id="fileSize"></div>
+    <div id="selectedFileContainer" style="display:none;">
+      <div class="selected-file">
+        <div class="file-icon"><i class="fas fa-file-pdf"></i></div>
+        <div class="file-info">
+          <div class="file-name" id="fileName">document.pdf</div>
+          <div class="file-size" id="fileSize">0 KB</div>
+        </div>
+        <button class="remove-file" id="removeFile"><i class="fas fa-times"></i></button>
       </div>
-      <button class="remove-file" id="removeFile" title="Remove file"><i class="fas fa-times"></i></button>
     </div>
 
-    <div class="editor-layout" style="margin-top:12px;">
-      <!-- left panel: page thumbnails & controls -->
-      <div class="panel">
-        <h3>Pages</h3>
-        <p>Manage pages: rotate, move or delete. Click a thumbnail to open a larger preview.</p>
-        <div class="thumb-list" id="thumbList" aria-live="polite"></div>
-
-        <div class="action-buttons" style="margin-top:12px;">
-          <button class="btn btn-primary" id="downloadBtn" disabled><i class="fas fa-download"></i> Download Edited PDF</button>
-          <button class="btn btn-secondary" id="resetBtn"><i class="fas fa-redo"></i> Reset</button>
+    <div class="editor-container" id="editorContainer" style="display:none;">
+      <div class="toolbar">
+        <div class="toolbar-section">
+          <h3>Edit Tools</h3>
+          <button class="tool-btn active" data-tool="pan"><i class="fas fa-hand-pointer"></i> Pan/Select</button>
+          <button class="tool-btn" data-tool="text"><i class="fas fa-font"></i> Add Text</button>
+          <button class="tool-btn" data-tool="rectangle"><i class="fas fa-square"></i> Rectangle</button>
+          <button class="tool-btn" data-tool="circle"><i class="fas fa-circle"></i> Circle</button>
+          <button class="tool-btn" data-tool="highlight"><i class="fas fa-highlighter"></i> Highlight</button>
+          <button class="tool-btn" data-tool="pen"><i class="fas fa-pen"></i> Freehand</button>
         </div>
 
-        <div id="progressWrap" style="display:none;margin-top:12px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div style="font-size:0.95rem;color:var(--muted)">Processing: <span id="progressText">0%</span></div>
-            <div style="font-size:0.9rem;color:var(--muted)"><span id="progressStage">Idle</span></div>
+        <div class="toolbar-section">
+          <h3>Text Options</h3>
+          <div style="display:flex;gap:8px;">
+            <select id="fontSize" style="background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:6px;">
+              <option value="12">12px</option>
+              <option value="14">14px</option>
+              <option value="16" selected>16px</option>
+              <option value="18">18px</option>
+              <option value="24">24px</option>
+            </select>
+            <input id="textInputPreview" type="text" placeholder="Preview text" style="flex:1;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px;" />
           </div>
-          <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
         </div>
 
-        <div id="statusMessage" class="status-message" style="margin-top:12px;"></div>
+        <div class="toolbar-section">
+          <h3>Colors</h3>
+          <div class="color-picker" id="colorPicker">
+            <div class="color-option active" style="background:#000000;" data-color="#000000"></div>
+            <div class="color-option" style="background:#ff0000;" data-color="#ff0000"></div>
+            <div class="color-option" style="background:#0000ff;" data-color="#0000ff"></div>
+            <div class="color-option" style="background:#00cc00;" data-color="#00cc00"></div>
+            <div class="color-option" style="background:#ffff00;" data-color="#ffff00"></div>
+            <div class="color-option" style="background:#ff00ff;" data-color="#ff00ff"></div>
+            <div class="color-option" style="background:#00ffff;" data-color="#00ffff"></div>
+            <div class="color-option" style="background:#ff8800;" data-color="#ff8800"></div>
+          </div>
+        </div>
+
+        <div class="toolbar-section">
+          <h3>Actions</h3>
+          <button class="tool-btn" id="undoBtn"><i class="fas fa-undo"></i> Undo</button>
+          <button class="tool-btn" id="redoBtn"><i class="fas fa-redo"></i> Redo</button>
+          <button class="tool-btn" id="clearBtn"><i class="fas fa-trash"></i> Clear Page</button>
+        </div>
       </div>
 
-      <!-- right panel: page preview large -->
-      <div class="panel preview-area">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-          <div style="font-weight:700;color:var(--muted)">Preview</div>
-          <div style="font-size:0.92rem;color:var(--muted)">Click a thumbnail to open full-size</div>
+      <div class="viewer" id="viewer">
+        <!-- pdf pages will be appended here -->
+        <div style="display:flex;justify-content:center;gap:12px;align-items:center;margin-bottom:10px;">
+          <button class="page-btn" id="prevPage"><i class="fas fa-chevron-left"></i> Prev</button>
+          <div class="page-info" id="pageInfo">Page 0 of 0</div>
+          <button class="page-btn" id="nextPage">Next <i class="fas fa-chevron-right"></i></button>
         </div>
-        <div class="preview-grid" id="previewGrid"></div>
+        <div id="pagesContainer"></div>
       </div>
     </div>
 
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="saveBtn" disabled><i class="fas fa-save"></i> Save Changes</button>
+      <button class="btn btn-secondary" id="downloadBtn" disabled><i class="fas fa-download"></i> Download Edited PDF</button>
+      <button class="btn btn-secondary" id="resetBtn"><i class="fas fa-redo"></i> Reset</button>
+    </div>
+
+    <div id="statusMessage" class="status-message"></div>
   </div>
 </main>
 
@@ -211,505 +208,514 @@
   </div>
 </footer>
 
+<!-- PDF.js (rendering) and pdf-lib (editing/saving) via CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+
 <script>
+  // Set current year
   document.getElementById('year').textContent = new Date().getFullYear();
-</script>
 
-<script>
-/* Multi-CDN loader for pdf.js and jsPDF (same robust pattern used previously) */
-(async function loader() {
-  const pdfJsCDNs = [
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js',
-    'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js',
-    'https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.min.js'
-  ];
-  const pdfWorkerCDNs = [
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js',
-    'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js',
-    'https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js'
-  ];
-  const jsPdfCDNs = [
-    'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-    'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
-    'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js'
-  ];
-
-  async function tryLoad(urls, globalName, timeout=9000) {
-    for (const url of urls) {
-      try {
-        await loadScriptWithTimeout(url, timeout);
-        await new Promise(r=>setTimeout(r,50));
-        if (!globalName || window[globalName] || (globalName==='pdfjsLib' && window.pdfjsLib) || (globalName==='jspdf' && window.jspdf)) return true;
-      } catch(e) {
-        console.warn('Failed to load', url, e);
-      }
+  // Theme toggle (keep)
+  const themeToggle = document.getElementById('themeToggle');
+  if (localStorage.getItem('sth_theme') === 'light') {
+    document.body.classList.add('light');
+    themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+  }
+  themeToggle.onclick = () => {
+    document.body.classList.toggle('light');
+    if (document.body.classList.contains('light')) {
+      themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+      localStorage.setItem('sth_theme', 'light');
+    } else {
+      themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
+      localStorage.removeItem('sth_theme');
     }
-    return false;
-  }
-  function loadScriptWithTimeout(src, timeoutMs) {
-    return new Promise((resolve,reject) => {
-      const s = document.createElement('script');
-      let done = false;
-      const t = setTimeout(()=>{ if(!done){ done=true; s.onerror=s.onload=null; if(s.parentNode) s.parentNode.removeChild(s); reject(new Error('Timeout ' + src)); }}, timeoutMs);
-      s.onload = ()=>{ if(!done){ done=true; clearTimeout(t); resolve(); } };
-      s.onerror = (e)=>{ if(!done){ done=true; clearTimeout(t); reject(e); } };
-      s.src = src; s.async = true; document.head.appendChild(s);
-    });
-  }
+  };
 
-  const pdfOk = await tryLoad(pdfJsCDNs, 'pdfjsLib', 9000);
-  if (pdfOk && window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerCDNs[0];
-  const jsOk = await tryLoad(jsPdfCDNs, 'jspdf', 9000);
+  // PDF.js worker setup
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-  if (!pdfOk && !jsOk) {
-    alert('Required libraries (pdf.js and jsPDF) failed to load from CDNs. See help box on the page for options.');
-    const libHelp = document.getElementById('statusMessage');
-    libHelp.style.display = 'block';
-    libHelp.className = 'status-message';
-    libHelp.innerHTML = '<strong>Libraries failed to load.</strong><br>Allowlist CDN domains (cdnjs.cloudflare.com, cdn.jsdelivr.net, unpkg.com) or host <code>pdf.min.js</code>, <code>pdf.worker.min.js</code>, and <code>jspdf.umd.min.js</code> locally.';
-  }
-
-  startApp({ pdfAvailable: pdfOk && !!window.pdfjsLib, jsAvailable: jsOk && !!window.jspdf });
-})();
-
-/* Main app */
-function startApp(env = { pdfAvailable:true, jsAvailable:true }) {
-  // DOM refs
+  // Elements
   const uploadArea = document.getElementById('uploadArea');
   const fileInput = document.getElementById('fileInput');
   const selectedFileContainer = document.getElementById('selectedFileContainer');
-  const fileNameEl = document.getElementById('fileName');
-  const fileSizeEl = document.getElementById('fileSize');
-  const removeFileBtn = document.getElementById('removeFile');
-  const thumbList = document.getElementById('thumbList');
-  const previewGrid = document.getElementById('previewGrid');
+  const fileName = document.getElementById('fileName');
+  const fileSize = document.getElementById('fileSize');
+  const removeFile = document.getElementById('removeFile');
+  const editorContainer = document.getElementById('editorContainer');
+  const pagesContainer = document.getElementById('pagesContainer');
+  const pageInfo = document.getElementById('pageInfo');
+  const prevPageBtn = document.getElementById('prevPage');
+  const nextPageBtn = document.getElementById('nextPage');
+  const saveBtn = document.getElementById('saveBtn');
   const downloadBtn = document.getElementById('downloadBtn');
   const resetBtn = document.getElementById('resetBtn');
-  const progressWrap = document.getElementById('progressWrap');
-  const progressBar = document.getElementById('progressBar');
-  const progressText = document.getElementById('progressText');
-  const progressStage = document.getElementById('progressStage');
   const statusMessage = document.getElementById('statusMessage');
-  const themeToggle = document.getElementById('themeToggle');
+  const toolButtons = document.querySelectorAll('.tool-btn[data-tool]');
+  const colorOptions = document.querySelectorAll('.color-option');
+  const fontSizeSelect = document.getElementById('fontSize');
+  const textPreview = document.getElementById('textInputPreview');
+  const undoBtn = document.getElementById('undoBtn');
+  const redoBtn = document.getElementById('redoBtn');
+  const clearBtn = document.getElementById('clearBtn');
 
-  if (localStorage.getItem('sth_theme') === 'light') { document.body.classList.add('light'); themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; }
-  themeToggle.onclick = () => { document.body.classList.toggle('light'); if(document.body.classList.contains('light')){ themeToggle.innerHTML='<i class="fa-solid fa-sun"></i>'; localStorage.setItem('sth_theme','light'); } else { themeToggle.innerHTML='<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); } };
+  // State
+  let pdfDoc = null; // pdf.js document
+  let originalPdfBytes = null; // ArrayBuffer of original
+  let totalPages = 0;
+  let currentPageIndex = 0; // 0-based
+  let currentTool = 'pan';
+  let currentColor = '#000000';
+  let scale = 1.2; // default render scale (mobile/desktop may adjust)
+  let pageViews = []; // stores objects {page, viewport, canvas, overlay, historyStack, redoStack}
+  const MAX_HISTORY = 50;
 
-  let selectedFile = null;
-  let pdfDoc = null;
-  let pages = []; // page objects: { pageNum, rotation (deg), canvasThumb (canvas), viewport, renderedCanvasFull (canvas) }
-
-  // listeners
-  uploadArea.addEventListener('click', ()=>fileInput.click());
+  // Wire up upload & drag/drop
+  uploadArea.addEventListener('click', () => fileInput.click());
   uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
   uploadArea.addEventListener('dragleave', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); });
-  uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); const f = e.dataTransfer.files[0]; if (f && f.type==='application/pdf') handleFile(f); else showStatus('Please drop a PDF file','error'); });
-  fileInput.addEventListener('change', e => { const f = e.target.files[0]; if (f && f.type==='application/pdf') handleFile(f); else if (f) showStatus('Please select a PDF file','error'); });
-  removeFileBtn.addEventListener('click', resetAll);
-  resetBtn.addEventListener('click', resetAll);
-  downloadBtn.addEventListener('click', downloadEditedPdf);
+  uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); const f = e.dataTransfer.files[0]; if (f && f.type === 'application/pdf') handleFile(f); else showStatus('Please drop a PDF file', 'error'); });
+  fileInput.addEventListener('change', e => { const f = e.target.files[0]; if (!f) return; if (f.type !== 'application/pdf') return showStatus('Please select a PDF file', 'error'); handleFile(f); });
+  removeFile.addEventListener('click', resetTool);
 
-  function showStatus(msg, type='info') {
-    statusMessage.textContent = msg;
+  // Tools & color pickers
+  document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentTool = btn.getAttribute('data-tool');
+      showStatus(`Selected tool: ${currentTool}`, 'success');
+    });
+  });
+  colorOptions.forEach(opt => { opt.addEventListener('click', () => { colorOptions.forEach(o => o.classList.remove('active')); opt.classList.add('active'); currentColor = opt.dataset.color; showStatus('Color: '+currentColor,'success'); }); });
+
+  // Undo/Redo/Clear actions (operate on currently visible page)
+  undoBtn.addEventListener('click', () => { const pv = pageViews[currentPageIndex]; if (!pv) return; if (pv.historyStack.length > 1) { pv.redoStack.push(pv.historyStack.pop()); const img = pv.historyStack[pv.historyStack.length-1]; restoreOverlayFromDataURL(pv.overlay, img); showStatus('Undo', 'success'); } });
+  redoBtn.addEventListener('click', () => { const pv = pageViews[currentPageIndex]; if (!pv) return; if (pv.redoStack.length) { const img = pv.redoStack.pop(); pv.historyStack.push(img); restoreOverlayFromDataURL(pv.overlay, img); showStatus('Redo', 'success'); } });
+  clearBtn.addEventListener('click', () => { const pv = pageViews[currentPageIndex]; if (!pv) return; pushHistorySnapshot(pv); clearCanvas(pv.overlay); showStatus('Cleared annotations on page', 'success'); });
+
+  // Prev/Next page controls simply change the scroll to that page and update current index
+  prevPageBtn.addEventListener('click', () => { if (currentPageIndex <= 0) return; setCurrentPage(currentPageIndex - 1); });
+  nextPageBtn.addEventListener('click', () => { if (currentPageIndex >= totalPages - 1) return; setCurrentPage(currentPageIndex + 1); });
+
+  saveBtn.addEventListener('click', async () => {
+    showStatus('Preparing edited PDF for download...', 'info');
+    try {
+      await generateEditedPdfAndDownload();
+    } catch (err) {
+      console.error(err);
+      showStatus('Error generating PDF: ' + err.message, 'error');
+    }
+  });
+  downloadBtn.addEventListener('click', () => saveBtn.click());
+  resetBtn.addEventListener('click', resetTool);
+
+  // Handle file
+  async function handleFile(file) {
+    try {
+      showStatus('Loading PDF...', 'info');
+      selectedFileContainer.style.display = 'block';
+      fileName.textContent = file.name;
+      fileSize.textContent = formatFileSize(file.size);
+
+      // read arrayBuffer
+      originalPdfBytes = await file.arrayBuffer();
+
+      // load PDF with PDF.js
+      pdfDoc = await pdfjsLib.getDocument({ data: originalPdfBytes }).promise;
+      totalPages = pdfDoc.numPages;
+
+      // cleanup any previous
+      pagesContainer.innerHTML = '';
+      pageViews = [];
+
+      // render pages
+      for (let i = 1; i <= totalPages; ++i) {
+        await renderPage(i);
+      }
+
+      editorContainer.style.display = 'grid';
+      saveBtn.disabled = false;
+      downloadBtn.disabled = false;
+      setCurrentPage(0);
+      showStatus('PDF loaded. You can now edit pages.', 'success');
+
+    } catch (err) {
+      console.error(err);
+      showStatus('Failed to load PDF: ' + err.message, 'error');
+    }
+  }
+
+  // Render single page (1-based)
+  async function renderPage(pageNumber) {
+    const page = await pdfDoc.getPage(pageNumber);
+    const viewport = page.getViewport({ scale });
+
+    // container for page
+    const wrapper = document.createElement('div');
+    wrapper.className = 'pdf-page';
+    wrapper.style.width = (viewport.width) + 'px';
+    wrapper.style.height = (viewport.height + 30) + 'px';
+    wrapper.style.position = 'relative';
+    wrapper.style.marginBottom = '18px';
+
+    // actual PDF canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
+    canvas.style.display = 'block';
+    canvas.style.width = viewport.width + 'px';
+    canvas.style.height = viewport.height + 'px';
+    canvas.style.background = '#fff';
+    canvas.style.borderRadius = '6px';
+    canvas.style.overflow = 'hidden';
+
+    // overlay canvas for annotations (same size, positioned absolute)
+    const overlay = document.createElement('canvas');
+    overlay.width = canvas.width;
+    overlay.height = canvas.height;
+    overlay.style.position = 'absolute';
+    overlay.style.left = '50%';
+    overlay.style.transform = 'translateX(-50%)';
+    overlay.style.top = '0';
+    overlay.style.cursor = 'crosshair';
+    overlay.style.width = viewport.width + 'px';
+    overlay.style.height = viewport.height + 'px';
+    overlay.style.borderRadius = '6px';
+    overlay.style.background = 'transparent';
+
+    // label footer (page number)
+    const label = document.createElement('div');
+    label.style.textAlign = 'center';
+    label.style.color = getComputedStyle(document.body).getPropertyValue('--muted') || '#9fb3c8';
+    label.style.marginTop = '6px';
+    label.textContent = `Page ${pageNumber} of ${totalPages}`;
+
+    // append
+    wrapper.appendChild(canvas);
+    wrapper.appendChild(overlay);
+    wrapper.appendChild(label);
+    pagesContainer.appendChild(wrapper);
+
+    // render page to canvas
+    const ctx = canvas.getContext('2d');
+    ctx.save();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0,0,canvas.width, canvas.height);
+    ctx.restore();
+
+    const renderContext = {
+      canvasContext: ctx,
+      viewport
+    };
+    await page.render(renderContext).promise;
+
+    // create page view record
+    const pv = {
+      pageNumber,
+      page,
+      viewport,
+      canvas,
+      overlay,
+      historyStack: [],
+      redoStack: []
+    };
+
+    // start with empty snapshot
+    pv.historyStack.push(overlay.toDataURL());
+    pv.redoStack = [];
+
+    // attach overlay interactions
+    attachOverlayEvents(pv);
+
+    pageViews.push(pv);
+  }
+
+  // Make overlay interactive: draw shapes/text/freehand depending on currentTool
+  function attachOverlayEvents(pv) {
+    const o = pv.overlay;
+    const ctx = o.getContext('2d');
+    let drawing = false;
+    let startX=0, startY=0, lastX=0, lastY=0;
+    let tempCanvas = null; // for preview shapes
+    // helper: get mouse/touch coords relative to canvas
+    function getPos(e) {
+      const rect = o.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const x = (clientX - rect.left) * (o.width / rect.width);
+      const y = (clientY - rect.top) * (o.height / rect.height);
+      return { x, y };
+    }
+
+    // setup temp canvas for shape preview
+    function ensureTemp() {
+      if (!tempCanvas) {
+        tempCanvas = document.createElement('canvas');
+        tempCanvas.width = o.width;
+        tempCanvas.height = o.height;
+        tempCanvas.style.position = 'absolute';
+        tempCanvas.style.left = o.style.left;
+        tempCanvas.style.top = o.style.top;
+        tempCanvas.style.transform = o.style.transform;
+        tempCanvas.style.pointerEvents = 'none';
+        o.parentElement.appendChild(tempCanvas);
+      }
+    }
+    function removeTemp() {
+      if (tempCanvas) { tempCanvas.parentElement.removeChild(tempCanvas); tempCanvas = null; }
+    }
+
+    o.addEventListener('mousedown', start);
+    o.addEventListener('touchstart', start, {passive:false});
+    o.addEventListener('mousemove', move);
+    o.addEventListener('touchmove', move, {passive:false});
+    o.addEventListener('mouseup', up);
+    o.addEventListener('mouseleave', up);
+    o.addEventListener('touchend', up);
+
+    function start(e) {
+      if (currentTool === 'pan') return;
+      e.preventDefault();
+      drawing = true;
+      const p = getPos(e);
+      startX = p.x; startY = p.y;
+      lastX = p.x; lastY = p.y;
+
+      if (currentTool === 'freehand' || currentTool === 'pen') {
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.strokeStyle = currentColor;
+        ctx.lineWidth = (currentTool === 'pen') ? 2 : 3;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+      }
+
+      // clear redo when new action starts
+      pv.redoStack = [];
+    }
+
+    function move(e) {
+      if (!drawing) return;
+      e.preventDefault();
+      const p = getPos(e);
+      const x = p.x, y = p.y;
+
+      if (currentTool === 'pen' || currentTool === 'freehand') {
+        ctx.lineTo(x,y);
+        ctx.strokeStyle = currentColor;
+        ctx.lineWidth = (currentTool === 'pen') ? 2 : 3;
+        ctx.stroke();
+      } else {
+        // shape preview on temp canvas
+        ensureTemp();
+        const tctx = tempCanvas.getContext('2d');
+        tctx.clearRect(0,0,tempCanvas.width,tempCanvas.height);
+        tctx.strokeStyle = currentColor;
+        tctx.fillStyle = (currentTool === 'highlight') ? hexToRgba(currentColor, 0.35) : 'transparent';
+        tctx.lineWidth = 2;
+        if (currentTool === 'rectangle') {
+          const w = x - startX, h = y - startY;
+          tctx.strokeRect(startX, startY, w, h);
+        } else if (currentTool === 'circle') {
+          const r = Math.hypot(x - startX, y - startY);
+          tctx.beginPath(); tctx.arc(startX, startY, r, 0, Math.PI*2); tctx.stroke();
+        } else if (currentTool === 'highlight') {
+          const w = x - startX, h = Math.max(12, Math.abs(y - startY));
+          tctx.fillRect(startX, startY - (h/2), w, h);
+        }
+      }
+      lastX = x; lastY = y;
+    }
+
+    function up(e) {
+      if (!drawing) return;
+      drawing = false;
+      const p = getPos(e.changedTouches ? e.changedTouches[0] : e);
+      const x = p.x, y = p.y;
+
+      if (currentTool === 'pen' || currentTool === 'freehand') {
+        // already drawn paths on overlay
+        pushHistorySnapshot(pv);
+      } else if (currentTool === 'text') {
+        const userText = textPreview.value || prompt('Enter text:');
+        if (userText) {
+          ctx.font = `${fontSizeSelect.value}px Arial`;
+          ctx.fillStyle = currentColor;
+          ctx.fillText(userText, x, y);
+          pushHistorySnapshot(pv);
+        }
+      } else {
+        // finalize shape from temp canvas onto overlay
+        if (tempCanvas) {
+          const tctx = tempCanvas.getContext('2d');
+          ctx.drawImage(tempCanvas, 0, 0);
+          removeTemp();
+          pushHistorySnapshot(pv);
+        } else {
+          // small click shapes (e.g., click rectangle)
+          if (currentTool === 'rectangle') {
+            ctx.strokeStyle = currentColor; ctx.lineWidth = 2; ctx.strokeRect(x, y, 100, 60);
+            pushHistorySnapshot(pv);
+          } else if (currentTool === 'circle') {
+            ctx.strokeStyle = currentColor; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x,y,30,0,Math.PI*2); ctx.stroke();
+            pushHistorySnapshot(pv);
+          } else if (currentTool === 'highlight') {
+            ctx.fillStyle = hexToRgba(currentColor, 0.35); ctx.fillRect(x, y, 150, 20);
+            pushHistorySnapshot(pv);
+          }
+        }
+      }
+    }
+  }
+
+  // Save snapshot for undo history
+  function pushHistorySnapshot(pv) {
+    try {
+      const data = pv.overlay.toDataURL();
+      pv.historyStack.push(data);
+      if (pv.historyStack.length > MAX_HISTORY) pv.historyStack.shift();
+      pv.redoStack = [];
+    } catch (err) {
+      console.warn('History snapshot failed', err);
+    }
+  }
+  function restoreOverlayFromDataURL(overlay, dataURL) {
+    const ctx = overlay.getContext('2d');
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0,0,overlay.width, overlay.height);
+      ctx.drawImage(img, 0,0, overlay.width, overlay.height);
+    };
+    img.src = dataURL;
+  }
+  function clearCanvas(c) { c.getContext('2d').clearRect(0,0,c.width,c.height); }
+
+  // Set current page index (0-based) and scroll to it
+  function setCurrentPage(index) {
+    if (index < 0 || index >= pageViews.length) return;
+    currentPageIndex = index;
+    const pv = pageViews[index];
+    pageInfo.textContent = `Page ${index+1} of ${pageViews.length}`;
+    // scroll into view smoothly
+    pv.canvas.parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // Generate edited PDF by compositing each page (base canvas + overlay) into an image and embedding using pdf-lib
+  async function generateEditedPdfAndDownload() {
+    if (!originalPdfBytes) throw new Error('No PDF loaded');
+
+    showStatus('Compositing pages...', 'info');
+
+    // load with pdf-lib so we can reuse original pages' sizes and metadata
+    const existingPdf = await PDFLib.PDFDocument.load(originalPdfBytes);
+    const newPdf = existingPdf; // modify in-place
+
+    // For each pageView, create combined image
+    for (let i = 0; i < pageViews.length; ++i) {
+      const pv = pageViews[i];
+      // composite: draw base canvas and overlay into a temp canvas
+      const composite = document.createElement('canvas');
+      composite.width = pv.canvas.width;
+      composite.height = pv.canvas.height;
+      const cctx = composite.getContext('2d');
+      // draw PDF page raster
+      cctx.drawImage(pv.canvas, 0, 0);
+      // draw overlay
+      cctx.drawImage(pv.overlay, 0, 0);
+
+      // convert to PNG bytes
+      const dataUrl = composite.toDataURL('image/png');
+      const pngBytes = dataURLToUint8Array(dataUrl);
+
+      // embed into pdf-lib page
+      const pngImage = await newPdf.embedPng(pngBytes);
+      const page = newPdf.getPage(i); // use the existing page object
+      const { width: pageW, height: pageH } = page.getSize();
+
+      // scale image to page size (image pixels correspond to render scale; handle scale ratio)
+      // compute scale factors between composite pixels and page size (points)
+      // We assume viewport.width (pixels) corresponds to pageW (points) proportionally
+      page.drawImage(pngImage, {
+        x: 0,
+        y: 0,
+        width: pageW,
+        height: pageH,
+      });
+    }
+
+    showStatus('Finalizing PDF...', 'info');
+    const modifiedPdfBytes = await newPdf.save();
+    const blob = new Blob([modifiedPdfBytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+
+    // trigger download
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'edited-' + (fileName.textContent || 'document.pdf');
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 1000);
+
+    showStatus('Edited PDF downloaded successfully', 'success');
+  }
+
+  // Utility: convert dataURL to Uint8Array
+  function dataURLToUint8Array(dataURL) {
+    const base64 = dataURL.split(',')[1];
+    const binary = atob(base64);
+    const len = binary.length;
+    const arr = new Uint8Array(len);
+    for (let i = 0; i < len; i++) arr[i] = binary.charCodeAt(i);
+    return arr;
+  }
+
+  // Helpers
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes','KB','MB','GB','TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+  function showStatus(message, type) {
     statusMessage.style.display = 'block';
-    statusMessage.className = 'status-message';
+    statusMessage.textContent = message;
+    statusMessage.classList.remove('status-success','status-error');
     if (type === 'success') statusMessage.classList.add('status-success');
     if (type === 'error') statusMessage.classList.add('status-error');
-    if (type !== 'info') setTimeout(()=> statusMessage.style.display='none', 4500);
+    if (type !== 'info') setTimeout(()=> statusMessage.style.display='none', 4000);
   }
-  function setProgress(p){ progressBar.style.width = `${p}%`; progressText.textContent = `${Math.round(p)}%`; }
-
-  async function handleFile(file) {
-    resetUI();
-    selectedFile = file;
-    fileNameEl.textContent = file.name;
-    fileSizeEl.textContent = formatFileSize(file.size);
-    selectedFileContainer.style.display = 'flex';
-    downloadBtn.disabled = false;
-    showStatus('PDF selected', 'success');
-
-    if (!env.pdfAvailable || !window.pdfjsLib) {
-      showStatus('pdf.js not available — previews disabled. Cannot edit without pdf.js.', 'error');
-      downloadBtn.disabled = true;
-      return;
-    }
-
-    try {
-      progressWrap.style.display = 'block';
-      progressStage.textContent = 'Loading PDF';
-      setProgress(5);
-      const arrayBuffer = await file.arrayBuffer();
-      setProgress(15);
-      pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      setProgress(30);
-      await loadPagesToThumbnails(pdfDoc);
-      setProgress(100);
-      setTimeout(()=> progressWrap.style.display='none', 300);
-    } catch (err) {
-      console.error(err);
-      showStatus('Error loading PDF: ' + (err.message || err), 'error');
-      progressWrap.style.display = 'none';
-    }
-  }
-
-  async function loadPagesToThumbnails(pdf) {
-    pages = [];
-    thumbList.innerHTML = '';
-    previewGrid.innerHTML = '';
-    const total = pdf.numPages;
-    for (let p=1;p<=total;p++) {
-      progressStage.textContent = `Rendering page ${p} / ${total}`;
-      setProgress(30 + (p/total)*50);
-      try {
-        const page = await pdf.getPage(p);
-        const viewport = page.getViewport({ scale: 1.0 });
-        // create thumbnail canvas (small)
-        const thumbScale = Math.min(160 / viewport.width, 110 / viewport.height);
-        const thumbViewport = page.getViewport({ scale: thumbScale });
-        const thumbCanvas = document.createElement('canvas');
-        thumbCanvas.width = Math.round(thumbViewport.width);
-        thumbCanvas.height = Math.round(thumbViewport.height);
-        await page.render({ canvasContext: thumbCanvas.getContext('2d'), viewport: thumbViewport }).promise;
-
-        // store page state (rotation degrees 0,90,180,270)
-        const pg = { pageNum: p, rotation: 0, thumbCanvas, viewport, renderedCanvasFull: null };
-        pages.push(pg);
-
-        // create thumbnail element
-        addThumbElement(pg);
-      } catch (err) {
-        console.error('Page render error', p, err);
-      }
-      await new Promise(r=>setTimeout(r,30));
-    }
-    setProgress(95);
-    showPreviewGrid();
-    setTimeout(()=> setProgress(100), 120);
-  }
-
-  function addThumbElement(pg) {
-    const item = document.createElement('div');
-    item.className = 'thumb-item';
-    item.dataset.p = pg.pageNum;
-
-    const previewWrap = document.createElement('div');
-    previewWrap.className = 'thumb-preview';
-    previewWrap.appendChild(pg.thumbCanvas);
-
-    const meta = document.createElement('div');
-    meta.className = 'thumb-meta';
-    const label = document.createElement('div'); label.className = 'label'; label.textContent = `Page ${pg.pageNum}`;
-    const actions = document.createElement('div'); actions.className = 'actions';
-
-    const btnRotate = document.createElement('button'); btnRotate.className = 'small-btn'; btnRotate.title = 'Rotate 90° clockwise'; btnRotate.innerHTML = '<i class="fas fa-rotate-right"></i>';
-    btnRotate.onclick = () => rotatePage(pg.pageNum);
-
-    const btnDel = document.createElement('button'); btnDel.className = 'small-btn'; btnDel.title = 'Delete page'; btnDel.innerHTML = '<i class="fas fa-trash"></i>';
-    btnDel.onclick = () => deletePage(pg.pageNum);
-
-    const btnLeft = document.createElement('button'); btnLeft.className = 'small-btn'; btnLeft.title = 'Move left'; btnLeft.innerHTML = '<i class="fas fa-arrow-left"></i>';
-    btnLeft.onclick = () => movePageLeft(pg.pageNum);
-
-    const btnRight = document.createElement('button'); btnRight.className = 'small-btn'; btnRight.title = 'Move right'; btnRight.innerHTML = '<i class="fas fa-arrow-right"></i>';
-    btnRight.onclick = () => movePageRight(pg.pageNum);
-
-    actions.appendChild(btnLeft);
-    actions.appendChild(btnRight);
-    actions.appendChild(btnRotate);
-    actions.appendChild(btnDel);
-
-    meta.appendChild(label);
-    meta.appendChild(actions);
-
-    item.appendChild(previewWrap);
-    item.appendChild(meta);
-
-    // clicking thumbnail opens full preview of this page
-    previewWrap.addEventListener('click', () => openFullPreview(pg.pageNum));
-
-    thumbList.appendChild(item);
-  }
-
-  function showPreviewGrid() {
-    previewGrid.innerHTML = '';
-    for (const pg of pages) {
-      const card = document.createElement('div');
-      card.className = 'preview-card';
-      const canvas = document.createElement('canvas');
-      // use thumb canvas scaled up for preview OR render full-size later
-      canvas.width = pg.thumbCanvas.width * 2;
-      canvas.height = pg.thumbCanvas.height * 2;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(pg.thumbCanvas, 0, 0, canvas.width, canvas.height);
-      card.appendChild(canvas);
-      const lbl = document.createElement('div'); lbl.style.color='var(--muted)'; lbl.style.fontSize='0.9rem'; lbl.textContent = `Page ${pg.pageNum}`;
-      card.appendChild(lbl);
-      previewGrid.appendChild(card);
-      // click to open full preview
-      card.addEventListener('click', () => openFullPreview(pg.pageNum));
-    }
-  }
-
-  async function openFullPreview(pageNum) {
-    // find page state
-    const pgIndex = pages.findIndex(p => p.pageNum === pageNum);
-    if (pgIndex === -1) return;
-    const state = pages[pgIndex];
-
-    // If we already rendered a full-resolution canvas for this page and rotation hasn't changed, show it; otherwise render full
-    if (state.renderedCanvasFull && state.renderedCanvasFull.rotation === state.rotation) {
-      showPopupImage(state.renderedCanvasFull.canvas.toDataURL());
-      return;
-    }
-
-    // render full page using pdf.js at higher scale
-    try {
-      progressWrap.style.display = 'block';
-      progressStage.textContent = 'Rendering full page';
-      setProgress(10);
-      const page = await pdfDoc.getPage(state.pageNum);
-      setProgress(30);
-      const scale = 1.6; // scale for full preview
-      const viewport = page.getViewport({ scale });
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.round(viewport.width);
-      canvas.height = Math.round(viewport.height);
-      const ctx = canvas.getContext('2d');
-      await page.render({ canvasContext: ctx, viewport }).promise;
-      // apply rotation visually on canvas for preview
-      if (state.rotation % 360 !== 0) {
-        const rotated = rotateCanvasCanvas(canvas, state.rotation);
-        state.renderedCanvasFull = { canvas: rotated, rotation: state.rotation };
-        showPopupImage(rotated.toDataURL());
-      } else {
-        state.renderedCanvasFull = { canvas, rotation: state.rotation };
-        showPopupImage(canvas.toDataURL());
-      }
-      setProgress(100);
-      setTimeout(()=> progressWrap.style.display='none', 300);
-    } catch (err) {
-      console.error(err);
-      showStatus('Error rendering full page: ' + (err.message || err),'error');
-      progressWrap.style.display = 'none';
-    }
-  }
-
-  function rotateCanvasCanvas(srcCanvas, degrees) {
-    const d = ((degrees % 360) + 360) % 360;
-    if (d === 0) return srcCanvas;
-    const w = srcCanvas.width, h = srcCanvas.height;
-    const out = document.createElement('canvas');
-    if (d === 90 || d === 270) { out.width = h; out.height = w; } else { out.width = w; out.height = h; }
-    const ctx = out.getContext('2d');
-    ctx.translate(out.width/2, out.height/2);
-    ctx.rotate(d * Math.PI / 180);
-    ctx.drawImage(srcCanvas, -w/2, -h/2);
-    return out;
-  }
-
-  function rotatePage(pageNum) {
-    const idx = pages.findIndex(p => p.pageNum === pageNum);
-    if (idx === -1) return;
-    pages[idx].rotation = (pages[idx].rotation + 90) % 360;
-    // update thumbnail visually by rotating its canvas copy
-    const thumbCanvas = pages[idx].thumbCanvas;
-    const rotated = rotateCanvasCanvas(thumbCanvas, 90);
-    pages[idx].thumbCanvas = rotated;
-    // update thumb DOM
-    refreshThumbnailsUI();
-    showPreviewGrid();
-  }
-
-  function deletePage(pageNum) {
-    const idx = pages.findIndex(p => p.pageNum === pageNum);
-    if (idx === -1) return;
-    pages.splice(idx, 1);
-    refreshNumbering();
-    refreshThumbnailsUI();
-    showPreviewGrid();
-  }
-
-  function movePageLeft(pageNum) {
-    const idx = pages.findIndex(p => p.pageNum === pageNum);
-    if (idx > 0) {
-      const temp = pages[idx-1];
-      pages[idx-1] = pages[idx];
-      pages[idx] = temp;
-      refreshNumbering();
-      refreshThumbnailsUI();
-      showPreviewGrid();
-    }
-  }
-
-  function movePageRight(pageNum) {
-    const idx = pages.findIndex(p => p.pageNum === pageNum);
-    if (idx !== -1 && idx < pages.length - 1) {
-      const temp = pages[idx+1];
-      pages[idx+1] = pages[idx];
-      pages[idx] = temp;
-      refreshNumbering();
-      refreshThumbnailsUI();
-      showPreviewGrid();
-    }
-  }
-
-  function refreshNumbering() {
-    // reset pageNum to their position index+1 to preserve order for final PDF
-    for (let i=0;i<pages.length;i++) pages[i].pageNum = i+1;
-  }
-
-  function refreshThumbnailsUI() {
-    // clear and rebuild thumb list (keeps click handlers simple)
-    thumbList.innerHTML = '';
-    for (const pg of pages) addThumbElement(pg);
-  }
-
-  async function downloadEditedPdf() {
-    if (!env.jsAvailable || !window.jspdf) { showStatus('jsPDF not available — cannot create final PDF.','error'); return; }
-    if (!pages.length) { showStatus('No pages to save', 'error'); return; }
-
-    try {
-      progressWrap.style.display = 'block';
-      progressStage.textContent = 'Rendering pages';
-      setProgress(5);
-      const { jsPDF } = window.jspdf;
-      let doc = null;
-      const total = pages.length;
-      for (let i=0;i<total;i++) {
-        const pg = pages[i];
-        setProgress(5 + ((i+1)/total)*80);
-        // render full page (if not cached) at scale for print quality
-        let canvas = pg.renderedCanvasFull ? pg.renderedCanvasFull.canvas : null;
-        if (!canvas) {
-          const srcPage = await pdfDoc.getPage(pg.pageNum); // note: pageNum is now ordering index (but pdfDoc pages are original indices)
-          // IMPORTANT: original pdfDoc.getPage expects original page number. We must map to original page numbers.
-          // To preserve original mapping, when we reordered pages we updated pageNum; but pdfDoc pages are based on original order.
-          // To handle this, store originalIndex in pages initial load. We'll revise: pages must have originalIndex property.
-          // but we didn't store it earlier — fix: pages array initial load should include originalIndex; implement by checking for origIndex.
-        }
-      }
-      // OOPS: we need original page mapping to request correct pages from pdfDoc.
-      // To fix, rebuild pages to include originalIndex when pages were first loaded.
-      // We'll re-implement: if pages[].originalIndex is missing, assume pageNum maps to original index at load time.
-    } catch (err) {
-      console.error(err);
-      showStatus('Error creating PDF: ' + (err.message || err), 'error');
-      progressWrap.style.display = 'none';
-    }
-
-    // Because of above mapping nuance we re-implement the download logic from scratch below (complete version).
-    return downloadEditedPdf_v2();
-  }
-
-  // Updated, complete download builder handling original page mapping
-  async function downloadEditedPdf_v2() {
-    try {
-      // Ensure pages have originalIndex property (set at load time). If not present, assume initial mapping: originalIndex==indexAtLoad
-      if (!pages.length) { showStatus('No pages to save','error'); return; }
-      // If originalIndex missing, construct from current order by assuming initial load order - but we must have saved originalIndex when loading.
-      // We'll attempt to use stored originalIndex; otherwise best-effort: treat pageNum as original index.
-      progressWrap.style.display = 'block';
-      progressStage.textContent = 'Preparing final PDF';
-      setProgress(5);
-      const { jsPDF } = window.jspdf;
-      let doc = null;
-      const total = pages.length;
-      for (let i=0;i<total;i++) {
-        const pg = pages[i];
-        progressStage.textContent = `Rendering page ${i+1} / ${total}`;
-        // Render the page at scale 2.0 for decent quality if canvas not cached or rotation changed
-        let canvas = null;
-        if (pg.renderedCanvasFull && pg.renderedCanvasFull.rotation === pg.rotation) {
-          canvas = pg.renderedCanvasFull.canvas;
-        } else {
-          // We need to fetch the original PDF page by its original index.
-          const origIndex = (typeof pg.originalIndex === 'number') ? pg.originalIndex : pg.pageNum; // fallback
-          const page = await pdfDoc.getPage(origIndex);
-          const scale = 2.0;
-          const viewport = page.getViewport({ scale });
-          const c = document.createElement('canvas');
-          c.width = Math.round(viewport.width);
-          c.height = Math.round(viewport.height);
-          await page.render({ canvasContext: c.getContext('2d'), viewport }).promise;
-          // apply rotation
-          if (pg.rotation % 360 !== 0) {
-            const rotated = rotateCanvasCanvas(c, pg.rotation);
-            canvas = rotated;
-          } else {
-            canvas = c;
-          }
-          pg.renderedCanvasFull = { canvas: canvas, rotation: pg.rotation };
-        }
-
-        const imgData = canvas.toDataURL('image/jpeg', 0.92);
-        const orientation = (canvas.width > canvas.height) ? 'l' : 'p';
-        const scaleForPdf = 96 * 2.0; // 96dpi assumption times render scale
-        const pxToMm = (px) => (px * 25.4) / scaleForPdf;
-        const wmm = pxToMm(canvas.width);
-        const hmm = pxToMm(canvas.height);
-
-        if (i === 0) {
-          doc = new jsPDF({ unit: 'mm', format: [wmm, hmm], orientation });
-          doc.addImage(imgData, 'JPEG', 0, 0, wmm, hmm);
-        } else {
-          doc.addPage([wmm, hmm], orientation);
-          doc.addImage(imgData, 'JPEG', 0, 0, wmm, hmm);
-        }
-        setProgress(5 + ((i+1)/total)*85);
-        await new Promise(r=>setTimeout(r,50));
-      }
-      progressStage.textContent = 'Finalizing';
-      setProgress(95);
-      doc.save(`edited-${selectedFile.name}`);
-      setProgress(100);
-      showStatus('Edited PDF downloaded', 'success');
-      setTimeout(()=>{ progressWrap.style.display='none'; setProgress(0); }, 700);
-    } catch (err) {
-      console.error(err);
-      showStatus('Error generating edited PDF: ' + (err.message || err),'error');
-      progressWrap.style.display = 'none';
-    }
-  }
-
-  // Reset UI & state
-  function resetAll() {
-    selectedFile = null;
-    pdfDoc = null;
-    pages = [];
-    thumbList.innerHTML = '';
-    previewGrid.innerHTML = '';
+  function resetTool() {
+    // reset UI and state
+    originalPdfBytes = null; pdfDoc = null; totalPages = 0; currentPageIndex = 0; pageViews = [];
+    pagesContainer.innerHTML = '';
+    editorContainer.style.display = 'none';
     selectedFileContainer.style.display = 'none';
-    downloadBtn.disabled = true;
     fileInput.value = '';
-    showStatus('Editor reset', 'success');
+    saveBtn.disabled = true; downloadBtn.disabled = true;
+    showStatus('Tool reset', 'success');
+  }
+  function hexToRgba(hex, alpha=0.4) {
+    hex = hex.replace('#','');
+    if (hex.length === 3) hex = hex.split('').map(s=>s+s).join('');
+    const r = parseInt(hex.substr(0,2),16);
+    const g = parseInt(hex.substr(2,2),16);
+    const b = parseInt(hex.substr(4,2),16);
+    return `rgba(${r},${g},${b},${alpha})`;
   }
 
-  // Utility helpers
-  function formatFileSize(bytes){ if(!bytes) return '0 Bytes'; const k=1024; const sizes=['Bytes','KB','MB','GB']; const i=Math.floor(Math.log(bytes)/Math.log(k)); return parseFloat((bytes/Math.pow(k,i)).toFixed(2)) + ' ' + sizes[i]; }
-
-  // When first loading pages, store originalIndex property so we can reference original PDF pages later
-  // Modify loadPagesToThumbnails to set originalIndex when creating pg object
-  // But we already did above; fix by adjusting pages creation here:
-  // To ensure pages have originalIndex, override loadPagesToThumbnails with a wrapper that sets originalIndex
-  // However since loadPagesToThumbnails already pushed pg.pageNum=p, we need to update pages[].originalIndex
-  // We'll attach originalIndex after load (if missing).
-  // Do that now after loadPagesToThumbnails completes in handleFile: ensure pages[i].originalIndex = originalOrderIndex
-
-  // Small fix: attach originalIndex after pages created
-  // We'll monkey-patch loadPagesToThumbnails call to set originalIndex. Update: implement a small wrapper above.
-  // To keep code flow clean, after pdf loaded and pages array built, set originalIndex values:
-  (function ensureOriginalIndex() {
-    // This closure will run every time pages array changes via loadPagesToThumbnails.
-    // We will patch addThumbElement to set pg.originalIndex if missing.
-    const origAddThumb = addThumbElement;
-    addThumbElement = function(pg) {
-      if (typeof pg.originalIndex === 'undefined') pg.originalIndex = pg.pageNum; // initial mapping
-      origAddThumb(pg);
-    };
-  })();
-
-  // End startApp
-} // end startApp
+  // small UX: keyboard shortcuts for tools (T=text, R=rect, C=circle, H=highlight, P=pan, D=pen)
+  window.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    const map = { 't':'text','r':'rectangle','c':'circle','h':'highlight','p':'pan','d':'pen' };
+    if (map[e.key]) {
+      document.querySelectorAll('.tool-btn[data-tool]').forEach(b=>b.classList.remove('active'));
+      const btn = document.querySelector('.tool-btn[data-tool="'+map[e.key]+'"]');
+      if (btn) { btn.classList.add('active'); currentTool = map[e.key]; showStatus('Selected '+map[e.key],'success'); }
+    }
+  });
 </script>
 </body>
 </html>
