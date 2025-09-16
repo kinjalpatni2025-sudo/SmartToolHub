@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>QR Code Scanner - Smarttool Hub</title>
+  <meta name="description" content="Scan QR codes with your camera or upload images. 100% client-side."/>
+  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+  <style>
+    :root{
+      --bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;
+      --primary:#22d3ee;--muted:#9fb3c8;--radius:12px;
+    }
+    body.light{
+      --bg:#f6f8fb;--text:#0b1220;--card:#ffffff;--border:#e6eefc;
+      --primary:#0b74ff;--muted:#556677;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      background:var(--bg);color:var(--text);transition:background .25s,color .25s;
+      min-height:100vh;display:flex;flex-direction:column;
+    }
+    .container{max-width:1200px;margin:0 auto;padding:20px;width:100%}
+    header{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;
+    }
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand img{width:46px;height:46px;border-radius:10px}
+    .brand .title{font-size:1.25rem;font-weight:700;color:var(--primary);margin:0}
+    .brand .tag{font-size:.9rem;color:var(--muted)}
+    .header-actions{display:flex;gap:10px;align-items:center}
+    .btn-header{
+      border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;
+      color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;font-weight:600
+    }
+    .btn-header:hover{border-color:var(--primary);color:var(--primary)}
+
+    /* Tool content */
+    .tool-content {
+      background:var(--card);border-radius:var(--radius);border:1px solid var(--border);
+      padding:25px;margin-top:20px;
+    }
+    .tool-title { font-size:1.8rem;margin-bottom:5px;color:var(--primary); }
+    .tool-description { color:var(--muted);margin-bottom:18px; }
+
+    .scanner-grid { display:grid; grid-template-columns: 1fr 380px; gap:18px; align-items:start; }
+    @media (max-width:980px){ .scanner-grid { grid-template-columns: 1fr; } }
+
+    /* Camera area */
+    .camera-box {
+      border:1px solid var(--border);border-radius:var(--radius);padding:12px;background:var(--bg);
+      display:flex;flex-direction:column;gap:12px;align-items:stretch;
+    }
+    .camera-header { display:flex;gap:12px;align-items:center;justify-content:space-between; }
+    .camera-view { width:100%;min-height:360px;border-radius:8px;background:#071021;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}
+    .camera-placeholder { color:var(--muted);font-weight:600; }
+    #qr-video { width:100%; height:100%; object-fit:cover; display:block; }
+
+    .controls-row { display:flex;gap:10px;flex-wrap:wrap;align-items:center; }
+    .select-camera { background:var(--card);border:1px solid var(--border);padding:8px;border-radius:8px;color:var(--text); }
+    .btn { padding:10px 14px;border-radius:10px;border:none;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px; }
+    .btn-primary { background:var(--primary);color:#00131f; }
+    .btn-secondary { background:var(--card);border:1px solid var(--border);color:var(--text); }
+
+    /* Sidebar info */
+    .info-panel { border:1px solid var(--border);border-radius:var(--radius);padding:12px;background:var(--bg); }
+    .info-panel h4 { margin:0 0 8px 0;color:var(--primary); }
+    .result-box { background:#06121a;border-radius:8px;padding:10px;border:1px solid var(--border);min-height:80px;color:var(--muted);overflow-wrap:anywhere; }
+    .result-actions { display:flex;gap:8px;margin-top:10px;flex-wrap:wrap; }
+    .history-list { margin-top:12px; display:flex;flex-direction:column; gap:8px; max-height:220px; overflow:auto; }
+    .history-item { padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--card);font-size:0.9rem;display:flex;justify-content:space-between;gap:8px;align-items:center;}
+    .history-item button { padding:6px 8px;border-radius:8px;border:none;cursor:pointer;background:transparent;color:var(--primary);font-weight:700; }
+
+    .upload-fallback { margin-top:6px; display:flex;gap:8px;align-items:center; }
+    .file-input { display:none; }
+
+    .status { margin-top:8px;color:var(--muted);font-size:0.9rem; }
+
+    footer{margin-top:auto;padding:18px 0;background:var(--card);border-top:1px solid var(--border)}
+    .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap}
+    .footer-links a{color:var(--primary);text-decoration:none;font-weight:600}
+  </style>
+</head>
+<body>
+<header class="container">
+  <div class="brand">
+    <a href="index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+      <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub Logo">
+      <div>
+        <div class="title">Smarttool Hub</div>
+        <div class="tag">Fast • Private • 100% Client-side</div>
+      </div>
+    </a>
+  </div>
+  <div class="header-actions">
+    <a href="index.html" class="btn-header"><i class="fa-solid fa-house"></i> Home</a>
+    <button class="btn-header" id="themeToggle" title="Toggle dark/light mode"><i class="fa-solid fa-moon"></i></button>
+  </div>
+</header>
+
+<main class="container">
+  <div class="tool-content">
+    <h1 class="tool-title">QR Code Scanner</h1>
+    <p class="tool-description">Scan QR codes using your camera or upload an image. All processing happens in your browser — no files are uploaded to a server.</p>
+
+    <div class="scanner-grid">
+      <!-- Camera / Scanner area -->
+      <div class="camera-box">
+        <div class="camera-header">
+          <div style="font-weight:700;color:var(--text)">Live Scanner</div>
+          <div style="color:var(--muted);font-size:0.9rem" id="cameraStatus">No camera started</div>
+        </div>
+
+        <div class="camera-view" id="cameraView">
+          <div class="camera-placeholder" id="cameraPlaceholder"><i class="fa-solid fa-video"></i> Camera feed will appear here</div>
+          <!-- video element will be injected here -->
+        </div>
+
+        <div class="controls-row">
+          <select id="cameraSelect" class="select-camera" aria-label="Choose camera"><option>Loading cameras...</option></select>
+          <button class="btn btn-primary" id="startBtn"><i class="fa-solid fa-play"></i> Start</button>
+          <button class="btn btn-secondary" id="stopBtn" disabled><i class="fa-solid fa-stop"></i> Stop</button>
+
+          <label class="upload-fallback" style="margin-left:auto">
+            <input type="file" id="fileInput" accept="image/*" class="file-input">
+            <button class="btn btn-secondary" id="uploadBtn"><i class="fa-solid fa-upload"></i> Upload Image</button>
+          </label>
+        </div>
+
+        <div class="status" id="scanHint">Tip: allow camera access, then point camera at a QR code.</div>
+      </div>
+
+      <!-- Sidebar: results + history -->
+      <div class="info-panel">
+        <h4>Decoded Result</h4>
+        <div class="result-box" id="resultBox">No QR code scanned yet.</div>
+        <div class="result-actions">
+          <button class="btn btn-primary" id="copyBtn" disabled><i class="fa-regular fa-copy"></i> Copy</button>
+          <button class="btn btn-secondary" id="openBtn" disabled><i class="fa-solid fa-up-right-from-square"></i> Open (if URL)</button>
+          <button class="btn btn-secondary" id="clearHistoryBtn" title="Clear history"><i class="fa-solid fa-trash"></i> Clear History</button>
+        </div>
+
+        <h4 style="margin-top:14px">Scan History</h4>
+        <div class="history-list" id="historyList">
+          <!-- history items -->
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="container">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> Smarttool Hub</div>
+    <div class="footer-links">
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="contact.html">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<!-- QR decoding library: html5-qrcode -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
+
+<script>
+  // Small UX & theme setup
+  document.getElementById('year').textContent = new Date().getFullYear();
+  const themeToggle = document.getElementById('themeToggle');
+  if (localStorage.getItem('sth_theme') === 'light') {
+    document.body.classList.add('light');
+    themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+  }
+  themeToggle.onclick = () => {
+    document.body.classList.toggle('light');
+    if (document.body.classList.contains('light')) {
+      themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; localStorage.setItem('sth_theme','light');
+    } else { themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); }
+  };
+
+  // Elements
+  const cameraView = document.getElementById('cameraView');
+  const cameraPlaceholder = document.getElementById('cameraPlaceholder');
+  const cameraSelect = document.getElementById('cameraSelect');
+  const startBtn = document.getElementById('startBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const fileInput = document.getElementById('fileInput');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const cameraStatus = document.getElementById('cameraStatus');
+
+  const resultBox = document.getElementById('resultBox');
+  const copyBtn = document.getElementById('copyBtn');
+  const openBtn = document.getElementById('openBtn');
+  const historyList = document.getElementById('historyList');
+  const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+  let html5QrScanner = null;
+  let currentCameraId = null;
+  let lastResult = null;
+  let scanHistory = [];
+
+  // Utility
+  function showResult(text) {
+    lastResult = text;
+    resultBox.textContent = text;
+    copyBtn.disabled = false;
+    try {
+      const url = new URL(text);
+      openBtn.disabled = false;
+      openBtn.onclick = () => { window.open(text, '_blank'); };
+    } catch (e) {
+      openBtn.disabled = true;
+      openBtn.onclick = null;
+    }
+    addHistory(text);
+  }
+
+  function addHistory(text) {
+    // avoid duplicates in a row
+    if (scanHistory.length && scanHistory[0] === text) return;
+    scanHistory.unshift(text);
+    if (scanHistory.length > 50) scanHistory.pop();
+    renderHistory();
+  }
+
+  function renderHistory() {
+    historyList.innerHTML = '';
+    for (let i = 0; i < scanHistory.length; i++) {
+      const t = scanHistory[i];
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      const left = document.createElement('div');
+      left.style.flex = '1';
+      left.textContent = t.length > 80 ? t.slice(0,80) + '…' : t;
+      const right = document.createElement('div');
+      right.style.display = 'flex'; right.style.gap = '8px';
+      const loadBtn = document.createElement('button');
+      loadBtn.textContent = 'Use';
+      loadBtn.onclick = () => { showResult(t); };
+      const copyBtnLocal = document.createElement('button');
+      copyBtnLocal.textContent = 'Copy';
+      copyBtnLocal.onclick = async () => {
+        await navigator.clipboard.writeText(t).catch(()=>{});
+        alert('Copied to clipboard');
+      };
+      right.appendChild(loadBtn); right.appendChild(copyBtnLocal);
+      item.appendChild(left); item.appendChild(right);
+      historyList.appendChild(item);
+    }
+  }
+
+  copyBtn.addEventListener('click', async () => {
+    if (!lastResult) return;
+    try { await navigator.clipboard.writeText(lastResult); showToast('Copied to clipboard'); }
+    catch (e) { showToast('Copy failed'); }
+  });
+
+  clearHistoryBtn.addEventListener('click', () => { scanHistory = []; renderHistory(); showToast('History cleared'); });
+
+  function showToast(msg) {
+    const prev = document.createElement('div');
+    prev.textContent = msg;
+    prev.style.position = 'fixed'; prev.style.bottom = '20px'; prev.style.right = '20px';
+    prev.style.padding = '10px 14px'; prev.style.borderRadius = '8px'; prev.style.background = '#0f1720';
+    prev.style.color = '#eaf2ff'; prev.style.zIndex = 9999; document.body.appendChild(prev);
+    setTimeout(()=> document.body.removeChild(prev), 1600);
+  }
+
+  // Enumerate cameras and populate select
+  async function listCameras() {
+    cameraSelect.innerHTML = '<option>Loading cameras...</option>';
+    if (!Html5Qrcode.getCameras) {
+      cameraSelect.innerHTML = '<option>No camera API</option>';
+      return;
+    }
+    try {
+      const devices = await Html5Qrcode.getCameras();
+      cameraSelect.innerHTML = '';
+      if (!devices || devices.length === 0) {
+        cameraSelect.innerHTML = '<option>No camera found</option>';
+        return;
+      }
+      devices.forEach(dev => {
+        const opt = document.createElement('option');
+        opt.value = dev.id; opt.textContent = dev.label || dev.id;
+        cameraSelect.appendChild(opt);
+      });
+      // select back current if exists
+      if (currentCameraId) {
+        const match = Array.from(cameraSelect.options).find(o => o.value === currentCameraId);
+        if (match) cameraSelect.value = currentCameraId;
+      }
+    } catch (err) {
+      console.warn('Camera list error', err);
+      cameraSelect.innerHTML = '<option>Error listing cameras</option>';
+    }
+  }
+
+  // Start scanner
+  startBtn.addEventListener('click', async () => {
+    // pick selected camera
+    const sel = cameraSelect.value;
+    currentCameraId = sel && sel !== 'No camera' ? sel : null;
+    await startCameraScan(currentCameraId);
+  });
+
+  stopBtn.addEventListener('click', () => {
+    stopCameraScan();
+  });
+
+  async function startCameraScan(cameraId = null) {
+    // If already running, stop first
+    if (html5QrScanner) {
+      try { await html5QrScanner.stop(); } catch(e){/*ignore*/} 
+      html5QrScanner = null;
+    }
+    // prepare UI
+    cameraPlaceholder.style.display = 'none';
+    cameraStatus.textContent = 'Starting camera...';
+    // create element for scanner
+    let qrRegion = document.getElementById('qrRegion');
+    if (!qrRegion) {
+      qrRegion = document.createElement('div');
+      qrRegion.id = 'qrRegion';
+      qrRegion.style.width = '100%';
+      qrRegion.style.height = '100%';
+      cameraView.appendChild(qrRegion);
+    } else {
+      qrRegion.innerHTML = '';
+    }
+
+    html5QrScanner = new Html5Qrcode(/* element id */ "qrRegion", /* verbose= */ false);
+
+    const config = { fps: 10, qrbox: { width: 300, height: 300 } };
+    if (cameraId) config.videoConstraints = { deviceId: { exact: cameraId } };
+
+    try {
+      await html5QrScanner.start(
+        cameraId ? { deviceId: { exact: cameraId } } : { facingMode: "environment" },
+        config,
+        qrCodeMessage => {
+          // success callback
+          cameraStatus.textContent = 'QR detected';
+          showResult(qrCodeMessage);
+        },
+        errorMessage => {
+          // ignore decode failures; optional logging
+          // console.debug('scan error', errorMessage);
+        }
+      );
+      stopBtn.disabled = false;
+      startBtn.disabled = true;
+      cameraStatus.textContent = 'Camera running';
+      showToast('Camera started');
+    } catch (err) {
+      console.error('start error', err);
+      cameraPlaceholder.style.display = 'flex';
+      cameraStatus.textContent = 'Camera error: ' + (err && err.message ? err.message : 'Permission denied / not available');
+      showToast('Camera failed — try upload');
+      // cleanup
+      try { html5QrScanner.clear(); } catch(e){}
+      html5QrScanner = null;
+    }
+  }
+
+  async function stopCameraScan() {
+    if (!html5QrScanner) return;
+    try {
+      await html5QrScanner.stop();
+      await html5QrScanner.clear();
+    } catch (e) {
+      // ignore
+    }
+    html5QrScanner = null;
+    const qrRegion = document.getElementById('qrRegion');
+    if (qrRegion) qrRegion.remove();
+    cameraPlaceholder.style.display = 'flex';
+    cameraStatus.textContent = 'Camera stopped';
+    stopBtn.disabled = true;
+    startBtn.disabled = false;
+    showToast('Camera stopped');
+  }
+
+  // Camera selection change restarts camera with new device
+  cameraSelect.addEventListener('change', async () => {
+    if (html5QrScanner) {
+      await stopCameraScan();
+      currentCameraId = cameraSelect.value;
+      await startCameraScan(currentCameraId);
+    }
+  });
+
+  // Upload image fallback
+  uploadBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    // decode using Html5Qrcode's scanFile method if available
+    showToast('Scanning image...');
+    try {
+      // html5-qrcode provides scanFile for image element scanning
+      if (!Html5Qrcode) throw new Error('Decoder not available');
+      // Create a temporary Html5Qrcode instance to use scanFile
+      const tmp = new Html5Qrcode("tmpId", false);
+      // scanFile returns a promise with decoded text or rejects
+      const result = await tmp.scanFile(f, /* showImage= */ true);
+      tmp.clear();
+      showResult(result);
+      showToast('Image scanned');
+    } catch (err) {
+      console.error('image scan failed', err);
+      showToast('Image scan failed — try clearer image');
+    } finally {
+      fileInput.value = '';
+    }
+  });
+
+  // On load: list cameras
+  (async function init() {
+    await listCameras();
+    // prefer first camera
+    if (cameraSelect.options && cameraSelect.options.length > 0) {
+      cameraSelect.selectedIndex = 0;
+    }
+    cameraPlaceholder.style.display = 'flex';
+    // graceful fallback: if html5-qrcode not loaded, inform user
+    if (typeof Html5Qrcode === 'undefined') {
+      cameraStatus.textContent = 'QR decoder library not loaded';
+      showToast('Decoder library failed to load');
+    }
+  })();
+
+  // keyboard accessibility hints: Enter to start/stop
+  startBtn.addEventListener('keydown', (e)=> { if (e.key==='Enter') startBtn.click(); });
+  stopBtn.addEventListener('keydown', (e)=> { if (e.key==='Enter') stopBtn.click(); });
+
+  // Prevent leaving camera running on unload
+  window.addEventListener('beforeunload', async () => {
+    if (html5QrScanner) {
+      try { await html5QrScanner.stop(); await html5QrScanner.clear(); } catch(e) {}
+    }
+  });
+</script>
+</body>
+</html>
