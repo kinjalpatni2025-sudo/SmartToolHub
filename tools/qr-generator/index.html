@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>QR Code Generator - Smarttool Hub</title>
-  <meta name="description" content="Generate QR codes in the browser. Customize size, colors, margin, error-correction and download as PNG or SVG." />
+  <title>QR Code Generator (Bulk) - Smarttool Hub</title>
+  <meta name="description" content="Generate QR codes one-by-one or in bulk from Excel/CSV. Download PNG/SVG or ZIP." />
   <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
   <style>
@@ -29,7 +29,7 @@
 
     .grid {
       display:grid;
-      grid-template-columns: 1fr 380px;
+      grid-template-columns: 1fr 420px;
       gap:18px;
       align-items:start;
     }
@@ -41,7 +41,7 @@
     }
     .form-row { display:flex;gap:10px;align-items:center;flex-wrap:wrap; }
     .form-row label{font-weight:700;color:var(--text);min-width:110px}
-    .input, .select, .btn, .color-input { background:var(--card);border:1px solid var(--border);padding:8px 10px;border-radius:8px;color:var(--text);outline:none }
+    .input, .select, .btn, .color-input, .file-input { background:var(--card);border:1px solid var(--border);padding:8px 10px;border-radius:8px;color:var(--text);outline:none }
     .textarea { background:var(--card);border:1px solid var(--border);padding:10px;border-radius:8px;color:var(--text);min-height:84px;resize:vertical }
     .small { font-size:0.9rem;color:var(--muted) }
 
@@ -61,6 +61,17 @@
     .footer-actions { display:flex;gap:10px;align-items:center;flex-wrap:wrap; }
 
     .status { color:var(--muted);font-size:0.9rem;margin-top:8px; }
+
+    /* Bulk preview grid */
+    .bulk-controls { background:var(--bg);border:1px solid var(--border);padding:12px;border-radius:10px;display:flex;flex-direction:column;gap:10px }
+    .bulk-meta { display:flex;gap:8px;align-items:center;flex-wrap:wrap }
+    .bulk-list { margin-top:12px; display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:12px; max-height:420px; overflow:auto; padding:6px; }
+    .bulk-card { background:var(--card);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:8px;align-items:center; }
+    .bulk-card img { width:120px; height:120px; object-fit:contain; background:white; border-radius:6px; }
+    .bulk-card .label { font-size:0.82rem;color:var(--muted); text-align:center; word-break:break-word; max-height:36px; overflow:hidden; }
+
+    .progress { width:100%;height:10px;background:rgba(255,255,255,0.03);border-radius:6px;overflow:hidden }
+    .progress .bar { height:100%; width:0%; background:linear-gradient(90deg,var(--primary),#60e7ff); transition:width .2s; }
 
     footer{margin-top:auto;padding:18px 0;background:var(--card);border-top:1px solid var(--border)}
     .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -87,11 +98,11 @@
 
   <main class="container">
     <div class="tool-content">
-      <h1 class="tool-title">QR Code Generator</h1>
-      <p class="tool-description">Create QR codes from text, URLs or small data. Customize size, margin, error-correction and colors. Download as PNG or SVG — everything runs in your browser.</p>
+      <h1 class="tool-title">QR Code Generator — Single & Bulk (Excel/CSV)</h1>
+      <p class="tool-description">Generate single QR codes or bulk-generate from an uploaded Excel/CSV column. Download PNG/SVG individually or all as ZIP. Everything runs in your browser.</p>
 
       <div class="grid">
-        <!-- Left: Controls -->
+        <!-- Left: Controls & Single generator -->
         <div class="controls" id="controlsPanel">
           <div class="form-row">
             <label for="textInput">Text / URL</label>
@@ -137,15 +148,49 @@
 
           <div style="display:flex;gap:10px;align-items:center;margin-top:6px;">
             <button id="generateBtn" class="btn btn-primary"><i class="fa-solid fa-qrcode"></i> Generate</button>
-            <button id="previewBtn" class="btn btn-secondary"><i class="fa-solid fa-eye"></i> Live Preview</button>
             <button id="clearBtn" class="btn btn-secondary"><i class="fa-solid fa-trash"></i> Clear</button>
             <div style="margin-left:auto;color:var(--muted);font-weight:700" id="summaryText">Ready</div>
           </div>
 
-          <div class="status" id="status">Tip: you can paste text or a URL, choose size/colors, then generate and download.</div>
+          <div class="status" id="status">Tip: paste text or URL, choose size/colors, then generate. For bulk use the Excel uploader on the right.</div>
+
+          <hr style="border:none;border-top:1px solid var(--border);margin:8px 0" />
+
+          <!-- Bulk upload -->
+          <div class="bulk-controls">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <label style="font-weight:700;color:var(--text);min-width:110px">Upload Excel/CSV</label>
+              <input id="bulkFileInput" type="file" class="file-input" accept=".xlsx,.xls,.csv" />
+              <button id="chooseBulkBtn" class="btn btn-secondary"><i class="fa-solid fa-file-import"></i> Choose file</button>
+            </div>
+
+            <div id="sheetAndColumn" style="display:none;flex-direction:column;gap:8px">
+              <div style="display:flex;gap:8px;align-items:center">
+                <label style="min-width:110px;color:var(--text);font-weight:700">Worksheet</label>
+                <select id="sheetSelect" class="select"></select>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <label style="min-width:110px;color:var(--text);font-weight:700">Column</label>
+                <select id="columnSelect" class="select"></select>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <label style="min-width:110px;color:var(--text);font-weight:700">Skip rows</label>
+                <input id="skipRows" type="number" class="input" value="0" min="0" style="width:100px" />
+                <div class="small" style="margin-left:8px">If header row present set 1</div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <button id="previewBulkBtn" class="btn btn-secondary">Preview Values</button>
+                <button id="bulkGenerateBtn" class="btn btn-primary" disabled><i class="fa-solid fa-layer-group"></i> Generate Bulk</button>
+                <button id="downloadAllZipBtn" class="btn btn-secondary" disabled><i class="fa-solid fa-download"></i> Download All (ZIP)</button>
+                <div style="margin-left:auto;color:var(--muted);font-weight:700" id="bulkCount">No file</div>
+              </div>
+
+              <div class="progress" id="progressBar" style="display:none"><div class="bar" id="progressBarFill"></div></div>
+            </div>
+          </div>
         </div>
 
-        <!-- Right: Preview & Download -->
+        <!-- Right: Preview & Bulk list -->
         <div class="preview" id="previewPanel">
           <div style="display:flex;gap:12px;align-items:center;width:100%;justify-content:center;">
             <div style="font-weight:700;color:var(--primary)">Preview</div>
@@ -162,12 +207,13 @@
             <button id="copyBtn" class="btn btn-secondary" disabled><i class="fa-regular fa-copy"></i> Copy</button>
           </div>
 
-          <div style="margin-top:8px;width:100%;display:flex;gap:8px;align-items:center;justify-content:center;">
-            <label class="small">Label (optional): </label>
-            <input id="labelInput" class="input" type="text" placeholder="Caption under the QR (not embedded in QR)" style="flex:1" />
+          <div id="bulkArea" style="width:100%;margin-top:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-weight:700;color:var(--primary)">Bulk Preview</div>
+              <div style="color:var(--muted);font-size:0.9rem" id="bulkHint">Upload Excel/CSV to bulk-generate</div>
+            </div>
+            <div id="bulkList" class="bulk-list"></div>
           </div>
-
-          <div id="downloadHint" class="small" style="color:var(--muted)">Generate first to enable downloads.</div>
         </div>
       </div>
     </div>
@@ -184,8 +230,10 @@
     </div>
   </footer>
 
-  <!-- qrcode library (qrcodejs / node-qrcode UMD build) -->
+  <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
   <script>
     // UI init
@@ -207,288 +255,400 @@
     const fgColor = document.getElementById('fgColor');
     const bgColor = document.getElementById('bgColor');
     const generateBtn = document.getElementById('generateBtn');
-    const previewBtn = document.getElementById('previewBtn');
     const clearBtn = document.getElementById('clearBtn');
     const qrCanvasWrap = document.getElementById('qrCanvasWrap');
     const downloadPngBtn = document.getElementById('downloadPngBtn');
     const downloadSvgBtn = document.getElementById('downloadSvgBtn');
     const copyBtn = document.getElementById('copyBtn');
-    const labelInput = document.getElementById('labelInput');
+    const labelInput = document.getElementById('labelInput'); // not present in this view but safe
     const qrMeta = document.getElementById('qrMeta');
     const summaryText = document.getElementById('summaryText');
     const status = document.getElementById('status');
-    const downloadHint = document.getElementById('downloadHint');
 
-    let lastDataUrl = null;   // PNG data URL
-    let lastSvgText = null;   // SVG text
+    // Bulk elements
+    const bulkFileInput = document.getElementById('bulkFileInput');
+    const chooseBulkBtn = document.getElementById('chooseBulkBtn');
+    const sheetSelect = document.getElementById('sheetSelect');
+    const columnSelect = document.getElementById('columnSelect');
+    const sheetAndColumn = document.getElementById('sheetAndColumn');
+    const previewBulkBtn = document.getElementById('previewBulkBtn');
+    const bulkGenerateBtn = document.getElementById('bulkGenerateBtn');
+    const downloadAllZipBtn = document.getElementById('downloadAllZipBtn');
+    const bulkCount = document.getElementById('bulkCount');
+    const bulkList = document.getElementById('bulkList');
+    const bulkHint = document.getElementById('bulkHint');
+    const skipRows = document.getElementById('skipRows');
+    const progressBar = document.getElementById('progressBar');
+    const progressBarFill = document.getElementById('progressBarFill');
+
+    const outFormatSelect = outFormat;
+
+    // State
+    let lastDataUrl = null;
+    let lastSvgText = null;
     let lastConfig = null;
 
-    function sanitizeText(t) {
-      return (t || '').toString();
-    }
+    // Bulk parsed data
+    let workbook = null;
+    let currentSheetName = null;
+    let bulkValues = []; // array of strings to encode
+    let generatedItems = []; // {text, dataUrl or svgText, filename, blob}
 
-    function updateMeta() {
-      qrMeta.textContent = `${sizeInput.value}px • margin ${marginInput.value} • EC: ${ecLevel.value}`;
-    }
+    // Helpers
+    function sanitizeText(t) { return (t || '').toString(); }
+    function updateMeta(){ qrMeta.textContent = `${sizeInput.value}px • margin ${marginInput.value} • EC: ${ecLevel.value}`; }
+    function showStatus(msg){ status.textContent = msg; }
 
-    // Generate function (creates PNG and SVG representations)
-    async function generateQR({ autoPreview=false } = {}) {
+    // Single generate
+    async function generateQROne() {
       const text = sanitizeText(textInput.value).trim();
-      if (!text) { status.textContent = 'Please enter text or URL to encode.'; return; }
-      const size = Math.max(64, Math.min(2000, Number(sizeInput.value) || 320));
-      const margin = Math.max(0, Math.min(100, Number(marginInput.value) || 4));
-      const ec = ecLevel.value || 'M';
-      const fg = fgColor.value || '#00131f';
-      const bg = bgColor.value || '#ffffff';
-      const label = (labelInput.value || '').trim();
-
-      updateMeta();
-      summaryText.textContent = 'Generating...';
-      status.textContent = 'Generating QR...';
-      downloadHint.textContent = 'Preparing preview...';
-
-      // config for qrcode.toDataURL and toString
-      const config = {
-        errorCorrectionLevel: ec,
-        margin,
-        width: size,
-        color: { dark: fg, light: bg }
-      };
-
-      lastConfig = { text, size, margin, ec, fg, bg, label };
-
+      if (!text) { showStatus('Please enter text or URL to encode.'); return; }
+      const cfg = getConfig();
+      lastConfig = { text, ...cfg };
+      showStatus('Generating...');
       try {
-        // PNG / Data URL
-        lastDataUrl = await QRCode.toDataURL(text, config);
-
-        // SVG (string)
-        // qrcode.toString supports type 'svg'
+        lastDataUrl = await QRCode.toDataURL(text, { errorCorrectionLevel: cfg.ec, margin: cfg.margin, width: cfg.size, color: { dark: cfg.fg, light: cfg.bg } });
         lastSvgText = await new Promise((resolve, reject) => {
-          QRCode.toString(text, { ...config, type: 'svg' }, (err, svg) => {
+          QRCode.toString(text, { type: 'svg', errorCorrectionLevel: cfg.ec, margin: cfg.margin, width: cfg.size, color: { dark: cfg.fg, light: cfg.bg } }, (err, svg) => {
             if (err) return reject(err);
             resolve(svg);
           });
         });
-
-        // render preview according to selected format preference (show image always)
-        renderPreview(lastDataUrl, lastSvgText, label);
-
-        // enable downloads
+        renderPreview(lastDataUrl, lastSvgText);
         downloadPngBtn.disabled = false;
         downloadSvgBtn.disabled = false;
         copyBtn.disabled = false;
-
         summaryText.textContent = 'Generated';
-        status.textContent = 'QR code generated successfully.';
-        downloadHint.textContent = 'Use the buttons to download or copy the QR code.';
-
-        if (autoPreview) {
-          // nothing extra
-        }
+        showStatus('QR generated.');
       } catch (err) {
-        console.error('QR generation failed', err);
-        status.textContent = 'Failed to generate QR: ' + (err && err.message ? err.message : err);
-        summaryText.textContent = 'Error';
-        downloadHint.textContent = 'Fix inputs and try again.';
-        downloadPngBtn.disabled = true;
-        downloadSvgBtn.disabled = true;
-        copyBtn.disabled = true;
+        console.error(err);
+        showStatus('QR generation failed: ' + (err && err.message ? err.message : err));
       }
     }
 
-    // Render preview: show SVG if SVG selected, otherwise PNG; but always inject both options for download
-    function renderPreview(pngDataUrl, svgText, label) {
-      qrCanvasWrap.innerHTML = '';
-      const chosenFormat = outFormat.value;
+    function getConfig(){
+      return {
+        size: Math.max(64, Math.min(2000, Number(sizeInput.value) || 320)),
+        margin: Math.max(0, Math.min(100, Number(marginInput.value) || 4)),
+        ec: ecLevel.value || 'M',
+        fg: fgColor.value || '#00131f',
+        bg: bgColor.value || '#ffffff',
+        format: outFormat.value || 'png'
+      };
+    }
 
-      if (chosenFormat === 'svg') {
-        // show inline SVG
+    function renderPreview(pngDataUrl, svgText){
+      qrCanvasWrap.innerHTML = '';
+      if (outFormatSelect.value === 'svg' && svgText) {
         try {
-          const wrapper = document.createElement('div');
-          wrapper.style.width = '100%';
-          wrapper.style.display = 'flex';
-          wrapper.style.flexDirection = 'column';
-          wrapper.style.alignItems = 'center';
-          // sanitize and insert svg
           const svgNode = (new DOMParser()).parseFromString(svgText, 'image/svg+xml').documentElement;
           svgNode.style.maxWidth = '100%';
           svgNode.style.height = 'auto';
-          wrapper.appendChild(svgNode);
-          if (label) {
-            const lbl = document.createElement('div'); lbl.textContent = label; lbl.style.marginTop = '8px'; lbl.style.color = 'var(--muted)';
-            wrapper.appendChild(lbl);
-          }
-          qrCanvasWrap.appendChild(wrapper);
-        } catch (e) {
-          // fallback to png
-          const img = document.createElement('img');
-          img.className = 'qr-img';
-          img.src = pngDataUrl;
-          qrCanvasWrap.appendChild(img);
+          qrCanvasWrap.appendChild(svgNode);
+        } catch(e) {
+          const img = document.createElement('img'); img.className='qr-img'; img.src = pngDataUrl; qrCanvasWrap.appendChild(img);
         }
       } else {
-        const img = document.createElement('img');
-        img.className = 'qr-img';
-        img.src = pngDataUrl;
-        qrCanvasWrap.appendChild(img);
-        if (label) {
-          const lbl = document.createElement('div'); lbl.textContent = label; lbl.style.marginTop = '8px'; lbl.style.color = 'var(--muted)';
-          qrCanvasWrap.appendChild(lbl);
-        }
+        const img = document.createElement('img'); img.className='qr-img'; img.src = pngDataUrl; qrCanvasWrap.appendChild(img);
       }
     }
 
     // Download helpers
     function downloadDataUrl(dataUrl, filename) {
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(()=>{ try{ document.body.removeChild(a); }catch(e){} }, 200);
+      const a = document.createElement('a'); a.href = dataUrl; a.download = filename; document.body.appendChild(a); a.click();
+      setTimeout(()=>{ try{ document.body.removeChild(a);}catch(e){} }, 300);
     }
-
     function downloadSvgText(svgText, filename) {
       const blob = new Blob([svgText], { type: 'image/svg+xml' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(()=> { URL.revokeObjectURL(url); try{ document.body.removeChild(a);}catch(e){} }, 300);
+      const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(url); try{ document.body.removeChild(a);}catch(e){} }, 400);
     }
 
-    // PNG download triggers downloadDataUrl with dataURL
     downloadPngBtn.addEventListener('click', () => {
-      if (!lastDataUrl) return;
-      const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
-      downloadDataUrl(lastDataUrl, `qrcode_${ts}.png`);
+      if (!lastDataUrl) return; const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-'); downloadDataUrl(lastDataUrl, `qrcode_${ts}.png`);
     });
-
     downloadSvgBtn.addEventListener('click', () => {
-      if (!lastSvgText) return;
-      const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
-      downloadSvgText(lastSvgText, `qrcode_${ts}.svg`);
+      if (!lastSvgText) return; const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-'); downloadSvgText(lastSvgText, `qrcode_${ts}.svg`);
     });
-
     copyBtn.addEventListener('click', async () => {
-      // copy PNG data URL or SVG text depending on format
       try {
-        if (outFormat.value === 'svg' && lastSvgText) {
-          await navigator.clipboard.writeText(lastSvgText);
-          status.textContent = 'SVG copied to clipboard.';
-        } else if (lastDataUrl) {
-          await navigator.clipboard.writeText(lastDataUrl);
-          status.textContent = 'PNG data URL copied to clipboard.';
-        } else {
-          status.textContent = 'Nothing to copy.';
-        }
-      } catch (err) {
-        console.error('copy failed', err);
-        status.textContent = 'Clipboard copy failed (browser may block it).';
-      }
+        if (outFormat.value === 'svg' && lastSvgText) { await navigator.clipboard.writeText(lastSvgText); showStatus('SVG copied to clipboard.'); }
+        else if (lastDataUrl) { await navigator.clipboard.writeText(lastDataUrl); showStatus('PNG data URL copied to clipboard.'); }
+      } catch(e){ showStatus('Copy failed (browser may block).'); }
     });
 
-    // Live preview option — toggles auto-generation on input changes
-    let livePreview = false;
-    let liveTimer = null;
-    previewBtn.addEventListener('click', () => {
-      livePreview = !livePreview;
-      previewBtn.classList.toggle('btn-primary', livePreview);
-      previewBtn.classList.toggle('btn-secondary', !livePreview);
-      previewBtn.innerHTML = livePreview ? '<i class="fa-solid fa-eye"></i> Live ON' : '<i class="fa-solid fa-eye"></i> Live Preview';
-      if (livePreview) {
-        // generate immediately and then attach listeners
-        generateQR({ autoPreview: true });
-        attachLiveListeners();
-      } else {
-        detachLiveListeners();
-      }
-    });
-
-    function attachLiveListeners() {
-      detachLiveListeners(); // ensure idempotent
-      // debounce handler
-      liveTimer = (function() {
-        let id = null;
-        return function() {
-          if (id) clearTimeout(id);
-          id = setTimeout(()=> { generateQR({ autoPreview:true }); id = null; }, 600);
-        };
-      })();
-      textInput.addEventListener('input', liveTimer);
-      sizeInput.addEventListener('input', liveTimer);
-      marginInput.addEventListener('input', liveTimer);
-      ecLevel.addEventListener('change', liveTimer);
-      fgColor.addEventListener('input', liveTimer);
-      bgColor.addEventListener('input', liveTimer);
-      outFormat.addEventListener('change', liveTimer);
-      labelInput.addEventListener('input', liveTimer);
-    }
-
-    function detachLiveListeners() {
-      // remove generic handlers by cloning nodes (simple approach)
-      const newText = textInput.cloneNode(true);
-      textInput.parentNode.replaceChild(newText, textInput);
-      // reassign references and re-bind essential ones that were added earlier
-      // (we only changed the element reference - now re-get elements)
-      refreshElementRefs();
-      liveTimer = null;
-    }
-
-    function refreshElementRefs(){
-      // re-acquire elements that may have been replaced
-      window.textInput = document.getElementById('textInput');
-      window.sizeInput = document.getElementById('sizeInput');
-      window.marginInput = document.getElementById('marginInput');
-      window.ecLevel = document.getElementById('ecLevel');
-      window.outFormat = document.getElementById('outFormat');
-      window.fgColor = document.getElementById('fgColor');
-      window.bgColor = document.getElementById('bgColor');
-      window.labelInput = document.getElementById('labelInput');
-      // re-hook basic event listeners that don't depend on livePreview
-      // (we don't re-bind generate/clear/download since they remain)
-    }
-
-    // Generate on button click
-    generateBtn.addEventListener('click', () => generateQR());
-
-    // Clear
+    generateBtn.addEventListener('click', generateQROne);
     clearBtn.addEventListener('click', () => {
-      textInput.value = '';
-      labelInput.value = '';
-      qrCanvasWrap.innerHTML = '';
-      lastDataUrl = null;
-      lastSvgText = null;
-      downloadPngBtn.disabled = true;
-      downloadSvgBtn.disabled = true;
-      copyBtn.disabled = true;
-      summaryText.textContent = 'Cleared';
-      status.textContent = 'Inputs cleared.';
-      downloadHint.textContent = 'Generate first to enable downloads.';
+      textInput.value = ''; qrCanvasWrap.innerHTML = ''; lastDataUrl = lastSvgText = null; downloadPngBtn.disabled = downloadSvgBtn.disabled = copyBtn.disabled = true; summaryText.textContent='Cleared'; showStatus('Cleared.');
     });
 
-    // Handle format select change to re-render preview accordingly if already generated
-    outFormat.addEventListener('change', () => {
-      if (lastDataUrl || lastSvgText) {
-        renderPreview(lastDataUrl, lastSvgText, labelInput.value.trim());
+    // Bulk file selection UI
+    chooseBulkBtn.addEventListener('click', ()=> bulkFileInput.click());
+    bulkFileInput.addEventListener('change', async (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      await handleBulkFile(f);
+      e.target.value = '';
+    });
+
+    async function handleBulkFile(file) {
+      // reset
+      workbook = null;
+      sheetSelect.innerHTML = '';
+      columnSelect.innerHTML = '';
+      sheetAndColumn.style.display = 'none';
+      bulkValues = [];
+      bulkList.innerHTML = '';
+      bulkGenerateBtn.disabled = true;
+      downloadAllZipBtn.disabled = true;
+      bulkHint.textContent = 'Parsing file...';
+      bulkCount.textContent = 'Parsing...';
+
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        // detect CSV by extension and parse via XLSX read
+        const isCsv = /\.csv$/i.test(file.name);
+        const wb = XLSX.read(arrayBuffer, { type: "array", raw: false, cellText: false });
+        workbook = wb;
+        // populate sheet select
+        wb.SheetNames.forEach(name => {
+          const opt = document.createElement('option'); opt.value = name; opt.textContent = name; sheetSelect.appendChild(opt);
+        });
+        currentSheetName = wb.SheetNames[0];
+        sheetSelect.value = currentSheetName;
+        // populate columns from first row (headers) or from A..Z if no header
+        populateColumnsForSheet(currentSheetName);
+        sheetAndColumn.style.display = 'flex';
+        bulkHint.textContent = `File loaded: ${file.name}`;
+        bulkCount.textContent = '0 values';
+        showStatus('File parsed. Choose worksheet and column.');
+      } catch (err) {
+        console.error('Failed to parse file', err);
+        bulkHint.textContent = 'Parse failed';
+        showStatus('Failed to parse Excel/CSV file.');
       }
+    }
+
+    function populateColumnsForSheet(sheetName) {
+      columnSelect.innerHTML = '';
+      const sheet = workbook.Sheets[sheetName];
+      if (!sheet) return;
+      // try to get header row (row 1) keys
+      const range = XLSX.utils.decode_range(sheet['!ref'] || "A1:A1");
+      const firstRow = range.s.r; // typically 0
+      // build columns from A..Z..AA
+      const maxCol = range.e.c;
+      for (let c = 0; c <= maxCol; c++) {
+        const colLetter = XLSX.utils.encode_col(c);
+        // try header cell
+        const headerCell = sheet[colLetter + (firstRow+1)];
+        const headerText = headerCell ? (headerCell.v || '').toString() : colLetter;
+        const opt = document.createElement('option'); opt.value = colLetter; opt.textContent = `${colLetter} — ${headerText}`;
+        columnSelect.appendChild(opt);
+      }
+    }
+
+    sheetSelect.addEventListener('change', (e)=> {
+      currentSheetName = e.target.value;
+      populateColumnsForSheet(currentSheetName);
     });
 
-    // keyboard: Ctrl+Enter to generate
-    document.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { generateQR(); }
+    previewBulkBtn.addEventListener('click', ()=> {
+      if (!workbook) { showStatus('No file loaded'); return; }
+      // extract values in selected column, skipping rows as set
+      const col = columnSelect.value;
+      const skip = Math.max(0, Number(skipRows.value) || 0);
+      const sheet = workbook.Sheets[currentSheetName];
+      const rng = XLSX.utils.decode_range(sheet['!ref'] || 'A1:A1');
+      const values = [];
+      for (let r = skip; r <= rng.e.r; r++) {
+        const addr = col + (r+1);
+        const cell = sheet[addr];
+        const txt = cell ? (cell.v !== undefined ? cell.v : '') : '';
+        if (txt !== null && txt !== undefined && String(txt).trim() !== '') values.push(String(txt));
+      }
+      bulkValues = values;
+      bulkList.innerHTML = '';
+      generatedItems = [];
+      if (!values.length) {
+        bulkHint.textContent = 'No values found in column';
+        bulkCount.textContent = '0 values';
+        bulkGenerateBtn.disabled = true;
+        return;
+      }
+      // show a short preview of first up to 12 values
+      const previewCount = Math.min(12, values.length);
+      for (let i=0;i<previewCount;i++){
+        const card = document.createElement('div'); card.className = 'bulk-card';
+        const p = document.createElement('div'); p.className='label'; p.textContent = values[i];
+        card.appendChild(p);
+        bulkList.appendChild(card);
+      }
+      bulkHint.textContent = `Previewing first ${previewCount} of ${values.length} values`;
+      bulkCount.textContent = `${values.length} values`;
+      bulkGenerateBtn.disabled = false;
+      downloadAllZipBtn.disabled = true;
+      showStatus(`${values.length} values ready for bulk generation.`);
     });
 
-    // Initial UI state
-    downloadPngBtn.disabled = true;
-    downloadSvgBtn.disabled = true;
-    copyBtn.disabled = true;
+    // Bulk generate
+    bulkGenerateBtn.addEventListener('click', async () => {
+      if (!bulkValues || !bulkValues.length) { showStatus('No values to generate'); return; }
+      generatedItems = [];
+      bulkList.innerHTML = '';
+      progressBar.style.display = 'block';
+      progressBarFill.style.width = '0%';
+      const cfg = getConfig();
+      const total = bulkValues.length;
+      // limit: be careful with huge lists; still proceed but progress indicated
+      for (let i=0;i<total;i++){
+        const text = bulkValues[i];
+        // generate according to format
+        try {
+          if (cfg.format === 'svg') {
+            const svgText = await new Promise((resolve, reject) => {
+              QRCode.toString(text, { type: 'svg', errorCorrectionLevel: cfg.ec, margin: cfg.margin, width: cfg.size, color: { dark: cfg.fg, light: cfg.bg } }, (err, svg) => {
+                if (err) return reject(err);
+                resolve(svg);
+              });
+            });
+            const filename = sanitizeFilename(text, i, 'svg');
+            const blob = new Blob([svgText], { type: 'image/svg+xml' });
+            generatedItems.push({ text, svgText, filename, blob, format: 'svg' });
+            // create thumbnail by embedding svg as data URL
+            const imgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText);
+            pushBulkCard(imgUrl, text, filename);
+          } else {
+            // PNG path
+            const dataUrl = await QRCode.toDataURL(text, { errorCorrectionLevel: cfg.ec, margin: cfg.margin, width: cfg.size, color: { dark: cfg.fg, light: cfg.bg } });
+            // convert to blob
+            const blob = dataURLtoBlob(dataUrl);
+            const filename = sanitizeFilename(text, i, 'png');
+            generatedItems.push({ text, dataUrl, filename, blob, format: 'png' });
+            pushBulkCard(dataUrl, text, filename);
+          }
+        } catch (err) {
+          console.warn('Failed for item', i, err);
+          // create placeholder card with error
+          pushBulkCard(null, text, 'error');
+        }
+        // update progress
+        const pct = Math.round(((i+1)/total)*100);
+        progressBarFill.style.width = pct + '%';
+        await sleep(10); // let UI breathe
+      }
+      progressBar.style.display = 'none';
+      downloadAllZipBtn.disabled = generatedItems.length === 0;
+      bulkHint.textContent = `Generated ${generatedItems.length} / ${total}`;
+      showStatus('Bulk generation finished.');
+    });
+
+    function pushBulkCard(imgUrl, text, filename) {
+      const card = document.createElement('div'); card.className = 'bulk-card';
+      if (imgUrl) {
+        const img = document.createElement('img'); img.src = imgUrl; img.alt = 'QR';
+        card.appendChild(img);
+      } else {
+        const placeholder = document.createElement('div'); placeholder.style.width='120px'; placeholder.style.height='120px'; placeholder.style.display='flex'; placeholder.style.alignItems='center'; placeholder.style.justifyContent='center'; placeholder.style.background='#111827'; placeholder.style.borderRadius='6px';
+        placeholder.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b"></i>';
+        card.appendChild(placeholder);
+      }
+      const lbl = document.createElement('div'); lbl.className='label'; lbl.textContent = text;
+      card.appendChild(lbl);
+
+      const controls = document.createElement('div'); controls.style.display='flex'; controls.style.gap='6px';
+      const dlBtn = document.createElement('button'); dlBtn.className='btn btn-secondary'; dlBtn.style.padding='6px 8px'; dlBtn.innerHTML = '<i class="fa-solid fa-download"></i>';
+      dlBtn.onclick = async () => {
+        // find item by filename
+        const item = generatedItems.find(it => it.filename === filename);
+        if (!item) { showStatus('Not found'); return; }
+        if (item.format === 'svg') downloadSvgText(item.svgText, item.filename);
+        else downloadBlob(item.blob, item.filename);
+      };
+      controls.appendChild(dlBtn);
+
+      const copyBtnLocal = document.createElement('button'); copyBtnLocal.className='btn btn-secondary'; copyBtnLocal.style.padding='6px 8px'; copyBtnLocal.innerHTML='<i class="fa-regular fa-copy"></i>';
+      copyBtnLocal.onclick = async () => {
+        const it = generatedItems.find(it => it.filename === filename);
+        if (!it) return;
+        try {
+          if (it.format === 'svg') await navigator.clipboard.writeText(it.svgText);
+          else await navigator.clipboard.writeText(it.dataUrl);
+          showStatus('Copied to clipboard');
+        } catch(e){ showStatus('Copy failed'); }
+      };
+      controls.appendChild(copyBtnLocal);
+
+      card.appendChild(controls);
+      bulkList.appendChild(card);
+    }
+
+    function sanitizeFilename(text, index, ext) {
+      let base = text && String(text).trim().slice(0,60) || `qr_${index+1}`;
+      base = base.replace(/[\\\/:*?"<>|]/g, '-').replace(/\s+/g,'_');
+      const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+      return `${base}_${ts}.${ext}`;
+    }
+
+    function dataURLtoBlob(dataurl) {
+      const arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1];
+      const bstr = atob(arr[1]); let n = bstr.length; const u8arr = new Uint8Array(n);
+      while(n--){ u8arr[n] = bstr.charCodeAt(n); }
+      return new Blob([u8arr], { type: mime });
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(url); try{ document.body.removeChild(a);}catch(e){} }, 400);
+    }
+
+    function sleep(ms){ return new Promise(res=>setTimeout(res,ms)); }
+
+    // Download all as ZIP
+    downloadAllZipBtn.addEventListener('click', async () => {
+      if (!generatedItems || !generatedItems.length) { showStatus('No generated items'); return; }
+      if (typeof JSZip === 'undefined') { showStatus('JSZip missing'); return; }
+      showStatus('Preparing ZIP...');
+      const zip = new JSZip();
+      for (let i=0;i<generatedItems.length;i++){
+        const it = generatedItems[i];
+        try {
+          if (it.format === 'svg') zip.file(it.filename, it.blob);
+          else zip.file(it.filename, it.blob);
+        } catch(e){ console.warn('zip add failed', e); }
+      }
+      const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } }, (meta) => {
+        progressBar.style.display = 'block';
+        progressBarFill.style.width = Math.round(meta.percent) + '%';
+      });
+      progressBar.style.display = 'none';
+      downloadBlob(blob, `qr_bulk_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.zip`);
+      showStatus('ZIP ready.');
+    });
+
+    // small UI niceties
+    sheetAndColumn.style.display = 'none';
+    chooseBulkBtn.addEventListener('keydown', (e) => { if (e.key === 'Enter') bulkFileInput.click(); });
+
+    // initial meta update
     updateMeta();
+    [sizeInput, marginInput, ecLevel, fgColor, bgColor, outFormat].forEach(el => el.addEventListener('input', updateMeta));
+    outFormat.addEventListener('change', () => {
+      if (lastDataUrl || lastSvgText) renderPreview(lastDataUrl, lastSvgText);
+    });
 
-    // Expose quick API on window for debugging
-    window._qr_generator_state = () => ({ lastConfig, lastDataUrlExists: !!lastDataUrl, lastSvgExists: !!lastSvgText });
+    // helper: convert CSV raw parse when workbook read has single sheet but raw header less
+    // (XLSX already handled parsing)
+
+    // keyboard: Ctrl+Enter to generate single
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { generateQROne(); }
+    });
+
+    // Expose for debugging
+    window._bulk_qr_state = () => ({ workbookLoaded: !!workbook, currentSheetName, bulkValuesLength: bulkValues.length, generatedItemsLength: generatedItems.length });
 
   </script>
 </body>
