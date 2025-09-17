@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Edit PDF Online - Smarttool Hub (Fixed Upload)</title>
-  <meta name="description" content="Edit PDF pages in the browser: draw, add text, add images, then download the edited PDF. Fixed upload handling." />
+  <title>Edit PDF Online - Smarttool Hub</title>
+  <meta name="description" content="Edit PDFs in the browser: annotate, draw, add text/images and export edited PDF. Client-side only." />
   <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
   <style>
-    /* Design preserved exactly like your uploaded tools */
+    /* Design kept identical to your uploaded tools (header, cards, colors, spacing) */
     :root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8;--radius:12px}
     body.light{--bg:#f6f8fb;--text:#0b1220;--card:#ffffff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
     *{box-sizing:border-box;margin:0;padding:0}
@@ -24,38 +24,37 @@
     .btn-header:hover{border-color:var(--primary);color:var(--primary)}
 
     .tool-content { background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:18px;margin-top:20px; }
-    .tool-title { font-size:1.6rem;margin-bottom:5px;color:var(--primary); }
+    .tool-title { font-size:1.6rem;margin-bottom:6px;color:var(--primary); }
     .tool-description { color:var(--muted);margin-bottom:14px; }
 
-    .layout { display:grid; grid-template-columns: 320px 1fr 360px; gap:16px; align-items:start; }
-    @media (max-width:1100px){ .layout{ grid-template-columns: 1fr; } }
+    .layout { display:grid; grid-template-columns: 360px 1fr; gap:16px; align-items:start; }
+    @media (max-width:980px){ .layout { grid-template-columns: 1fr; } }
 
-    .panel { background:var(--bg); border:1px solid var(--border); padding:12px; border-radius:10px; }
-    .upload-area { border:2px dashed var(--border); border-radius:10px; padding:12px; text-align:center; cursor:pointer; background:transparent; user-select:none; }
-    .upload-area.dragover { border-color:var(--primary); background:rgba(34,211,238,0.03); }
+    .sidebar { background:var(--bg);border:1px solid var(--border);padding:12px;border-radius:10px; display:flex;flex-direction:column;gap:12px; }
+    .upload-area { border:2px dashed var(--border);border-radius:8px;padding:14px;text-align:center;cursor:pointer;background:var(--card) }
+    .file-input { display:none; }
+    .small { color:var(--muted); font-size:0.9rem; }
 
-    .thumbs { display:flex; flex-direction:column; gap:8px; max-height:56vh; overflow:auto; padding:6px; }
-    .thumb { display:flex; gap:8px; align-items:center; padding:8px; border-radius:8px; border:1px solid var(--border); cursor:pointer; background:var(--card); }
-    .thumb.active { border-color:var(--primary); box-shadow:0 4px 20px rgba(34,211,238,0.06); }
-    .thumb .tmeta { font-size:0.9rem; color:var(--muted); }
+    .controls { display:flex;flex-direction:column;gap:8px; }
+    .controls .row { display:flex;gap:8px;align-items:center;flex-wrap:wrap; }
+    .controls select, .controls input[type="color"], .controls button { background:var(--card);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:8px; }
+    .controls .btn { padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:700; }
+    .btn-primary { background:var(--primary);color:#00131f; }
+    .btn-secondary { background:transparent;border:1px solid var(--border);color:var(--text); }
 
-    .viewer { position:relative; display:flex; flex-direction:column; align-items:center; gap:8px; min-height:60vh; justify-content:flex-start; }
-    .page-wrap { position:relative; background:#0b0f13; border-radius:8px; padding:10px; border:1px solid var(--border); }
-    canvas.baseCanvas { display:block; max-width:100%; height:auto; border-radius:4px; background:white; }
-    canvas.overlayCanvas { position:absolute; left:10px; top:10px; pointer-events:auto; touch-action:none; border-radius:4px; }
+    .viewer { background:transparent;border-radius:8px;padding:6px;min-height:520px;overflow:auto;display:flex;flex-direction:column;gap:12px;align-items:center; }
+    .page-wrapper { position:relative;background:#0f1720;padding:8px;border-radius:10px;border:1px solid var(--border); }
+    canvas.renderCanvas { display:block; max-width:100%; height:auto; border-radius:6px; background:white }
+    canvas.annotCanvas { position:absolute; left:8px; top:8px; touch-action:none; cursor:crosshair }
 
-    .tools { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
-    .btn { padding:8px 12px; border-radius:8px; border:none; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:8px; }
-    .btn-primary { background:var(--primary); color:#00131f; }
-    .btn-secondary { background:var(--card); color:var(--text); border:1px solid var(--border); }
-    .tool-control { display:flex; gap:8px; align-items:center; color:var(--muted); }
+    .page-tools { display:flex;gap:8px;align-items:center;flex-wrap:wrap; }
 
-    .right-panel { display:flex; flex-direction:column; gap:10px; max-height:80vh; overflow:auto; }
-    .panel h4 { margin:0 0 8px 0; color:var(--primary); }
+    .status { color:var(--muted);font-size:0.9rem; }
 
-    .status { color:var(--muted); font-size:0.9rem; margin-top:6px; }
-    .text-box { position:absolute; min-width:60px; min-height:28px; padding:6px 8px; border-radius:6px; background:rgba(255,255,255,0.9); color:#00131f; border:1px dashed rgba(0,0,0,0.12); cursor:move; resize:both; overflow:auto; }
-    footer{margin-top:auto;padding:14px 0;background:var(--card);border-top:1px solid var(--border)}
+    footer{margin-top:auto;padding:18px 0;background:var(--card);border-top:1px solid var(--border)}
+    .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap}
+    .footer-links a{color:var(--primary);text-decoration:none;font-weight:600}
   </style>
 </head>
 <body>
@@ -77,98 +76,64 @@
 
   <main class="container">
     <div class="tool-content">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
-        <div>
-          <h1 class="tool-title">Edit PDF Online</h1>
-          <div class="tool-description">Upload a PDF, edit pages (draw, add text, add images) and download the edited PDF. Fixed upload handling.</div>
-        </div>
-        <div class="status" id="statusMsg">Ready</div>
-      </div>
+      <div class="tool-title">Edit PDF Online</div>
+      <div class="tool-description">Upload PDF, annotate pages (draw, add text, add image), then export the edited PDF. Everything runs in your browser — files never leave your device.</div>
 
-      <div class="layout" style="margin-top:12px;">
-        <!-- Left -->
-        <div class="panel">
-          <div class="upload-area" id="uploadArea" title="Click or drop a PDF here">
-            <div style="font-weight:700;color:var(--muted)"><i class="fa-solid fa-file-pdf"></i> Drop PDF here or click to choose</div>
-            <div style="margin-top:8px;color:var(--muted);font-size:0.9rem">Single PDF supported for editing</div>
-            <input type="file" id="fileInput" accept="application/pdf" style="display:none">
+      <div class="layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+          <div class="upload-area" id="uploadArea" title="Click or drop a PDF to edit">
+            <div style="font-weight:700;color:var(--primary)">Upload PDF</div>
+            <div class="small">Drop PDF here or click to browse (supports multi-page PDFs)</div>
+            <input id="fileInput" class="file-input" type="file" accept="application/pdf">
           </div>
 
-          <div style="margin-top:10px">
-            <div style="display:flex;gap:8px">
-              <button id="zoomIn" class="btn btn-secondary"><i class="fa-solid fa-magnifying-glass-plus"></i> Zoom In</button>
-              <button id="zoomOut" class="btn btn-secondary"><i class="fa-solid fa-magnifying-glass-minus"></i> Zoom Out</button>
-              <button id="fitWidth" class="btn btn-secondary"><i class="fa-solid fa-expand"></i> Fit Width</button>
-            </div>
-          </div>
+          <div class="controls">
+            <div style="font-weight:700">Tools</div>
 
-          <h4 style="margin-top:12px">Pages</h4>
-          <div class="thumbs" id="thumbs"></div>
-        </div>
-
-        <!-- Center -->
-        <div class="panel viewer">
-          <div class="tools" id="toolbar">
-            <div class="tool-control">
-              <button id="selectTool" class="btn btn-secondary"><i class="fa-solid fa-mouse-pointer"></i> Select</button>
-              <button id="drawTool" class="btn btn-secondary"><i class="fa-solid fa-pen"></i> Draw</button>
-              <button id="textTool" class="btn btn-secondary"><i class="fa-solid fa-font"></i> Text</button>
-              <button id="imageTool" class="btn btn-secondary"><i class="fa-solid fa-image"></i> Image</button>
+            <div class="row">
+              <button class="btn btn-secondary" id="toolPan"><i class="fa-solid fa-hand-paper"></i> Pan</button>
+              <button class="btn btn-primary" id="toolDraw"><i class="fa-solid fa-pen"></i> Draw</button>
+              <button class="btn btn-secondary" id="toolText"><i class="fa-solid fa-font"></i> Text</button>
+              <button class="btn btn-secondary" id="toolImage"><i class="fa-solid fa-image"></i> Add Image</button>
+              <input id="imgInput" type="file" accept="image/*" style="display:none">
             </div>
 
-            <div class="tool-control">
-              <label style="font-weight:700;color:var(--muted)">Color</label>
-              <input type="color" id="toolColor" value="#ff0000" style="height:34px;border-radius:6px;border:1px solid var(--border)"/>
-              <label style="font-weight:700;color:var(--muted)">Size</label>
-              <input type="range" id="toolSize" min="1" max="48" value="4"/>
-              <span id="sizeVal" style="color:var(--muted);min-width:36px;text-align:center">4</span>
+            <div class="row">
+              <label class="small">Color</label>
+              <input type="color" id="penColor" value="#ffeb3b">
+              <label class="small">Size</label>
+              <select id="penSize">
+                <option value="2">2px</option>
+                <option value="4" selected>4px</option>
+                <option value="8">8px</option>
+                <option value="12">12px</option>
+                <option value="20">20px</option>
+              </select>
             </div>
 
-            <div class="tool-control" style="margin-left:auto">
-              <button id="undoBtn" class="btn btn-secondary"><i class="fa-solid fa-rotate-left"></i> Undo</button>
-              <button id="clearBtn" class="btn btn-secondary"><i class="fa-solid fa-trash"></i> Clear</button>
-              <button id="savePageBtn" class="btn btn-primary"><i class="fa-solid fa-save"></i> Save Page</button>
+            <div class="row">
+              <button class="btn btn-secondary" id="undoBtn"><i class="fa-solid fa-rotate-left"></i> Undo</button>
+              <button class="btn btn-secondary" id="clearBtn"><i class="fa-solid fa-trash"></i> Clear Page</button>
             </div>
-          </div>
 
-          <div id="pageContainer" style="width:100%;display:flex;justify-content:center;align-items:center;">
-            <div class="page-wrap" id="pageWrap" style="display:none;"></div>
-          </div>
-
-          <div style="width:100%;display:flex;justify-content:space-between;align-items:center;margin-top:8px">
-            <div style="color:var(--muted)"><span id="currentPageLabel">Page 0 / 0</span></div>
-            <div style="display:flex;gap:8px">
-              <button id="prevPage" class="btn btn-secondary"><i class="fa-solid fa-chevron-left"></i> Prev</button>
-              <button id="nextPage" class="btn btn-secondary">Next <i class="fa-solid fa-chevron-right"></i></button>
+            <div style="border-top:1px dashed var(--border);padding-top:8px;">
+              <div style="font-weight:700">Export</div>
+              <div class="row">
+                <button class="btn btn-primary" id="savePdfBtn"><i class="fa-solid fa-file-export"></i> Export Edited PDF</button>
+                <button class="btn btn-secondary" id="downloadPagesBtn"><i class="fa-solid fa-download"></i> Download Pages (Images)</button>
+              </div>
+              <div class="small status" id="status">No file loaded</div>
             </div>
           </div>
         </div>
 
-        <!-- Right -->
-        <div class="panel right-panel">
-          <div>
-            <h4>Tools / Items</h4>
-            <div id="itemsList" style="display:flex;flex-direction:column;gap:8px"></div>
-          </div>
-
-          <div>
-            <h4>Add Image</h4>
-            <input type="file" id="stampInput" accept="image/*" />
-            <div class="status" style="margin-top:6px">Upload small PNG/JPG to stamp on pages.</div>
-          </div>
-
-          <div>
-            <h4>Download</h4>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button id="downloadEditedPdf" class="btn btn-primary" disabled><i class="fa-solid fa-file-arrow-down"></i> Download Edited PDF</button>
-              <button id="downloadCurrentPage" class="btn btn-secondary" disabled><i class="fa-solid fa-download"></i> Download Current Page</button>
-              <button id="resetAll" class="btn btn-secondary"><i class="fa-solid fa-redo"></i> Reset</button>
-            </div>
-            <div class="status" id="downloadStatus" style="margin-top:8px"></div>
-          </div>
+        <!-- Viewer -->
+        <div class="viewer" id="viewer">
+          <!-- pages will be injected here -->
+          <div class="small">Upload a PDF to begin editing — each page shows the original rendering with an annotation layer on top.</div>
         </div>
       </div>
-
     </div>
   </main>
 
@@ -183,12 +148,12 @@
     </div>
   </footer>
 
-  <!-- Libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.10.120/build/pdf.min.js"></script>
+  <!-- Dependencies: PDF.js for rendering, jsPDF for export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
   <script>
-    // UI init
+    // Setup
     document.getElementById('year').textContent = new Date().getFullYear();
     const themeToggle = document.getElementById('themeToggle');
     if (localStorage.getItem('sth_theme') === 'light') { document.body.classList.add('light'); themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; }
@@ -198,617 +163,458 @@
       else { themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); }
     };
 
-    // Set pdf.js worker (use jsDelivr) — important fix for many upload/load failures
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.10.120/build/pdf.worker.min.js';
+    // pdf.js worker setup
+    if (pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
+      // use CDN worker (pdfjs-dist exposes worker)
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    }
 
     // Elements
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
-    const thumbs = document.getElementById('thumbs');
-    const pageWrap = document.getElementById('pageWrap');
-    const pageCountLabel = document.getElementById('currentPageLabel');
-    const statusMsg = document.getElementById('statusMsg');
+    const viewer = document.getElementById('viewer');
+    const statusEl = document.getElementById('status');
 
-    const selectTool = document.getElementById('selectTool');
-    const drawTool = document.getElementById('drawTool');
-    const textTool = document.getElementById('textTool');
-    const imageTool = document.getElementById('imageTool');
-    const toolColor = document.getElementById('toolColor');
-    const toolSize = document.getElementById('toolSize');
-    const sizeVal = document.getElementById('sizeVal');
+    const toolPan = document.getElementById('toolPan');
+    const toolDraw = document.getElementById('toolDraw');
+    const toolText = document.getElementById('toolText');
+    const toolImage = document.getElementById('toolImage');
+    const imgInput = document.getElementById('imgInput');
+
+    const penColor = document.getElementById('penColor');
+    const penSize = document.getElementById('penSize');
     const undoBtn = document.getElementById('undoBtn');
     const clearBtn = document.getElementById('clearBtn');
-    const savePageBtn = document.getElementById('savePageBtn');
-    const prevPage = document.getElementById('prevPage');
-    const nextPage = document.getElementById('nextPage');
-    const zoomIn = document.getElementById('zoomIn');
-    const zoomOut = document.getElementById('zoomOut');
-    const fitWidth = document.getElementById('fitWidth');
 
-    const itemsList = document.getElementById('itemsList');
-    const stampInput = document.getElementById('stampInput');
-    const downloadEditedPdf = document.getElementById('downloadEditedPdf');
-    const downloadCurrentPage = document.getElementById('downloadCurrentPage');
-    const resetAll = document.getElementById('resetAll');
+    const savePdfBtn = document.getElementById('savePdfBtn');
+    const downloadPagesBtn = document.getElementById('downloadPagesBtn');
 
     // State
     let pdfDoc = null;
-    let pdfArrayBuffer = null;
-    let currentPageIndex = 0;
-    let scale = 1.0;
-    let baseCanvas = null;
-    let overlayCanvas = null;
-    let overlayCtx = null;
-    let pageImagesCache = {};
-    let pagesMeta = [];
-    let activeTool = 'select';
-    let drawing = false;
-    let currentStroke = null;
-    let stampImageBlob = null;
+    let pages = []; // array of {pageNumber, renderCanvas, annotCanvas, scale, actions: [strokes/texts/images], imgElements}
+    let currentTool = 'draw'; // 'pan','draw','text','image'
+    let activePointer = null;
 
-    // helpers
-    function setStatus(msg) { statusMsg.textContent = msg; }
-    function enableButton(btn, en) { btn.disabled = !en; }
+    // Utility
+    function setStatus(txt) { statusEl.textContent = txt; }
+    function uid() { return 'id_' + Math.random().toString(36).slice(2,9); }
 
-    // Robust drag/drop: handle files and items
+    // Upload handlers
     uploadArea.addEventListener('click', () => fileInput.click());
-    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; uploadArea.classList.add('dragover'); });
-    uploadArea.addEventListener('dragleave', (e) => { uploadArea.classList.remove('dragover'); });
-    uploadArea.addEventListener('drop', async (e) => {
-      e.preventDefault(); uploadArea.classList.remove('dragover');
-      try {
-        const files = [];
-        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
-          for (let i=0;i<e.dataTransfer.files.length;i++) files.push(e.dataTransfer.files[i]);
-        } else if (e.dataTransfer && e.dataTransfer.items && e.dataTransfer.items.length) {
-          for (let i=0;i<e.dataTransfer.items.length;i++){
-            const it = e.dataTransfer.items[i];
-            if (it.kind === 'file') {
-              const f = it.getAsFile();
-              if (f) files.push(f);
-            }
-          }
-        }
-        if (!files.length) { setStatus('No file detected in drop'); return; }
-        // pick first PDF file
-        const pdfFile = files.find(f => f.type === 'application/pdf' || /\.pdf$/i.test(f.name));
-        if (!pdfFile) { setStatus('No PDF file found in dropped items'); return; }
-        await handlePdfFile(pdfFile);
-      } catch (err) {
-        console.error('drop handler error', err);
-        setStatus('Drop failed: ' + (err && err.message ? err.message : 'unknown error'));
-      }
-    });
+    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+    uploadArea.addEventListener('dragleave', (e) => { e.preventDefault(); uploadArea.classList.remove('dragover'); });
+    uploadArea.addEventListener('drop', (e) => { e.preventDefault(); uploadArea.classList.remove('dragover'); const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) handleFile(f); });
 
-    // file input change
-    fileInput.addEventListener('change', async (e) => {
+    fileInput.addEventListener('change', (e) => {
       const f = e.target.files && e.target.files[0];
-      if (!f) return;
-      await handlePdfFile(f);
+      if (f) handleFile(f);
       fileInput.value = '';
     });
 
-    // zoom controls
-    zoomIn.addEventListener('click', () => { scale = Math.min(3, scale + 0.1); renderCurrentPage(); });
-    zoomOut.addEventListener('click', () => { scale = Math.max(0.2, scale - 0.1); renderCurrentPage(); });
-    fitWidth.addEventListener('click', () => { scale = 1; renderCurrentPage(); });
-
-    // tool UI
-    toolSize.addEventListener('input', () => { sizeVal.textContent = toolSize.value; });
-    selectTool.addEventListener('click', () => setActiveTool('select'));
-    drawTool.addEventListener('click', () => setActiveTool('draw'));
-    textTool.addEventListener('click', () => setActiveTool('text'));
-    imageTool.addEventListener('click', () => setActiveTool('image'));
-    undoBtn.addEventListener('click', undoLast);
-    clearBtn.addEventListener('click', clearOverlays);
-    savePageBtn.addEventListener('click', saveCurrentPageEdits);
-
-    prevPage.addEventListener('click', () => { if (!pdfDoc) return; if (currentPageIndex > 0) { currentPageIndex--; switchToPage(currentPageIndex); } });
-    nextPage.addEventListener('click', () => { if (!pdfDoc) return; if (currentPageIndex < pdfDoc.numPages - 1) { currentPageIndex++; switchToPage(currentPageIndex); } });
-
-    stampInput.addEventListener('change', async (e) => {
-      const f = e.target.files && e.target.files[0];
-      if (!f) return;
-      stampImageBlob = f;
-      setStatus('Stamp image loaded. Use Image tool to place it on page.');
-    });
-
-    resetAll.addEventListener('click', () => {
-      pdfDoc = null; pdfArrayBuffer = null; pagesMeta = []; pageImagesCache = {}; currentPageIndex = 0;
-      thumbs.innerHTML = ''; pageWrap.style.display='none'; setStatus('Reset complete'); downloadEditedPdf.disabled = true; downloadCurrentPage.disabled = true;
-    });
-
-    downloadCurrentPage.addEventListener('click', async () => {
-      if (!pdfDoc) return;
-      const blob = await exportSinglePageBlob(currentPageIndex);
-      downloadBlob(blob, `page-${currentPageIndex+1}.pdf`);
-    });
-
-    downloadEditedPdf.addEventListener('click', async () => {
-      if (!pdfDoc) return;
-      setStatus('Preparing edited PDF — please wait...');
-      downloadEditedPdf.disabled = true;
+    async function handleFile(file) {
+      if (!file || !/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') { setStatus('Please select a PDF file'); return; }
+      setStatus('Loading PDF...');
+      pages = [];
+      viewer.innerHTML = '';
       try {
-        const mergedBlob = await buildEditedPdf();
-        downloadBlob(mergedBlob, `edited_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.pdf`);
-        setStatus('Edited PDF ready.');
+        const arrayBuffer = await file.arrayBuffer();
+        pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        setStatus(`PDF loaded — ${pdfDoc.numPages} page(s). Rendering...`);
+        // render pages sequentially to avoid heavy parallel work
+        for (let p=1; p<=pdfDoc.numPages; p++) {
+          await renderPage(p);
+        }
+        setStatus('Rendering complete. Use tools to annotate. Export when ready.');
       } catch (err) {
         console.error(err);
-        setStatus('Failed to build edited PDF.');
-      } finally {
-        downloadEditedPdf.disabled = false;
+        setStatus('Failed to load PDF: ' + (err.message || err));
+      }
+    }
+
+    // Render a single PDF page and attach an annotation canvas above it
+    async function renderPage(pageNumber) {
+      const page = await pdfDoc.getPage(pageNumber);
+      // reasonable scale to render at good quality
+      const viewport = page.getViewport({ scale: 1 });
+      const desiredWidth = Math.min(viewport.width, 1200); // cap width for UI
+      const scale = desiredWidth / viewport.width;
+      const renderViewport = page.getViewport({ scale });
+
+      // container
+      const wrapper = document.createElement('div');
+      wrapper.className = 'page-wrapper';
+      wrapper.dataset.page = pageNumber;
+
+      // renderer canvas
+      const renderCanvas = document.createElement('canvas');
+      renderCanvas.className = 'renderCanvas';
+      // use devicePixelRatio for crisp rendering
+      const dpr = window.devicePixelRatio || 1;
+      renderCanvas.width = Math.floor(renderViewport.width * dpr);
+      renderCanvas.height = Math.floor(renderViewport.height * dpr);
+      renderCanvas.style.width = Math.floor(renderViewport.width) + 'px';
+      renderCanvas.style.height = Math.floor(renderViewport.height) + 'px';
+      const rctx = renderCanvas.getContext('2d');
+      rctx.scale(dpr, dpr);
+
+      // draw using pdf.js render
+      await page.render({ canvasContext: rctx, viewport: renderViewport }).promise;
+
+      // annotation canvas (overlay)
+      const annotCanvas = document.createElement('canvas');
+      annotCanvas.className = 'annotCanvas';
+      annotCanvas.width = renderCanvas.width;
+      annotCanvas.height = renderCanvas.height;
+      annotCanvas.style.width = renderCanvas.style.width;
+      annotCanvas.style.height = renderCanvas.style.height;
+      annotCanvas.style.left = '8px'; annotCanvas.style.top = '8px';
+      annotCanvas.style.pointerEvents = 'auto';
+
+      // ensure wrapper size matches
+      wrapper.style.width = renderCanvas.style.width;
+      wrapper.style.height = renderCanvas.style.height;
+      wrapper.appendChild(renderCanvas);
+      wrapper.appendChild(annotCanvas);
+
+      // page tools row
+      const toolsRow = document.createElement('div');
+      toolsRow.className = 'page-tools';
+      toolsRow.style.marginTop = '8px';
+      toolsRow.innerHTML = `<div style="color:var(--muted);font-weight:700">Page ${pageNumber}</div>`;
+      wrapper.appendChild(toolsRow);
+
+      viewer.appendChild(wrapper);
+
+      // page state
+      const pageState = {
+        pageNumber,
+        renderCanvas,
+        annotCanvas,
+        dpr,
+        scale,
+        actions: [], // each action: {type:'stroke'|'text'|'image', data:...}
+        undone: []
+      };
+      pages.push(pageState);
+
+      // bind annotation events
+      bindAnnotEvents(pageState);
+    }
+
+    // Annotation: draw strokes, add text, add image. Keep actions stack to support undo.
+    function bindAnnotEvents(pageState) {
+      const canvas = pageState.annotCanvas;
+      const ctx = canvas.getContext('2d');
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      let drawing = false;
+      let currentStroke = null;
+
+      // utility to get pointer pos scaled to canvas pixel coords
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        let clientX, clientY;
+        if (e.touches && e.touches[0]) { clientX=e.touches[0].clientX; clientY=e.touches[0].clientY; }
+        else { clientX=e.clientX; clientY=e.clientY; }
+        const x = (clientX - rect.left) * (canvas.width / rect.width);
+        const y = (clientY - rect.top) * (canvas.height / rect.height);
+        return { x, y };
+      }
+
+      // drawing handlers (pointer events)
+      function pointerDown(e) {
+        if (currentTool !== 'draw') return;
+        drawing = true;
+        currentStroke = { type: 'stroke', color: penColor.value, size: Number(penSize.value), points: [] };
+        const pt = getPos(e);
+        currentStroke.points.push(pt);
+        drawStrokeSegment(ctx, currentStroke);
+        canvas.setPointerCapture && canvas.setPointerCapture(e.pointerId);
+      }
+      function pointerMove(e) {
+        if (!drawing || !currentStroke) return;
+        const pt = getPos(e);
+        currentStroke.points.push(pt);
+        drawStrokeSegment(ctx, currentStroke);
+      }
+      function pointerUp(e) {
+        if (!drawing) return;
+        drawing = false;
+        if (currentStroke && currentStroke.points.length) {
+          pageState.actions.push(currentStroke);
+          pageState.undone = [];
+        }
+        currentStroke = null;
+        canvas.releasePointerCapture && canvas.releasePointerCapture(e.pointerId);
+      }
+
+      // support mouse & touch fallback
+      canvas.addEventListener('pointerdown', (e)=> {
+        if (currentTool === 'draw') pointerDown(e);
+        else if (currentTool === 'text') handleTextPlace(e, pageState);
+        // image handled separately
+      });
+      canvas.addEventListener('pointermove', pointerMove);
+      canvas.addEventListener('pointerup', pointerUp);
+      canvas.addEventListener('pointercancel', pointerUp);
+      canvas.addEventListener('touchstart', (e)=>{ /* prevent scrolling */ }, {passive:false});
+
+      // Draw current actions to canvas (clear and re-render)
+      function redrawAll() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        for (const act of pageState.actions) {
+          if (act.type === 'stroke') drawStroke(ctx, act);
+          else if (act.type === 'text') drawText(ctx, act);
+          else if (act.type === 'image') drawImageAction(ctx, act);
+        }
+      }
+      pageState.redrawAll = redrawAll;
+
+      // initial draw
+      redrawAll();
+
+      // helper functions for drawing strokes/text/images
+      function drawStrokeSegment(ctx, stroke) {
+        // draw incremental last segment for performance
+        const pts = stroke.points;
+        const last = pts.length - 1;
+        if (last < 1) {
+          // single point (dot)
+          ctx.fillStyle = stroke.color;
+          const r = stroke.size/2;
+          ctx.beginPath(); ctx.arc(pts[0].x, pts[0].y, r, 0, Math.PI*2); ctx.fill();
+          return;
+        }
+        ctx.strokeStyle = stroke.color;
+        ctx.lineWidth = stroke.size;
+        ctx.beginPath();
+        ctx.moveTo(pts[last-1].x, pts[last-1].y);
+        ctx.lineTo(pts[last].x, pts[last].y);
+        ctx.stroke();
+      }
+      function drawStroke(ctx, stroke) {
+        if (!stroke.points || !stroke.points.length) return;
+        ctx.strokeStyle = stroke.color;
+        ctx.lineWidth = stroke.size;
+        ctx.beginPath();
+        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+        for (let i=1;i<stroke.points.length;i++) ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+        ctx.stroke();
+      }
+      function drawText(ctx, act) {
+        ctx.save();
+        ctx.fillStyle = act.color || '#000';
+        const fontSize = act.size || 16;
+        ctx.font = `${fontSize}px sans-serif`;
+        // simple text wrap: draw single line
+        ctx.fillText(act.text, act.x, act.y);
+        ctx.restore();
+      }
+      function drawImageAction(ctx, act) {
+        // act.img is an HTMLImageElement already loaded
+        ctx.drawImage(act.img, act.x, act.y, act.w, act.h);
+      }
+
+      // text placement
+      async function handleTextPlace(e, pageState) {
+        const pos = getPos(e);
+        const userText = prompt('Enter text to add to this page (simple plaintext):');
+        if (!userText) return;
+        const size = parseInt(prompt('Font size in px (e.g. 16):', '18')) || 18;
+        const txtAct = { type:'text', text: userText, x: pos.x, y: pos.y, color: penColor.value || '#000', size };
+        pageState.actions.push(txtAct);
+        pageState.undone = [];
+        pageState.redrawAll();
+      }
+
+      // image placement
+      imgInput.addEventListener('change', async (ev) => {
+        const file = ev.target.files && ev.target.files[0];
+        if (!file) return;
+        if (currentTool !== 'image') return;
+        const img = new Image();
+        img.onload = () => {
+          // scale image to fit page width if too large
+          const maxW = canvas.width * 0.5;
+          const scale = Math.min(1, maxW / img.naturalWidth);
+          const w = img.naturalWidth * scale;
+          const h = img.naturalHeight * scale;
+          // place at center
+          const x = (canvas.width - w)/2;
+          const y = (canvas.height - h)/2;
+          const act = { type:'image', img, x, y, w, h };
+          pageState.actions.push(act);
+          pageState.undone = [];
+          pageState.redrawAll();
+        };
+        img.onerror = () => alert('Failed to load image');
+        img.src = URL.createObjectURL(file);
+        imgInput.value = '';
+      });
+
+      // undo and clear bindings per page (wired later globally)
+    }
+
+    // Global tool buttons
+    function setTool(tool) {
+      currentTool = tool;
+      [toolPan, toolDraw, toolText, toolImage].forEach(btn => btn.classList.remove('btn-primary'));
+      if (tool === 'pan') toolPan.classList.add('btn-primary'); 
+      if (tool === 'draw') toolDraw.classList.add('btn-primary');
+      if (tool === 'text') toolText.classList.add('btn-primary');
+      if (tool === 'image') toolImage.classList.add('btn-primary');
+      setStatus('Tool: ' + tool);
+      if (tool === 'image') imgInput.click(); // prompt image upload when selecting image tool
+    }
+    toolPan.addEventListener('click', ()=> setTool('pan'));
+    toolDraw.addEventListener('click', ()=> setTool('draw'));
+    toolText.addEventListener('click', ()=> setTool('text'));
+    toolImage.addEventListener('click', ()=> setTool('image'));
+
+    // Undo and Clear (applies to currently visible page under cursor or first page if none)
+    undoBtn.addEventListener('click', () => {
+      const ps = getVisiblePageState();
+      if (!ps) return;
+      if (ps.actions && ps.actions.length) {
+        const act = ps.actions.pop();
+        ps.undone.push(act);
+        ps.redrawAll && ps.redrawAll();
+        setStatus('Undid last action on page ' + ps.pageNumber);
+      } else {
+        setStatus('Nothing to undo on this page');
       }
     });
 
-    // utility downloads
-    function downloadBlob(blob, filename) {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click();
-      setTimeout(()=>{ URL.revokeObjectURL(url); try{ document.body.removeChild(a);}catch(e){} }, 500);
-    }
-
-    function dataURLToUint8Array(dataURL) {
-      const arr = dataURL.split(',');
-      const bstr = atob(arr[1]);
-      let n = bstr.length;
-      const u8 = new Uint8Array(n);
-      while (n--) u8[n] = bstr.charCodeAt(n);
-      return u8;
-    }
-
-    // Main: handle PDF file robustly
-    async function handlePdfFile(file) {
-      if (!file) { setStatus('No file provided'); return; }
-      if (!file.type || (!file.type.includes('pdf') && !/\.pdf$/i.test(file.name))) {
-        setStatus('Selected file is not a PDF');
-        return;
+    clearBtn.addEventListener('click', () => {
+      const ps = getVisiblePageState();
+      if (!ps) return;
+      if (confirm('Clear all annotations on this page?')) {
+        ps.actions = [];
+        ps.undone = [];
+        ps.redrawAll && ps.redrawAll();
+        setStatus('Cleared annotations on page ' + ps.pageNumber);
       }
-      setStatus('Loading PDF — please wait...');
+    });
+
+    // Helper: pick page under center of viewport or first page
+    function getVisiblePageState() {
+      if (!pages.length) return null;
+      // pick the first page for simplicity, or you can inspect scroll position to choose nearest
+      // We'll choose the page whose wrapper is closest to top of viewer (most visible)
+      let best = pages[0];
+      let bestDist = Infinity;
+      for (const ps of pages) {
+        const rect = ps.annotCanvas.getBoundingClientRect();
+        const vRect = viewer.getBoundingClientRect();
+        const dist = Math.abs(rect.top - vRect.top);
+        if (dist < bestDist) { bestDist = dist; best = ps; }
+      }
+      return best;
+    }
+
+    // Export edited PDF: merge renderCanvas + annotCanvas into image per page and add to jsPDF
+    savePdfBtn.addEventListener('click', async () => {
+      if (!pages.length) { setStatus('No pages to export'); return; }
+      setStatus('Preparing edited PDF — this may take a moment...');
       try {
-        const ab = await file.arrayBuffer();
-        pdfArrayBuffer = ab;
-        // load pdf.js document
-        const loadingTask = pdfjsLib.getDocument({ data: ab });
-        const loadedDoc = await loadingTask.promise;
-        pdfDoc = loadedDoc;
-        // init pages meta
-        pagesMeta = [];
-        for (let i=0;i<pdfDoc.numPages;i++){
-          pagesMeta.push({ width:0, height:0, viewport:null, edits: { drawStrokes:[], textBoxes:[], images:[] }, edited:false });
-        }
-        // render thumbnails (lightweight)
-        thumbs.innerHTML = '';
-        for (let i=0;i<pdfDoc.numPages;i++){
-          try {
-            const page = await pdfDoc.getPage(i+1);
-            const viewport = page.getViewport({ scale: 0.22 });
-            const canvas = document.createElement('canvas');
-            canvas.width = Math.floor(viewport.width);
-            canvas.height = Math.floor(viewport.height);
-            const ctx = canvas.getContext('2d');
-            await page.render({ canvasContext: ctx, viewport }).promise;
-            const thumb = document.createElement('div'); thumb.className='thumb'; thumb.dataset.index = i;
-            const img = document.createElement('img'); img.src = canvas.toDataURL('image/png'); img.style.width='60px'; img.style.height='80px'; img.style.objectFit='cover'; img.style.borderRadius='6px';
-            const meta = document.createElement('div'); meta.style.flex='1';
-            const title = document.createElement('div'); title.textContent = `Page ${i+1}`;
-            const tmeta = document.createElement('div'); tmeta.className='tmeta'; tmeta.textContent = `${Math.round(viewport.width)} x ${Math.round(viewport.height)}`;
-            meta.appendChild(title); meta.appendChild(tmeta);
-            thumb.appendChild(img); thumb.appendChild(meta);
-            thumb.addEventListener('click', () => { switchToPage(i); });
-            thumbs.appendChild(thumb);
-            page.cleanup?.();
-          } catch (perr) {
-            console.warn('Thumb render failed for page', i+1, perr);
+        const { jsPDF } = window.jspdf;
+        // use A4 as format with dynamic page sizes based on canvas mm conversion
+        const doc = new jsPDF({ unit: 'mm', format: 'a4' }); // placeholder; we will set custom size per page by using addImage with specified w/h
+        // We'll start by removing the initial blank page created by jsPDF (it always starts with one). We'll instead create pages manually.
+        // Workaround: create new doc and immediately delete initial page later by using setPage? Simpler: create first page with proper content, then addPage for others.
+        let firstAdded = false;
+
+        for (let i=0;i<pages.length;i++) {
+          const ps = pages[i];
+          // Merge render + annotations into one canvas
+          const merged = document.createElement('canvas');
+          merged.width = ps.renderCanvas.width;
+          merged.height = ps.renderCanvas.height;
+          const mctx = merged.getContext('2d');
+          // draw base (render)
+          mctx.drawImage(ps.renderCanvas, 0, 0, merged.width, merged.height);
+          // draw annotations
+          mctx.drawImage(ps.annotCanvas, 0, 0, merged.width, merged.height);
+
+          // Convert to dataURL PNG
+          const dataUrl = merged.toDataURL('image/png');
+
+          // compute dimensions in mm for jsPDF: px -> mm (assume 96 DPI)
+          const px = merged.width / (ps.dpr || 1); // pixel CSS width = canvas.width / dpr
+          const cssWidthPx = merged.width / (ps.dpr || 1);
+          // Better compute mm using CSS pixel width (which equals renderCanvas.style.width px)
+          // But we've set style width = Math.floor(viewport.width). So convert CSS px to mm assuming 96dpi: mm = px * 25.4 / 96
+          const cssPx = parseFloat(ps.renderCanvas.style.width);
+          const mmWidth = cssPx * 25.4 / 96;
+          const mmHeight = (merged.height / (ps.dpr || 1)) * 25.4 / 96;
+
+          if (!firstAdded) {
+            // use existing first page
+            doc.setPage(1);
+            doc.deletePage(1);
+            // add image as first page by using addPage then set current
+            doc.addPage([mmWidth, mmHeight], 'portrait');
+            doc.setPage(1);
+            doc.addImage(dataUrl, 'PNG', 0, 0, mmWidth, mmHeight);
+            firstAdded = true;
+          } else {
+            doc.addPage([mmWidth, mmHeight], 'portrait');
+            doc.setPage(doc.getNumberOfPages());
+            doc.addImage(dataUrl, 'PNG', 0, 0, mmWidth, mmHeight);
           }
         }
-        currentPageIndex = 0;
-        await switchToPage(0);
-        setStatus('PDF loaded. You can edit pages now.');
-        downloadEditedPdf.disabled = false;
-        downloadCurrentPage.disabled = false;
+
+        // Save PDF
+        const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+        const filename = `edited_${ts}.pdf`;
+        doc.save(filename);
+        setStatus('Edited PDF exported: ' + filename);
       } catch (err) {
-        console.error('Failed to load PDF', err);
-        setStatus('Failed to load PDF: ' + (err && err.message ? err.message : 'unknown error'));
+        console.error('Export failed', err);
+        setStatus('Export failed: ' + (err.message || err));
       }
-    }
+    });
 
-    // Switch that page index and render base + overlay
-    async function switchToPage(index) {
-      if (!pdfDoc) return;
-      currentPageIndex = index;
-      Array.from(thumbs.children).forEach(ch => ch.classList.toggle('active', Number(ch.dataset.index) === index));
-      pageWrap.style.display = 'block';
-      pageWrap.innerHTML = '';
-      try {
-        const page = await pdfDoc.getPage(index+1);
-        const viewport = page.getViewport({ scale });
-        pagesMeta[index].width = viewport.width;
-        pagesMeta[index].height = viewport.height;
-        pagesMeta[index].viewport = viewport;
-
-        baseCanvas = document.createElement('canvas');
-        baseCanvas.className = 'baseCanvas';
-        baseCanvas.width = Math.floor(viewport.width);
-        baseCanvas.height = Math.floor(viewport.height);
-        baseCanvas.style.maxWidth = '100%';
-        baseCanvas.style.height = 'auto';
-        const baseCtx = baseCanvas.getContext('2d');
-        await page.render({ canvasContext: baseCtx, viewport }).promise;
-
-        overlayCanvas = document.createElement('canvas');
-        overlayCanvas.className = 'overlayCanvas';
-        overlayCanvas.width = baseCanvas.width;
-        overlayCanvas.height = baseCanvas.height;
-        overlayCanvas.style.left = baseCanvas.offsetLeft + 'px';
-        overlayCanvas.style.top = baseCanvas.offsetTop + 'px';
-        overlayCanvas.style.width = baseCanvas.style.width;
-        overlayCanvas.style.height = baseCanvas.style.height;
-        overlayCanvas.style.pointerEvents = 'auto';
-        overlayCtx = overlayCanvas.getContext('2d');
-        overlayCtx.clearRect(0,0,overlayCanvas.width, overlayCanvas.height);
-
-        pageWrap.appendChild(baseCanvas);
-        pageWrap.appendChild(overlayCanvas);
-
-        // render saved edits if present
-        renderEditsForPage(index);
-
-        attachOverlayEvents();
-        pageCountLabel.textContent = `Page ${currentPageIndex+1} / ${pdfDoc.numPages}`;
-        updateItemsList();
-      } catch (err) {
-        console.error('render page failed', err);
-        setStatus('Failed to render page: ' + (err && err.message ? err.message : 'unknown'));
+    // Download individual pages as images (merged)
+    downloadPagesBtn.addEventListener('click', async () => {
+      if (!pages.length) { setStatus('No pages to download'); return; }
+      setStatus('Preparing page images...');
+      for (let i=0;i<pages.length;i++) {
+        const ps = pages[i];
+        const merged = document.createElement('canvas');
+        merged.width = ps.renderCanvas.width;
+        merged.height = ps.renderCanvas.height;
+        const mctx = merged.getContext('2d');
+        mctx.drawImage(ps.renderCanvas, 0, 0, merged.width, merged.height);
+        mctx.drawImage(ps.annotCanvas, 0, 0, merged.width, merged.height);
+        const dataUrl = merged.toDataURL('image/png');
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = `${ps.pageNumber}.png`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(()=> { try{document.body.removeChild(a);}catch(e){} }, 200);
       }
-    }
+      setStatus('Page images downloaded');
+    });
 
-    function attachOverlayEvents() {
-      // replace existing to avoid duplicate listeners
-      const newOverlay = overlayCanvas.cloneNode(true);
-      overlayCanvas.parentNode.replaceChild(newOverlay, overlayCanvas);
-      overlayCanvas = newOverlay;
-      overlayCtx = overlayCanvas.getContext('2d');
-      overlayCanvas.addEventListener('pointerdown', startPointer);
-      overlayCanvas.addEventListener('pointermove', movePointer);
-      overlayCanvas.addEventListener('pointerup', endPointer);
-      overlayCanvas.addEventListener('pointercancel', endPointer);
-      overlayCanvas.addEventListener('pointerleave', endPointer);
-      overlayCanvas.addEventListener('dblclick', (e) => {
-        if (activeTool !== 'text') return;
-        const rect = overlayCanvas.getBoundingClientRect();
-        const x = Math.round((e.clientX - rect.left) * (overlayCanvas.width / rect.width));
-        const y = Math.round((e.clientY - rect.top) * (overlayCanvas.height / rect.height));
-        createTextBoxAt(x, y);
-      });
-    }
+    // When user selects an image tool, open file dialog and image placement is handled per-page by imgInput listener
+    toolImage.addEventListener('click', ()=> imgInput.click());
 
-    function startPointer(e) {
-      if (activeTool === 'draw') {
-        drawing = true;
-        currentStroke = { color: toolColor.value, size: Number(toolSize.value), path: [] };
-        const pt = toLocalPoint(e);
-        currentStroke.path.push(pt);
-        drawStrokeOnCanvas(currentStroke);
-      } else if (activeTool === 'image') {
-        if (!stampImageBlob) { setStatus('Upload stamp image first from right panel'); return; }
-        (async () => {
-          const dataUrl = await fileToDataUrl(stampImageBlob);
-          const rect = overlayCanvas.getBoundingClientRect();
-          const x = Math.round((e.clientX - rect.left) * (overlayCanvas.width / rect.width));
-          const y = Math.round((e.clientY - rect.top) * (overlayCanvas.height / rect.height));
-          createImageOnPage(dataUrl, x, y);
-        })();
-      }
-    }
+    // Notes:
+    // - Actions are saved per-page in pages[].actions (strokes/text/images). Undo/clear operate on currently "visible" page (approximation).
+    // - Export merges the rendered PDF page and the annotation canvas and packs each merged image into a new PDF page at approximate real-world size.
+    // - This approach preserves visual edits but does not preserve vector PDF text/editability.
 
-    function movePointer(e) {
-      if (!drawing || !currentStroke) return;
-      const pt = toLocalPoint(e);
-      currentStroke.path.push(pt);
-      drawStrokeOnCanvas(currentStroke);
-    }
+    // Accessibility: keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { undoBtn.click(); }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); savePdfBtn.click(); }
+    });
 
-    function endPointer(e) {
-      if (drawing && currentStroke) {
-        pagesMeta[currentPageIndex].edits.drawStrokes.push(currentStroke);
-        pagesMeta[currentPageIndex].edited = true;
-        currentStroke = null;
-        drawing = false;
-        updateItemsList();
-      }
-    }
-
-    function toLocalPoint(e) {
-      const rect = overlayCanvas.getBoundingClientRect();
-      const x = Math.round((e.clientX - rect.left) * (overlayCanvas.width / rect.width));
-      const y = Math.round((e.clientY - rect.top) * (overlayCanvas.height / rect.height));
-      return { x, y };
-    }
-
-    function drawStrokeOnCanvas(stroke) {
-      overlayCtx.lineJoin = 'round';
-      overlayCtx.lineCap = 'round';
-      overlayCtx.strokeStyle = stroke.color;
-      overlayCtx.lineWidth = stroke.size;
-      overlayCtx.beginPath();
-      const pts = stroke.path;
-      if (!pts || !pts.length) return;
-      overlayCtx.moveTo(pts[0].x, pts[0].y);
-      for (let i=1;i<pts.length;i++){
-        overlayCtx.lineTo(pts[i].x, pts[i].y);
-      }
-      overlayCtx.stroke();
-    }
-
-    function renderEditsForPage(pageIndex) {
-      overlayCtx.clearRect(0,0,overlayCanvas.width, overlayCanvas.height);
-      const meta = pagesMeta[pageIndex];
-      if (!meta) return;
-      (meta.edits.drawStrokes || []).forEach(stroke => {
-        overlayCtx.lineJoin = 'round';
-        overlayCtx.lineCap = 'round';
-        overlayCtx.strokeStyle = stroke.color;
-        overlayCtx.lineWidth = stroke.size;
-        overlayCtx.beginPath();
-        const pts = stroke.path;
-        if (!pts || !pts.length) return;
-        overlayCtx.moveTo(pts[0].x, pts[0].y);
-        for (let i=1;i<pts.length;i++) overlayCtx.lineTo(pts[i].x, pts[i].y);
-        overlayCtx.stroke();
-      });
-      // Remove any existing DOM text/image nodes
-      Array.from(pageWrap.querySelectorAll('.text-box, .placed-image')).forEach(n => n.remove());
-      (meta.edits.textBoxes || []).forEach(tb => createTextBoxFromMeta(tb));
-      (meta.edits.images || []).forEach(im => createImageElementFromMeta(im));
-    }
-
-    // Text boxes
-    function createTextBoxAt(x, y) {
-      const tb = { html: 'Text', x, y, w: 160, h: 40, fontSize: 16, color: '#00131f' };
-      pagesMeta[currentPageIndex].edits.textBoxes.push(tb);
-      pagesMeta[currentPageIndex].edited = true;
-      createTextBoxFromMeta(tb, true);
-      updateItemsList();
-    }
-
-    function createTextBoxFromMeta(tb, focus=false) {
-      const el = document.createElement('div');
-      el.className = 'text-box';
-      el.contentEditable = 'true';
-      el.innerText = tb.html;
-      // position relative to pageWrap size
-      const parentW = overlayCanvas.width, parentH = overlayCanvas.height;
-      const wrapRect = pageWrap.getBoundingClientRect();
-      el.style.left = (10 + (tb.x * (wrapRect.width - 20) / parentW)) + 'px';
-      el.style.top = (10 + (tb.y * (wrapRect.height - 20) / parentH)) + 'px';
-      el.style.width = (tb.w * (wrapRect.width - 20) / parentW) + 'px';
-      el.style.height = (tb.h * (wrapRect.height - 20) / parentH) + 'px';
-      el.style.fontSize = (tb.fontSize * (wrapRect.width - 20) / parentW) + 'px';
-      el.style.color = tb.color;
-      el.style.zIndex = 20;
-      makeDraggable(el, (left, top, width, height) => {
-        const relX = Math.round(((left - 10) * overlayCanvas.width) / (wrapRect.width - 20));
-        const relY = Math.round(((top - 10) * overlayCanvas.height) / (wrapRect.height - 20));
-        const relW = Math.round((width * overlayCanvas.width) / (wrapRect.width - 20));
-        const relH = Math.round((height * overlayCanvas.height) / (wrapRect.height - 20));
-        tb.x = relX; tb.y = relY; tb.w = relW; tb.h = relH; pagesMeta[currentPageIndex].edited = true; updateItemsList();
-      });
-      el.addEventListener('blur', () => { tb.html = el.innerText; });
-      pageWrap.appendChild(el);
-      if (focus) {
-        el.focus();
-        document.execCommand('selectAll', false, null);
-        document.getSelection().collapseToEnd();
-      }
-    }
-
-    // Make draggable (simple)
-    function makeDraggable(el, onUpdate) {
-      let dragging = false, startX=0, startY=0, origLeft=0, origTop=0;
-      el.addEventListener('pointerdown', (e) => {
-        dragging = true; startX = e.clientX; startY = e.clientY;
-        const rect = el.getBoundingClientRect(); const parentRect = pageWrap.getBoundingClientRect();
-        origLeft = rect.left - parentRect.left; origTop = rect.top - parentRect.top;
-        el.setPointerCapture(e.pointerId);
-      });
-      window.addEventListener('pointermove', (e) => {
-        if (!dragging) return;
-        const dx = e.clientX - startX; const dy = e.clientY - startY;
-        const newLeft = Math.max(0, origLeft + dx); const newTop = Math.max(0, origTop + dy);
-        el.style.left = (10 + newLeft) + 'px'; el.style.top = (10 + newTop) + 'px';
-      });
-      window.addEventListener('pointerup', (e) => {
-        if (dragging) {
-          dragging = false;
-          const rect = el.getBoundingClientRect(); const parentRect = pageWrap.getBoundingClientRect();
-          const left = rect.left - parentRect.left; const top = rect.top - parentRect.top;
-          const width = rect.width; const height = rect.height;
-          onUpdate(left, top, width, height);
-        }
-      });
-    }
-
-    // Images
-    function createImageOnPage(dataUrl, x, y) {
-      const imgMeta = { dataUrl, x, y, w: 160, h: 120 };
-      pagesMeta[currentPageIndex].edits.images.push(imgMeta);
-      pagesMeta[currentPageIndex].edited = true;
-      createImageElementFromMeta(imgMeta);
-      updateItemsList();
-    }
-
-    function createImageElementFromMeta(imgMeta) {
-      const el = document.createElement('img');
-      el.className = 'placed-image';
-      el.src = imgMeta.dataUrl;
-      el.style.position = 'absolute';
-      const wrapRect = pageWrap.getBoundingClientRect();
-      el.style.left = (10 + (imgMeta.x * (wrapRect.width - 20) / overlayCanvas.width)) + 'px';
-      el.style.top = (10 + (imgMeta.y * (wrapRect.height - 20) / overlayCanvas.height)) + 'px';
-      el.style.width = (imgMeta.w * (wrapRect.width - 20) / overlayCanvas.width) + 'px';
-      el.style.height = (imgMeta.h * (wrapRect.height - 20) / overlayCanvas.height) + 'px';
-      el.style.zIndex = 30;
-      makeDraggable(el, (left, top, width, height) => {
-        imgMeta.x = Math.round(((left - 10) * overlayCanvas.width) / (wrapRect.width - 20));
-        imgMeta.y = Math.round(((top - 10) * overlayCanvas.height) / (wrapRect.height - 20));
-        imgMeta.w = Math.round((width * overlayCanvas.width) / (wrapRect.width - 20));
-        imgMeta.h = Math.round((height * overlayCanvas.height) / (wrapRect.height - 20));
-        pagesMeta[currentPageIndex].edited = true;
-        updateItemsList();
-      });
-      pageWrap.appendChild(el);
-    }
-
-    function undoLast() {
-      const meta = pagesMeta[currentPageIndex];
-      if (!meta) return;
-      if ((meta.edits.drawStrokes || []).length) { meta.edits.drawStrokes.pop(); meta.edited = true; renderEditsForPage(currentPageIndex); updateItemsList(); return; }
-      if ((meta.edits.images || []).length) { meta.edits.images.pop(); meta.edited = true; renderEditsForPage(currentPageIndex); updateItemsList(); return; }
-      if ((meta.edits.textBoxes || []).length) { meta.edits.textBoxes.pop(); meta.edited = true; renderEditsForPage(currentPageIndex); updateItemsList(); return; }
-      setStatus('Nothing to undo on this page');
-    }
-
-    function clearOverlays() {
-      const meta = pagesMeta[currentPageIndex];
-      if (!meta) return;
-      meta.edits = { drawStrokes: [], textBoxes: [], images: [] };
-      meta.edited = true;
-      renderEditsForPage(currentPageIndex);
-      updateItemsList();
-    }
-
-    async function saveCurrentPageEdits() {
-      setStatus('Flattening page edits — please wait...');
-      try {
-        const tmp = document.createElement('canvas');
-        tmp.width = baseCanvas.width; tmp.height = baseCanvas.height;
-        const ctx = tmp.getContext('2d');
-        ctx.drawImage(baseCanvas, 0, 0, tmp.width, tmp.height);
-        const meta = pagesMeta[currentPageIndex];
-        (meta.edits.drawStrokes || []).forEach(stroke => {
-          ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = stroke.color; ctx.lineWidth = stroke.size; ctx.beginPath();
-          const pts = stroke.path; if (!pts || !pts.length) return;
-          ctx.moveTo(pts[0].x, pts[0].y);
-          for (let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x, pts[i].y);
-          ctx.stroke();
-        });
-        for (const im of (meta.edits.images || [])) {
-          const img = await loadImage(im.dataUrl);
-          ctx.drawImage(img, im.x, im.y, im.w, im.h);
-        }
-        ctx.fillStyle = '#ffffff';
-        ctx.textBaseline = 'top';
-        for (const tb of (meta.edits.textBoxes || [])) {
-          ctx.fillStyle = 'rgba(255,255,255,0.95)';
-          ctx.fillRect(tb.x, tb.y, tb.w, tb.h);
-          ctx.fillStyle = tb.color || '#00131f';
-          const fontSize = tb.fontSize || 16; ctx.font = `${fontSize}px sans-serif`;
-          const lines = (tb.html || '').split('\n'); let y = tb.y + 4;
-          for (const line of lines) { ctx.fillText(line, tb.x + 6, y); y += fontSize + 2; }
-        }
-        const dataUrl = tmp.toDataURL('image/png');
-        pageImagesCache[currentPageIndex] = dataUrl;
-        pagesMeta[currentPageIndex].edited = true;
-        setStatus('Page flattened and cached.');
-      } catch (err) { console.error('flatten failed', err); setStatus('Flatten failed for page'); }
-    }
-
-    function loadImage(src) {
-      return new Promise((resolve, reject) => { const i = new Image(); i.onload = () => resolve(i); i.onerror = reject; i.src = src; });
-    }
-
-    async function exportSinglePageBlob(pageIndex) {
-      if (!pdfDoc) throw new Error('No PDF loaded');
-      try {
-        const { PDFDocument } = PDFLib;
-        const srcPdf = await PDFDocument.load(pdfArrayBuffer, { ignoreEncryption: true });
-        if (!pagesMeta[pageIndex].edited || !pageImagesCache[pageIndex]) {
-          const newPdf = await PDFDocument.create();
-          const [copied] = await newPdf.copyPages(srcPdf, [pageIndex]);
-          newPdf.addPage(copied);
-          const bytes = await newPdf.save();
-          return new Blob([bytes], { type: 'application/pdf' });
-        } else {
-          const imgDataUrl = pageImagesCache[pageIndex];
-          const imgBytes = dataURLToUint8Array(imgDataUrl);
-          const newPdf = await PDFDocument.create();
-          const img = await newPdf.embedPng(imgBytes);
-          const width = pagesMeta[pageIndex].width;
-          const height = pagesMeta[pageIndex].height;
-          const page = newPdf.addPage([width, height]);
-          page.drawImage(img, { x: 0, y: 0, width, height });
-          const bytes = await newPdf.save();
-          return new Blob([bytes], { type: 'application/pdf' });
-        }
-      } catch (err) { console.error('exportSinglePageBlob failed', err); throw err; }
-    }
-
-    async function buildEditedPdf() {
-      const { PDFDocument } = PDFLib;
-      const srcPdf = await PDFDocument.load(pdfArrayBuffer, { ignoreEncryption: true });
-      const mergedPdf = await PDFDocument.create();
-      for (let i=0;i<srcPdf.getPageCount();i++){
-        if (pagesMeta[i] && pagesMeta[i].edited && pageImagesCache[i]) {
-          const imgBytes = dataURLToUint8Array(pageImagesCache[i]);
-          const imgEmbed = await mergedPdf.embedPng(imgBytes);
-          const width = pagesMeta[i].width; const height = pagesMeta[i].height;
-          const page = mergedPdf.addPage([width, height]);
-          page.drawImage(imgEmbed, { x: 0, y: 0, width, height });
-        } else {
-          const [copied] = await mergedPdf.copyPages(srcPdf, [i]);
-          mergedPdf.addPage(copied);
-        }
-      }
-      const bytes = await mergedPdf.save();
-      return new Blob([bytes], { type: 'application/pdf' });
-    }
-
-    function updateItemsList() {
-      itemsList.innerHTML = '';
-      const meta = pagesMeta[currentPageIndex];
-      if (!meta) return;
-      const strokes = (meta.edits.drawStrokes || []).length;
-      const texts = (meta.edits.textBoxes || []).length;
-      const imgs = (meta.edits.images || []).length;
-      const edited = meta.edited ? 'Yes' : 'No';
-      const makeRow = (label, val) => {
-        const r = document.createElement('div'); r.style.display='flex'; r.style.justifyContent='space-between'; r.style.alignItems='center';
-        const l = document.createElement('div'); l.textContent = label; l.style.color='var(--muted)';
-        const v = document.createElement('div'); v.textContent = val; v.style.fontWeight='700';
-        r.appendChild(l); r.appendChild(v); return r;
-      };
-      itemsList.appendChild(makeRow('Draw strokes', strokes));
-      itemsList.appendChild(makeRow('Text boxes', texts));
-      itemsList.appendChild(makeRow('Images', imgs));
-      itemsList.appendChild(makeRow('Edited?', edited));
-    }
-
-    function fileToDataUrl(file) {
-      return new Promise((resolve, reject) => {
-        const r = new FileReader();
-        r.onload = e => resolve(e.target.result);
-        r.onerror = reject;
-        r.readAsDataURL(file);
-      });
-    }
-
-    // initial
-    setStatus('Ready');
-    setActiveTool('select');
-
-    // Expose debug state
-    window._editor_state = () => ({ pagesMeta, pageImagesCache, currentPageIndex, pdfLoaded: !!pdfDoc });
-
-    // helper: setActiveTool defined here to avoid hoisting issues
-    function setActiveTool(tool) {
-      activeTool = tool;
-      [selectTool, drawTool, textTool, imageTool].forEach(btn => btn.classList.remove('btn-primary'));
-      if (tool === 'select') selectTool.classList.add('btn-primary');
-      if (tool === 'draw') drawTool.classList.add('btn-primary');
-      if (tool === 'text') textTool.classList.add('btn-primary');
-      if (tool === 'image') imageTool.classList.add('btn-primary');
-      setStatus(`Tool: ${tool}`);
-    }
+    // Final UI status
+    setStatus('Ready — upload a PDF to begin editing.');
   </script>
 </body>
 </html>
