@@ -1,389 +1,468 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Compress PDF — Smarttool Hub</title>
-  <meta name="description" content="Compress PDF files client-side. Reduce PDF size by rasterizing pages to JPEG with adjustable quality and downscale. 100% client-side, drag & drop, preview & download." />
-  <meta name="keywords" content="compress pdf, reduce pdf size, pdf compressor, compress pdf online, shrink pdf, pdf optimization" />
+  <title>Compress PDF - Smarttool Hub</title>
+  <meta name="description" content="Compress PDF files in-browser by rasterizing pages and re-encoding as optimized JPEGs inside a new PDF." />
   <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
   <style>
-    :root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8}
-    body.light{--bg:#f6f8fb;--text:#0b1220;--card:#fff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text);transition:.22s}
-    .container{max-width:1100px;margin:0 auto;padding:18px}
-    header{display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:12px;border-bottom:1px solid var(--border)}
-    .brand a{display:flex;gap:12px;align-items:center;text-decoration:none;color:inherit}
-    .brand img{width:46px;height:46px;border-radius:8px}
-    .title{font-weight:700;color:var(--primary)}
-    .tag{font-size:.85rem;color:var(--muted)}
-    .header-actions{display:flex;gap:8px;align-items:center}
-    .btn-header{border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;color:var(--text);cursor:pointer;display:flex;gap:8px;align-items:center;text-decoration:none;font-weight:600}
-    main{padding:18px 0}
-    h1{margin:6px 0 8px;color:var(--primary)}
-    .meta{color:var(--muted);margin-bottom:12px}
-    .uploader{min-height:110px;border-radius:12px;border:2px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;background:var(--card);cursor:pointer}
-    .uploader:hover{border-color:var(--primary)}
-    input[type=file]{display:none}
-    .controls{display:flex;gap:12px;align-items:center;margin-top:12px;flex-wrap:wrap}
-    .controls label{font-size:.9rem;color:var(--muted);display:block}
-    .controls input[type=range], .controls input[type=number], .controls select { padding:8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text) }
-    .preview-info{margin-top:12px;color:var(--muted)}
-    .progress{height:12px;background:var(--border);border-radius:999px;overflow:hidden;margin-top:12px}
-    .progress-bar{height:100%;width:0;background:var(--primary);transition:width .2s}
-    .actions{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
-    .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
-    .btn-primary{background:var(--primary);color:#00131f}
-    .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
-    .status{color:var(--muted);display:flex;align-items:center;gap:8px}
-    .spinner{width:18px;height:18px;border-radius:50%;border:3px solid rgba(255,255,255,0.08);border-top-color:var(--primary);animation:spin .9s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    footer{margin-top:24px;padding:12px 0;background:var(--card);border-top:1px solid var(--border)}
-    @media(max-width:820px){.controls{flex-direction:column;align-items:flex-start}}
-    .small{font-size:.9rem;padding:8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text)}
+    /* EXACT design language used in your uploaded tools */
+    :root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8;--radius:12px}
+    body.light{--bg:#f6f8fb;--text:#0b1220;--card:#ffffff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;transition:background .25s,color .25s}
+    .container{max-width:1200px;margin:0 auto;padding:20px;width:100%}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand img{width:46px;height:46px;border-radius:10px}
+    .brand .title{font-size:1.25rem;font-weight:700;color:var(--primary);margin:0}
+    .brand .tag{font-size:.9rem;color:var(--muted)}
+    .header-actions{display:flex;gap:10px;align-items:center}
+    .btn-header{border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;font-weight:600}
+    .btn-header:hover{border-color:var(--primary);color:var(--primary)}
+
+    .tool-content { background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:25px;margin-top:20px; }
+    .tool-title { font-size:1.8rem;margin-bottom:5px;color:var(--primary); }
+    .tool-description { color:var(--muted);margin-bottom:18px; }
+
+    .upload-area { border:2px dashed var(--border);border-radius:var(--radius);padding:30px;text-align:center;margin-bottom:20px;transition:all 0.3s;cursor:pointer;background:var(--bg); }
+    .upload-area:hover, .upload-area.dragover { border-color:var(--primary);background:rgba(34,211,238,0.03); }
+    .upload-icon { font-size:3rem;color:var(--muted);margin-bottom:12px; }
+    .upload-text { color:var(--text);margin-bottom:10px;font-weight:600; }
+    .upload-subtext { color:var(--muted);font-size:0.9rem; }
+    .file-input { display:none; }
+
+    .selected-list { display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:18px; }
+    .file-card { background:var(--bg);border:1px solid var(--border);padding:12px;border-radius:10px;display:flex;gap:12px;align-items:flex-start; }
+    .pdf-icon { width:86px;height:86px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#0f1720;border:1px solid var(--border);font-size:2rem;color:var(--primary) }
+    .file-meta { flex:1 }
+    .file-meta h5{margin:0 0 6px 0;font-size:0.95rem;color:var(--text)}
+    .file-meta p{margin:0;color:var(--muted);font-size:0.88rem}
+    .file-actions { display:flex;flex-direction:column;gap:8px;min-width:140px; }
+    .small-btn { padding:8px 10px;border-radius:8px;border:none;cursor:pointer;font-weight:600 }
+    .small-btn.primary { background:var(--primary);color:#00131f }
+    .small-btn.secondary { background:var(--card);border:1px solid var(--border);color:var(--text) }
+
+    .options-row { display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap; }
+    .option { background:var(--bg);border:1px solid var(--border);padding:8px 12px;border-radius:8px;color:var(--muted); }
+    .quality-slider { display:flex;gap:8px;align-items:center; }
+
+    .action-buttons { display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:center; }
+    .btn { padding:12px 20px;border-radius:var(--radius);border:none;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px; }
+    .btn-primary { background:var(--primary);color:#00131f; }
+    .btn-secondary { background:var(--card);color:var(--text);border:1px solid var(--border); }
+    .btn:disabled { opacity:0.6;cursor:not-allowed; }
+
+    .status-message { margin-top:15px;padding:10px;border-radius:var(--radius);background:var(--bg);border:1px solid var(--border);color:var(--muted);font-size:0.9rem;display:none; }
+    .status-success { border-color:#10b981;color:#10b981; }
+    .status-error { border-color:#ef4444;color:#ef4444; }
+
+    footer{margin-top:auto;padding:18px 0;background:var(--card);border-top:1px solid var(--border)}
+    .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap}
+    .footer-links a{color:var(--primary);text-decoration:none;font-weight:600}
+
+    @media (max-width:720px){
+      header{flex-direction:column;align-items:flex-start;gap:10px}
+      .header-actions{align-self:flex-end}
+      .options-row{flex-direction:column}
+      .action-buttons{flex-direction:column}
+      .btn{width:100%;justify-content:center}
+    }
   </style>
 </head>
 <body>
-  <!-- Header -->
-  <header class="container">
-    <div class="brand">
-      <a href="../../index.html" title="Back to Smarttool Hub">
-        <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub logo">
-        <div>
-          <div class="title">Smarttool Hub</div>
-          <div class="tag">Fast • Private • Client-side</div>
-        </div>
-      </a>
+<header class="container">
+  <div class="brand">
+    <a href="index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+      <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub Logo">
+      <div>
+        <div class="title">Smarttool Hub</div>
+        <div class="tag">Fast • Private • 100% Client-side</div>
+      </div>
+    </a>
+  </div>
+  <div class="header-actions">
+    <a href="index.html" class="btn-header"><i class="fa-solid fa-house"></i> Home</a>
+    <button class="btn-header" id="themeToggle" title="Toggle dark/light mode"><i class="fa-solid fa-moon"></i></button>
+  </div>
+</header>
+
+<main class="container">
+  <div class="tool-content">
+    <h1 class="tool-title">Compress PDF</h1>
+    <p class="tool-description">Compress PDF files by rasterizing pages and re-encoding them as optimized JPEGs. Add one or more PDFs, tune quality/scale, compress per-file or all, then download. All in your browser.</p>
+
+    <div class="upload-area" id="uploadArea" title="Click or drop PDF files here to add multiple files">
+      <div class="upload-icon"><i class="fas fa-file-pdf"></i></div>
+      <div class="upload-text">Drop PDF files here or click to browse</div>
+      <div class="upload-subtext">Supports multiple PDF files. Compression is lossy (pages become JPEG images) — good for scanned PDFs.</div>
+      <input type="file" id="fileInput" class="file-input" accept="application/pdf" multiple>
     </div>
-    <div class="header-actions">
-      <a href="../../index.html" class="btn-header"><i class="fa-solid fa-house"></i> Home</a>
-      <button id="themeToggle" class="btn-header" title="Toggle theme"><i class="fa-solid fa-moon"></i></button>
-    </div>
-  </header>
 
-  <main class="container">
-    <h1>Compress PDF</h1>
-    <p class="meta">Reduce PDF file size by rasterizing each page to JPEG with configurable quality and downscale. Best for scanned/image PDFs. This runs fully in your browser — files are not uploaded.</p>
+    <div id="selectedList" class="selected-list" aria-live="polite"></div>
 
-    <label class="uploader" id="uploader">
-      <div style="font-size:28px;color:var(--primary)"><i class="fa-solid fa-compress"></i></div>
-      <div style="margin-top:8px;font-weight:700">Click or drag & drop a PDF</div>
-      <div style="margin-top:6px;color:var(--muted)">Supported: .pdf — single file at a time.</div>
-      <input type="file" id="fileInput" accept="application/pdf" />
-    </label>
-
-    <div class="controls" aria-label="compression settings">
-      <div>
-        <label for="quality">JPEG Quality: <span id="qualityLabel">0.7</span></label>
-        <input id="quality" type="range" min="0.1" max="1" step="0.05" value="0.7">
+    <div class="options-row">
+      <div class="option quality-slider">
+        <label style="font-weight:700;color:var(--text);">JPEG Quality</label>
+        <input type="range" id="qualitySlider" min="30" max="95" value="75" />
+        <div id="qualityValue" style="min-width:48px;text-align:center;color:var(--muted)">75%</div>
       </div>
 
-      <div>
-        <label for="maxWidth">Max width (px, 0 = no downscale)</label>
-        <input id="maxWidth" type="number" class="small" min="0" value="1200">
+      <div class="option quality-slider">
+        <label style="font-weight:700;color:var(--text);">Render Scale</label>
+        <input type="range" id="scaleSlider" min="30" max="150" value="100" />
+        <div id="scaleValue" style="min-width:48px;text-align:center;color:var(--muted)">100%</div>
       </div>
 
-      <div>
-        <label for="renderScale">Render scale (1.0 = native, higher = better quality)</label>
-        <select id="renderScale" class="small">
-          <option value="1.0">1.0</option>
-          <option value="1.2">1.2</option>
-          <option value="1.5" selected>1.5</option>
-          <option value="2.0">2.0</option>
-        </select>
-      </div>
-
-      <div>
-        <label for="preserveText">Preserve vector/text (try)</label>
-        <select id="preserveText" class="small">
-          <option value="auto" selected>Auto (attempt vector copy if no transforms)</option>
-          <option value="always">Always (try vector copy)</option>
-          <option value="never">Never (force raster)</option>
-        </select>
+      <div class="option">
+        <label style="display:flex;gap:8px;align-items:center;">
+          <input type="checkbox" id="mergeOutput" /> Merge all compressed PDFs into one ZIP entry (disabled = output separate PDFs)
+        </label>
       </div>
     </div>
 
-    <div class="preview-info" id="previewInfo">No PDF loaded.</div>
-
-    <div class="progress" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
-
-    <div class="actions">
-      <button id="compressBtn" class="btn btn-primary" disabled><i class="fa-solid fa-floppy-disk"></i> Compress & Download</button>
-      <button id="zipBtn" class="btn btn-ghost" disabled><i class="fa-solid fa-file-zipper"></i> Download pages as ZIP</button>
-      <button id="clearBtn" class="btn btn-ghost" disabled><i class="fa-solid fa-trash-can"></i> Clear</button>
-      <div class="status" id="status"></div>
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="compressAllBtn" disabled><i class="fas fa-compress"></i> Compress All</button>
+      <button class="btn btn-secondary" id="downloadAllZipBtn" disabled><i class="fas fa-download"></i> Download All (ZIP)</button>
+      <button class="btn btn-secondary" id="resetBtn"><i class="fas fa-redo"></i> Reset</button>
+      <div style="margin-left:auto;color:var(--muted);font-weight:600" id="summaryText">No files selected</div>
     </div>
 
-    <section style="margin-top:18px">
-      <h2 style="color:var(--primary)">How it works</h2>
-      <ol>
-        <li>Upload a PDF.</li>
-        <li>Choose JPEG quality and max width (downscale) — lower quality → smaller file.</li>
-        <li>Click <strong>Compress & Download</strong> to create a compressed PDF (pages are images).</li>
-      </ol>
-      <p style="color:var(--muted)">Tip: select a lower quality for scanned PDFs to get significant savings. If you need selectable text preserved, try "Preserve vector/text: Auto" — the tool will attempt to copy pages directly (vector) when possible; otherwise it falls back to raster compression.</p>
-    </section>
-  </main>
+    <div id="statusMessage" class="status-message"></div>
+  </div>
+</main>
 
-  <footer class="container">
+<footer class="container">
+  <div class="footer-inner">
     <div>© <span id="year"></span> Smarttool Hub</div>
-    <div style="color:var(--muted)">Privacy • Terms • Contact</div>
-  </footer>
+    <div class="footer-links">
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="contact.html">Contact</a>
+    </div>
+  </div>
+</footer>
 
-  <!-- FAQ JSON-LD -->
-  <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does this tool upload my files?","acceptedAnswer":{"@type":"Answer","text":"No. All processing happens in your browser. Files are never uploaded."}},{"@type":"Question","name":"Will my text stay selectable?","acceptedAnswer":{"@type":"Answer","text":"If you choose raster compression, pages become images and text is not selectable. Use the preserve-vector option to attempt vector copying when possible."}}]}
-  </script>
+<!-- Libraries: pdf.js, jsPDF, pdf-lib, JSZip -->
+<script src="https://unpkg.com/pdfjs-dist/build/pdf.min.js"></script>
+<script>if (window['pdfjsLib']) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist/build/pdf.worker.min.js';</script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
-  <!-- Libraries: pdf.js to render, pdf-lib to build output, jszip for zip option -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-  <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';</script>
-  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+  // UI & theme
+  document.getElementById('year').textContent = new Date().getFullYear();
+  const themeToggle = document.getElementById('themeToggle');
+  if (localStorage.getItem('sth_theme') === 'light') { document.body.classList.add('light'); themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; }
+  themeToggle.onclick = () => {
+    document.body.classList.toggle('light');
+    if (document.body.classList.contains('light')) { themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; localStorage.setItem('sth_theme','light'); }
+    else { themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); }
+  };
 
-  <script>
-  (function(){
-    // ---------- Theme + year ----------
-    const themeBtn = document.getElementById('themeToggle');
-    if(localStorage.getItem('sth_theme') === 'light'){ document.body.classList.add('light'); themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>'; }
-    themeBtn.addEventListener('click', ()=> {
-      document.body.classList.toggle('light');
-      if(document.body.classList.contains('light')){ themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>'; localStorage.setItem('sth_theme','light'); }
-      else { themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); }
+  // Elements
+  const uploadArea = document.getElementById('uploadArea');
+  const fileInput = document.getElementById('fileInput');
+  const selectedList = document.getElementById('selectedList');
+  const compressAllBtn = document.getElementById('compressAllBtn');
+  const downloadAllZipBtn = document.getElementById('downloadAllZipBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const summaryText = document.getElementById('summaryText');
+  const statusMessage = document.getElementById('statusMessage');
+
+  const qualitySlider = document.getElementById('qualitySlider');
+  const qualityValue = document.getElementById('qualityValue');
+  const scaleSlider = document.getElementById('scaleSlider');
+  const scaleValue = document.getElementById('scaleValue');
+  const mergeOutput = document.getElementById('mergeOutput');
+
+  // state
+  // filesState: [{ id, file, arrayBuffer, pageCount, compressedBlob (if produced), compressedSize }]
+  let filesState = [];
+  let compressing = false;
+
+  function uid(){ return 'f_' + Math.random().toString(36).slice(2,9); }
+  function isPdf(f){ return f && (f.type === 'application/pdf' || /\.pdf$/i.test(f.name)); }
+  function showStatus(msg, type='success', autoHide=true){
+    statusMessage.textContent = msg;
+    statusMessage.classList.remove('status-success','status-error');
+    statusMessage.style.display = 'block';
+    if (type==='success') statusMessage.classList.add('status-success');
+    if (type==='error') statusMessage.classList.add('status-error');
+    if (autoHide) setTimeout(()=> statusMessage.style.display='none', 5500);
+  }
+  function formatFileSize(bytes){ if (!bytes && bytes !== 0) return '-'; if (bytes < 1024) return bytes + ' B'; return (bytes/1024).toFixed(1) + ' KB'; }
+
+  // upload handlers
+  uploadArea.addEventListener('click', ()=> fileInput.click());
+  uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+  uploadArea.addEventListener('dragleave', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); });
+  uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); handleFilesAdded(Array.from(e.dataTransfer.files || [])); });
+  fileInput.addEventListener('change', e => { handleFilesAdded(Array.from(e.target.files || [])); fileInput.value = ''; });
+
+  async function handleFilesAdded(list) {
+    const incoming = list.filter(isPdf);
+    const rejected = list.filter(f => !isPdf(f));
+    if (rejected.length) showStatus(`${rejected.length} non-PDF file(s) ignored`, 'error');
+    if (!incoming.length) return;
+    for (const file of incoming) {
+      const id = uid();
+      const entry = { id, file, arrayBuffer: null, pageCount: null, compressedBlob: null, compressedSize: null };
+      filesState.push(entry);
+      try {
+        const ab = await file.arrayBuffer();
+        entry.arrayBuffer = ab;
+        try {
+          const pdfDoc = await pdfjsLib.getDocument({ data: ab }).promise;
+          entry.pageCount = pdfDoc.numPages;
+        } catch (err) {
+          entry.pageCount = null;
+        }
+      } catch (err) {
+        console.error('File read failed', err);
+        showStatus(`Failed to read ${file.name}`, 'error');
+      }
+    }
+    renderFileCards();
+    updateControls();
+    showStatus(`${incoming.length} file(s) added`, 'success');
+  }
+
+  function renderFileCards() {
+    selectedList.innerHTML = '';
+    filesState.forEach((entry, idx) => {
+      const file = entry.file;
+      const card = document.createElement('div'); card.className = 'file-card'; card.id = 'card-' + entry.id;
+
+      const icon = document.createElement('div'); icon.className = 'pdf-icon'; icon.innerHTML = '<i class="fa-solid fa-file-pdf"></i>';
+      card.appendChild(icon);
+
+      const meta = document.createElement('div'); meta.className = 'file-meta';
+      const h5 = document.createElement('h5'); h5.textContent = file.name; meta.appendChild(h5);
+      const p1 = document.createElement('p'); p1.textContent = `${formatFileSize(file.size)} • ${entry.pageCount ? entry.pageCount + ' page(s)' : 'Unknown pages'}`; meta.appendChild(p1);
+      const p2 = document.createElement('p'); p2.style.marginTop='8px';
+      if (entry.compressedBlob) p2.innerHTML = `<span style="color:var(--primary);font-weight:700">${formatFileSize(entry.compressedSize)}</span> • Compressed`;
+      else p2.innerHTML = `<span style="color:var(--muted)">Not compressed</span>`;
+      meta.appendChild(p2);
+      card.appendChild(meta);
+
+      const actions = document.createElement('div'); actions.className = 'file-actions';
+
+      const compressBtn = document.createElement('button'); compressBtn.className = 'small-btn primary'; compressBtn.innerHTML = '<i class="fa-solid fa-compress"></i> Compress';
+      compressBtn.disabled = compressing;
+      compressBtn.onclick = async () => { await compressSingle(entry); };
+
+      const downloadBtn = document.createElement('button'); downloadBtn.className = 'small-btn secondary'; downloadBtn.innerHTML = '<i class="fa-solid fa-download"></i> Download';
+      downloadBtn.disabled = !entry.compressedBlob;
+      downloadBtn.onclick = () => {
+        if (!entry.compressedBlob) return;
+        const url = URL.createObjectURL(entry.compressedBlob);
+        const a = document.createElement('a'); a.href = url; a.download = file.name.replace(/\.pdf$/i,'') + '_compressed.pdf';
+        document.body.appendChild(a); a.click();
+        setTimeout(()=> { URL.revokeObjectURL(url); try{document.body.removeChild(a);}catch(e){} }, 400);
+      };
+
+      const removeBtn = document.createElement('button'); removeBtn.className = 'small-btn secondary'; removeBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+      removeBtn.onclick = () => {
+        filesState = filesState.filter(f => f.id !== entry.id);
+        renderFileCards(); updateControls(); showStatus('File removed', 'success');
+      };
+
+      actions.appendChild(compressBtn); actions.appendChild(downloadBtn); actions.appendChild(removeBtn);
+      card.appendChild(actions);
+      selectedList.appendChild(card);
     });
-    document.getElementById('year').textContent = new Date().getFullYear();
 
-    // ---------- DOM refs ----------
-    const uploader = document.getElementById('uploader');
-    const fileInput = document.getElementById('fileInput');
-    const previewInfo = document.getElementById('previewInfo');
-    const progressBar = document.getElementById('progressBar');
-    const statusEl = document.getElementById('status');
+    summaryText.textContent = filesState.length ? `${filesState.length} file(s) selected` : 'No files selected';
+  }
 
-    const qualityEl = document.getElementById('quality');
-    const qualityLabel = document.getElementById('qualityLabel');
-    const maxWidthEl = document.getElementById('maxWidth');
-    const renderScaleEl = document.getElementById('renderScale');
-    const preserveTextEl = document.getElementById('preserveText');
+  function updateControls() {
+    compressAllBtn.disabled = filesState.length === 0 || compressing;
+    // allow zip download if at least one compressed blob exists
+    const anyCompressed = filesState.some(e => e.compressedBlob);
+    downloadAllZipBtn.disabled = !anyCompressed;
+  }
 
-    const compressBtn = document.getElementById('compressBtn');
-    const zipBtn = document.getElementById('zipBtn');
-    const clearBtn = document.getElementById('clearBtn');
+  // Helpers for converting dataURL to Uint8Array
+  function dataURLtoUint8Array(dataURL) {
+    const parts = dataURL.split(',');
+    const raw = atob(parts[1]);
+    const u8 = new Uint8Array(raw.length);
+    for (let i=0;i<raw.length;i++) u8[i] = raw.charCodeAt(i);
+    return u8;
+  }
 
-    // ---------- state ----------
-    // pdfData: { arrayBuffer, pdfjsDoc, pageCount, fileName }
-    let pdfData = null;
+  // Compress single entry: rasterize pages via pdf.js at chosen scale, encode to JPEG at chosen quality, build new PDF via jsPDF
+  async function compressSingle(entry) {
+    if (!entry.arrayBuffer) { showStatus('File unreadable', 'error'); return; }
+    if (!window.pdfjsLib) { showStatus('pdf.js not loaded', 'error'); return; }
+    if (!window.jspdf || !window.jspdf.jsPDF) { showStatus('jsPDF not loaded', 'error'); return; }
 
-    // ---------- helpers ----------
-    function showStatus(txt, busy=false, hideMs=0){
-      statusEl.textContent = txt || '';
-      if(busy) statusEl.insertAdjacentHTML('afterbegin','<span class="spinner" aria-hidden="true"></span>');
-      if(hideMs) setTimeout(()=> statusEl.textContent = '', hideMs);
+    compressing = true;
+    updateControls();
+    showStatus(`Compressing ${entry.file.name} — please wait...`, 'success', false);
+
+    try {
+      const loadingTask = pdfjsLib.getDocument({ data: entry.arrayBuffer });
+      const pdf = await loadingTask.promise;
+      const pageCount = pdf.numPages;
+      entry.pageCount = pageCount;
+
+      // collect images dataURLs
+      const imgs = [];
+      const renderScale = Number(scaleSlider.value) / 100; // percent
+      const jpegQuality = Number(qualitySlider.value) / 100;
+
+      for (let p = 1; p <= pageCount; p++) {
+        const page = await pdf.getPage(p);
+        // default viewport at scale=1 gives initial dimensions; we multiply by renderScale
+        const viewport = page.getViewport({ scale: renderScale });
+        // create canvas sized to viewport
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = Math.floor(viewport.width);
+        canvas.height = Math.floor(viewport.height);
+
+        // render
+        await page.render({ canvasContext: context, viewport }).promise;
+
+        // convert to JPEG
+        const jpegDataUrl = canvas.toDataURL('image/jpeg', jpegQuality);
+        imgs.push({ dataUrl: jpegDataUrl, width: canvas.width, height: canvas.height });
+        // free memory
+        canvas.width = canvas.height = 0;
+      }
+
+      // create PDF with jsPDF by inserting each JPEG page at image pixel dimensions (unit: pt)
+      const { jsPDF } = window.jspdf;
+      let doc = null;
+      for (let i = 0; i < imgs.length; i++) {
+        const img = imgs[i];
+        if (i === 0) {
+          doc = new jsPDF({ unit: 'pt', format: [img.width, img.height], compress: true });
+          doc.addImage(img.dataUrl, 'JPEG', 0, 0, img.width, img.height);
+        } else {
+          doc.addPage([img.width, img.height], 'portrait');
+          doc.addImage(img.dataUrl, 'JPEG', 0, 0, img.width, img.height);
+        }
+      }
+
+      // get blob
+      const arrayBuf = doc.output('arraybuffer');
+      const outBlob = new Blob([arrayBuf], { type: 'application/pdf' });
+      entry.compressedBlob = outBlob;
+      entry.compressedSize = outBlob.size;
+
+      showStatus(`${entry.file.name} compressed — ${formatFileSize(entry.compressedSize)}`, 'success');
+      renderFileCards();
+      updateControls();
+    } catch (err) {
+      console.error('Compression failed', err);
+      showStatus(`Failed to compress ${entry.file.name}`, 'error');
+    } finally {
+      compressing = false;
+      updateControls();
     }
-    function setProgress(p){ progressBar.style.width = Math.min(100,Math.max(0,Math.round(p))) + '%'; }
-    function resetProgress(){ progressBar.style.width = '0%'; }
-    function sanitize(name){ return name.replace(/[^a-z0-9_\-\.]/gi, '_'); }
-    function triggerDownload(blob, filename){
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(()=> URL.revokeObjectURL(a.href), 3000);
+  }
+
+  // Compress all sequentially
+  async function compressAll() {
+    if (!filesState.length) return;
+    compressing = true;
+    updateControls();
+    showStatus('Compressing all files — please wait...', 'success', false);
+    for (const entry of filesState) {
+      if (!entry.compressedBlob) {
+        // eslint-disable-next-line no-await-in-loop
+        await compressSingle(entry);
+      }
     }
+    compressing = false;
+    showStatus('All files compressed', 'success');
+    updateControls();
+  }
 
-    // ---------- file input & drag/drop ----------
-    uploader.addEventListener('click', ()=> fileInput.click());
-    uploader.addEventListener('dragover', e => { e.preventDefault(); uploader.style.borderColor = 'var(--primary)'; });
-    uploader.addEventListener('dragleave', e => { uploader.style.borderColor = ''; });
-    uploader.addEventListener('drop', e => { e.preventDefault(); uploader.style.borderColor = ''; handleFile(e.dataTransfer.files[0]); });
-    fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
-
-    async function handleFile(file){
-      if(!file) return;
-      if(!(file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))){
-        alert('Please select a PDF file.');
+  // Download all compressed files as ZIP
+  async function downloadAllAsZip() {
+    const compressed = filesState.filter(e => e.compressedBlob);
+    if (!compressed.length) { showStatus('No compressed files to download', 'error'); return; }
+    if (mergeOutput.checked) {
+      // create merged PDF (all compressed PDFs concatenated)
+      showStatus('Merging compressed PDFs into single PDF...', 'success', false);
+      try {
+        const mergedPdf = await PDFLib.PDFDocument.create();
+        for (const e of compressed) {
+          const src = await PDFLib.PDFDocument.load(await e.compressedBlob.arrayBuffer());
+          const copied = await mergedPdf.copyPages(src, src.getPageIndices());
+          copied.forEach(p => mergedPdf.addPage(p));
+        }
+        const mergedBytes = await mergedPdf.save();
+        const blob = new Blob([mergedBytes], { type: 'application/pdf' });
+        const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+        const name = `compressed_merged_${ts}.pdf`;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click();
+        setTimeout(()=> { URL.revokeObjectURL(url); try{document.body.removeChild(a);}catch(e){} }, 500);
+        showStatus('Merged compressed PDF downloaded', 'success');
+        return;
+      } catch (err) {
+        console.error('Merge of compressed PDFs failed', err);
+        showStatus('Failed to merge compressed PDFs', 'error');
         return;
       }
-      showStatus('Loading PDF...', true);
-      resetProgress();
-      try{
-        const buffer = await file.arrayBuffer();
-        // attempt to load pdf.js doc (handles many PDFs and password detection)
-        let pdfjsDoc = null;
-        try {
-          pdfjsDoc = await pdfjsLib.getDocument({ data: buffer }).promise;
-        } catch(err){
-          // if password-protected or other error, show message
-          console.error('pdf.js load error', err);
-          showStatus('Failed to read PDF. It may be password-protected or corrupted.', false);
-          return;
-        }
-        pdfData = { arrayBuffer: buffer, pdfjsDoc, pageCount: pdfjsDoc.numPages, fileName: file.name };
-        previewInfo.textContent = `${file.name} — ${pdfData.pageCount} pages loaded.`;
-        showStatus('PDF ready', false, 1800);
-        compressBtn.disabled = false;
-        zipBtn.disabled = false;
-        clearBtn.disabled = false;
-      } catch(err){
-        console.error(err);
-        showStatus('Failed to read file — see console', false);
-      }
     }
 
-    // ---------- UI helpers ----------
-    qualityEl.addEventListener('input', ()=> qualityLabel.textContent = qualityEl.value);
-    clearBtn.addEventListener('click', ()=> {
-      if(pdfData && pdfData.pdfjsDoc) try{ pdfData.pdfjsDoc.destroy(); }catch(e){}
-      pdfData = null;
-      previewInfo.textContent = 'No PDF loaded.';
-      compressBtn.disabled = true;
-      zipBtn.disabled = true;
-      clearBtn.disabled = true;
-      resetProgress();
-      showStatus('', false);
-    });
-
-    // ---------- compress logic ----------
-    // Two strategies:
-    // 1) If preserveText == 'always' or 'auto' and the PDF has no transforms applied (we do a quick pdf-lib load), try a vector-copy approach:
-    //    - Load pdf-lib and copy pages into a new doc WITHOUT rasterizing (this doesn't reduce embedded image quality).
-    //    - If the original has large images, this often doesn't reduce size. So we fallback to rasterize approach below which re-encodes pages as JPEGs.
-    // 2) Rasterize each page with pdf.js at selected renderScale, downscale to maxWidth if requested, convert to JPEG with chosen quality, embed into new PDF via pdf-lib.
-    // We'll attempt vector copy only if user chooses preserveText 'always' or 'auto'. When 'auto' we try vector copy only if renderScale == 1 and no transforms requested.
-    async function compressToPdf({ asZip = false } = {}) {
-      if(!pdfData) return;
-      const quality = Number(qualityEl.value) || 0.7;
-      const maxWidth = Number(maxWidthEl.value) || 0;
-      const renderScale = Number(renderScaleEl.value) || 1.5;
-      const preserve = preserveTextEl.value; // 'auto'|'always'|'never'
-
-      showStatus('Preparing compression...', true);
-      setProgress(0);
-
-      // If preserveText == 'always', attempt to use pdf-lib copy (no raster):
-      if((preserve === 'always' || preserve === 'auto') && !asZip) {
-        // try to use pdf-lib copyPages — this preserves vectors (no rasterization)
-        // But pdf-lib won't reduce image sizes — only recompressing images would help.
-        // We'll attempt to re-embed images with lower JPEG quality is non-trivial here.
-        // So: if preserve == 'always' we try to copy pages directly and finish (this will likely not shrink much).
-        if(preserve === 'always') {
-          try {
-            showStatus('Attempting vector copy (may preserve text) ...', true);
-            const src = await PDFLib.PDFDocument.load(pdfData.arrayBuffer, { ignoreEncryption: true });
-            const out = await PDFLib.PDFDocument.create();
-            const count = src.getPageCount();
-            for(let i=0;i<count;i++){
-              const [pg] = await out.copyPages(src, [i]);
-              out.addPage(pg);
-              setProgress(((i+1)/count)*100);
-              await new Promise(r=>setTimeout(r, 20));
-            }
-            const bytes = await out.save();
-            triggerDownload(new Blob([bytes], { type: 'application/pdf' }), sanitize(pdfData.fileName).replace(/\.[^/.]+$/, '') + '_copied.pdf');
-            showStatus('Vector copy complete (no raster). File may not be smaller.', false, 2200);
-            setProgress(100);
-            return;
-          } catch(err){
-            console.warn('Vector copy failed, falling back to raster compression', err);
-          }
-        }
+    if (typeof JSZip === 'undefined') { showStatus('JSZip not loaded', 'error'); return; }
+    showStatus('Preparing ZIP of compressed files...', 'success', false);
+    try {
+      const zip = new JSZip();
+      for (const e of compressed) {
+        const name = e.file.name.replace(/\.pdf$/i,'') + '_compressed.pdf';
+        zip.file(name, e.compressedBlob);
       }
-
-      // Rasterize approach (recommended): render pages with pdf.js, convert to JPEG, embed into new PDF
-      try {
-        const outPdf = await PDFLib.PDFDocument.create();
-        const pageCount = pdfData.pageCount;
-        for(let i=0;i<pageCount;i++){
-          const pageNum = i + 1;
-          showStatus(`Rendering page ${pageNum} of ${pageCount}...`, true);
-          // render canvas using pdf.js
-          const page = await pdfData.pdfjsDoc.getPage(pageNum);
-          // chosen scale for rendering — use renderScale setting
-          const viewport = page.getViewport({ scale: renderScale });
-          // create an offscreen canvas sized to viewport
-          const canvas = document.createElement('canvas');
-          canvas.width = Math.round(viewport.width);
-          canvas.height = Math.round(viewport.height);
-          const ctx = canvas.getContext('2d');
-          // white background for better JPEG results
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0,0,canvas.width,canvas.height);
-          await page.render({ canvasContext: ctx, viewport }).promise;
-
-          // optionally downscale to maxWidth to reduce size
-          let targetCanvas = canvas;
-          if(maxWidth > 0 && canvas.width > maxWidth){
-            const scale = maxWidth / canvas.width;
-            const w = Math.round(canvas.width * scale);
-            const h = Math.round(canvas.height * scale);
-            const tmp = document.createElement('canvas');
-            tmp.width = w; tmp.height = h;
-            tmp.getContext('2d').drawImage(canvas, 0,0, canvas.width, canvas.height, 0,0, w, h);
-            targetCanvas = tmp;
-          }
-
-          // convert canvas to JPEG blob with chosen quality
-          const blob = await new Promise(res => targetCanvas.toBlob(res, 'image/jpeg', quality));
-          const arr = await blob.arrayBuffer();
-          // embed into PDF with pdf-lib
-          const img = await outPdf.embedJpg(arr);
-          const { width, height } = img.scale(1);
-          const pageObj = outPdf.addPage([width, height]);
-          pageObj.drawImage(img, { x:0, y:0, width, height });
-
-          // progress
-          setProgress(((i+1)/pageCount)*100);
-          await new Promise(r=>setTimeout(r, 20));
-        }
-
-        // prepare output
-        const bytes = await outPdf.save();
-        if(asZip){
-          // create per-page PDFs and zip
-          const zip = new JSZip();
-          // for separate pages, we already created outPdf with each page; but user may want each page separate.
-          // We'll recreate per page PDFs by embedding single page images again.
-          // Simpler: load again and split — but to avoid re-render, we will embed images from earlier step if stored.
-          // For simplicity here we'll split from the saved bytes using pdf-lib: load and extract pages one-by-one.
-          const mergedDoc = await PDFLib.PDFDocument.load(bytes);
-          const total = mergedDoc.getPageCount();
-          for(let p=0;p<total;p++){
-            const single = await PDFLib.PDFDocument.create();
-            const [copied] = await single.copyPages(mergedDoc, [p]);
-            single.addPage(copied);
-            const b = await single.save();
-            zip.file(sanitize(pdfData.fileName).replace(/\.[^/.]+$/, '') + `_page_${p+1}.pdf`, b);
-          }
-          const blobZip = await zip.generateAsync({ type: 'blob' }, meta => setProgress(meta.percent));
-          triggerDownload(blobZip, sanitize(pdfData.fileName).replace(/\.[^/.]+$/, '') + '_compressed_pages.zip');
-          showStatus('ZIP ready ✓', false, 2200);
-        } else {
-          triggerDownload(new Blob([bytes], { type: 'application/pdf' }), sanitize(pdfData.fileName).replace(/\.[^/.]+$/, '') + '_compressed.pdf');
-          showStatus('Compression complete ✓', false, 2200);
-        }
-      } catch(err){
-        console.error('Compression failed', err);
-        showStatus('Compression failed — see console', false);
-      } finally {
-        setTimeout(()=> resetProgress(), 800);
-      }
+      const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } }, (meta) => {
+        // optional progress
+      });
+      const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = `compressed_pdfs_${ts}.zip`; document.body.appendChild(a); a.click();
+      setTimeout(()=> { URL.revokeObjectURL(url); try{document.body.removeChild(a);}catch(e){} }, 500);
+      showStatus('ZIP downloaded', 'success');
+    } catch (err) {
+      console.error('ZIP creation failed', err);
+      showStatus('Failed to prepare ZIP', 'error');
     }
+  }
 
-    // wire buttons
-    compressBtn.addEventListener('click', ()=> compressToPdf({ asZip: false }));
-    zipBtn.addEventListener('click', ()=> compressToPdf({ asZip: true }));
+  // Reset
+  resetBtn.addEventListener('click', () => {
+    filesState = [];
+    selectedList.innerHTML = '';
+    downloadAllZipBtn.disabled = true;
+    compressAllBtn.disabled = true;
+    showStatus('Reset complete', 'success');
+    summaryText.textContent = 'No files selected';
+  });
 
-    // initial UI state
-    qualityLabel.textContent = qualityEl.value;
+  // Wire UI
+  compressAllBtn.addEventListener('click', async () => { await compressAll(); });
+  downloadAllZipBtn.addEventListener('click', downloadAllAsZip);
 
-    // expose small debugging helpers
-    window._pdfData = () => pdfData;
+  qualitySlider.addEventListener('input', () => { qualityValue.textContent = `${qualitySlider.value}%`; });
+  scaleSlider.addEventListener('input', () => { scaleValue.textContent = `${scaleSlider.value}%`; });
 
+  // keyboard accessible
+  uploadArea.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
+
+  // initial
+  (function init() {
+    summaryText.textContent = 'No files selected';
+    updateControls();
   })();
-  </script>
+</script>
 </body>
 </html>
