@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Edit PDF Online - Smarttool Hub</title>
-  <meta name="description" content="Edit PDF pages in the browser: draw, add text, add images, then download edited PDF." />
+  <title>Edit PDF Online - Smarttool Hub (Fixed Upload)</title>
+  <meta name="description" content="Edit PDF pages in the browser: draw, add text, add images, then download the edited PDF. Fixed upload handling." />
   <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
   <style>
-    /* Design matches your uploaded tools */
+    /* Design preserved exactly like your uploaded tools */
     :root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8;--radius:12px}
     body.light{--bg:#f6f8fb;--text:#0b1220;--card:#ffffff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
     *{box-sizing:border-box;margin:0;padding:0}
@@ -31,7 +31,7 @@
     @media (max-width:1100px){ .layout{ grid-template-columns: 1fr; } }
 
     .panel { background:var(--bg); border:1px solid var(--border); padding:12px; border-radius:10px; }
-    .upload-area { border:2px dashed var(--border); border-radius:10px; padding:12px; text-align:center; cursor:pointer; background:transparent; }
+    .upload-area { border:2px dashed var(--border); border-radius:10px; padding:12px; text-align:center; cursor:pointer; background:transparent; user-select:none; }
     .upload-area.dragover { border-color:var(--primary); background:rgba(34,211,238,0.03); }
 
     .thumbs { display:flex; flex-direction:column; gap:8px; max-height:56vh; overflow:auto; padding:6px; }
@@ -54,14 +54,8 @@
     .panel h4 { margin:0 0 8px 0; color:var(--primary); }
 
     .status { color:var(--muted); font-size:0.9rem; margin-top:6px; }
-    .footer-actions { display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-top:12px; }
-
     .text-box { position:absolute; min-width:60px; min-height:28px; padding:6px 8px; border-radius:6px; background:rgba(255,255,255,0.9); color:#00131f; border:1px dashed rgba(0,0,0,0.12); cursor:move; resize:both; overflow:auto; }
-    .text-box[contenteditable="true"]:focus { outline:2px solid rgba(34,211,238,0.25); }
-
     footer{margin-top:auto;padding:14px 0;background:var(--card);border-top:1px solid var(--border)}
-    .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-    .footer-links a{color:var(--primary);text-decoration:none;font-weight:600}
   </style>
 </head>
 <body>
@@ -86,13 +80,13 @@
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
         <div>
           <h1 class="tool-title">Edit PDF Online</h1>
-          <div class="tool-description">Upload a PDF, edit pages (draw, add text, add images) and download the edited PDF. All in your browser.</div>
+          <div class="tool-description">Upload a PDF, edit pages (draw, add text, add images) and download the edited PDF. Fixed upload handling.</div>
         </div>
         <div class="status" id="statusMsg">Ready</div>
       </div>
 
       <div class="layout" style="margin-top:12px;">
-        <!-- Left: thumbnails & upload -->
+        <!-- Left -->
         <div class="panel">
           <div class="upload-area" id="uploadArea" title="Click or drop a PDF here">
             <div style="font-weight:700;color:var(--muted)"><i class="fa-solid fa-file-pdf"></i> Drop PDF here or click to choose</div>
@@ -112,7 +106,7 @@
           <div class="thumbs" id="thumbs"></div>
         </div>
 
-        <!-- Center: viewer & editing canvas -->
+        <!-- Center -->
         <div class="panel viewer">
           <div class="tools" id="toolbar">
             <div class="tool-control">
@@ -138,9 +132,7 @@
           </div>
 
           <div id="pageContainer" style="width:100%;display:flex;justify-content:center;align-items:center;">
-            <div class="page-wrap" id="pageWrap" style="display:none;">
-              <!-- baseCanvas and overlayCanvas inserted here -->
-            </div>
+            <div class="page-wrap" id="pageWrap" style="display:none;"></div>
           </div>
 
           <div style="width:100%;display:flex;justify-content:space-between;align-items:center;margin-top:8px">
@@ -150,10 +142,9 @@
               <button id="nextPage" class="btn btn-secondary">Next <i class="fa-solid fa-chevron-right"></i></button>
             </div>
           </div>
-
         </div>
 
-        <!-- Right: properties & download -->
+        <!-- Right -->
         <div class="panel right-panel">
           <div>
             <h4>Tools / Items</h4>
@@ -194,7 +185,7 @@
 
   <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
-  <script src="https://unpkg.com/pdfjs-dist@3.10.120/build/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.10.120/build/pdf.min.js"></script>
 
   <script>
     // UI init
@@ -207,15 +198,14 @@
       else { themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); }
     };
 
-    // pdf.js worker
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.10.120/build/pdf.worker.min.js';
+    // Set pdf.js worker (use jsDelivr) — important fix for many upload/load failures
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.10.120/build/pdf.worker.min.js';
 
     // Elements
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
     const thumbs = document.getElementById('thumbs');
     const pageWrap = document.getElementById('pageWrap');
-    const pageContainer = document.getElementById('pageContainer');
     const pageCountLabel = document.getElementById('currentPageLabel');
     const statusMsg = document.getElementById('statusMsg');
 
@@ -244,33 +234,59 @@
     // State
     let pdfDoc = null;
     let pdfArrayBuffer = null;
-    let currentPageIndex = 0; // 0-based
+    let currentPageIndex = 0;
     let scale = 1.0;
-    let baseCanvas = null; // page rendered canvas
-    let overlayCanvas = null; // drawing/text overlay canvas
+    let baseCanvas = null;
+    let overlayCanvas = null;
     let overlayCtx = null;
-    let pageImagesCache = {}; // caches page base image dataURL if needed
-    let pagesMeta = []; // [{width, height, viewport, edits: {drawStrokes:[], textBoxes:[], images:[]}, edited:Boolean}]
-    // drawStrokes: [{color, size, path: [{x,y}, ...]}]
-    // textBoxes: [{html, x, y, w, h, fontSize, color}]
-    // images: [{dataUrl, x,y,w,h}]
-    let activeTool = 'select'; // select, draw, text, image
+    let pageImagesCache = {};
+    let pagesMeta = [];
+    let activeTool = 'select';
     let drawing = false;
     let currentStroke = null;
-    let dragItem = null; // for text/image dragging
     let stampImageBlob = null;
 
     // helpers
     function setStatus(msg) { statusMsg.textContent = msg; }
     function enableButton(btn, en) { btn.disabled = !en; }
 
-    // Upload handlers (drag & click)
+    // Robust drag/drop: handle files and items
     uploadArea.addEventListener('click', () => fileInput.click());
-    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
-    uploadArea.addEventListener('dragleave', (e) => { e.preventDefault(); uploadArea.classList.remove('dragover'); });
-    uploadArea.addEventListener('drop', (e) => { e.preventDefault(); uploadArea.classList.remove('dragover'); const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) handlePdfFile(f); });
+    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; uploadArea.classList.add('dragover'); });
+    uploadArea.addEventListener('dragleave', (e) => { uploadArea.classList.remove('dragover'); });
+    uploadArea.addEventListener('drop', async (e) => {
+      e.preventDefault(); uploadArea.classList.remove('dragover');
+      try {
+        const files = [];
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+          for (let i=0;i<e.dataTransfer.files.length;i++) files.push(e.dataTransfer.files[i]);
+        } else if (e.dataTransfer && e.dataTransfer.items && e.dataTransfer.items.length) {
+          for (let i=0;i<e.dataTransfer.items.length;i++){
+            const it = e.dataTransfer.items[i];
+            if (it.kind === 'file') {
+              const f = it.getAsFile();
+              if (f) files.push(f);
+            }
+          }
+        }
+        if (!files.length) { setStatus('No file detected in drop'); return; }
+        // pick first PDF file
+        const pdfFile = files.find(f => f.type === 'application/pdf' || /\.pdf$/i.test(f.name));
+        if (!pdfFile) { setStatus('No PDF file found in dropped items'); return; }
+        await handlePdfFile(pdfFile);
+      } catch (err) {
+        console.error('drop handler error', err);
+        setStatus('Drop failed: ' + (err && err.message ? err.message : 'unknown error'));
+      }
+    });
 
-    fileInput.addEventListener('change', (e) => { const f = e.target.files && e.target.files[0]; if (f) handlePdfFile(f); fileInput.value=''; });
+    // file input change
+    fileInput.addEventListener('change', async (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      await handlePdfFile(f);
+      fileInput.value = '';
+    });
 
     // zoom controls
     zoomIn.addEventListener('click', () => { scale = Math.min(3, scale + 0.1); renderCurrentPage(); });
@@ -293,8 +309,7 @@
     stampInput.addEventListener('change', async (e) => {
       const f = e.target.files && e.target.files[0];
       if (!f) return;
-      const dataUrl = await fileToDataUrl(f);
-      stampImageBlob = await (async () => { const b = await f.arrayBuffer(); return new Blob([b], { type: f.type }); })();
+      stampImageBlob = f;
       setStatus('Stamp image loaded. Use Image tool to place it on page.');
     });
 
@@ -325,56 +340,66 @@
       }
     });
 
-    // utilities
+    // utility downloads
     function downloadBlob(blob, filename) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click();
-      setTimeout(()=>{ URL.revokeObjectURL(url); try{ document.body.removeChild(a); }catch(e){} }, 500);
+      setTimeout(()=>{ URL.revokeObjectURL(url); try{ document.body.removeChild(a);}catch(e){} }, 500);
     }
 
-    function fileToDataUrl(file) {
-      return new Promise((resolve, reject) => {
-        const r = new FileReader();
-        r.onload = e => resolve(e.target.result);
-        r.onerror = reject;
-        r.readAsDataURL(file);
-      });
+    function dataURLToUint8Array(dataURL) {
+      const arr = dataURL.split(',');
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8 = new Uint8Array(n);
+      while (n--) u8[n] = bstr.charCodeAt(n);
+      return u8;
     }
 
-    // Handle PDF file: load with pdf.js, render thumbnails, prepare meta
+    // Main: handle PDF file robustly
     async function handlePdfFile(file) {
+      if (!file) { setStatus('No file provided'); return; }
+      if (!file.type || (!file.type.includes('pdf') && !/\.pdf$/i.test(file.name))) {
+        setStatus('Selected file is not a PDF');
+        return;
+      }
       setStatus('Loading PDF — please wait...');
       try {
         const ab = await file.arrayBuffer();
         pdfArrayBuffer = ab;
         // load pdf.js document
         const loadingTask = pdfjsLib.getDocument({ data: ab });
-        pdfDoc = await loadingTask.promise;
+        const loadedDoc = await loadingTask.promise;
+        pdfDoc = loadedDoc;
         // init pages meta
         pagesMeta = [];
         for (let i=0;i<pdfDoc.numPages;i++){
           pagesMeta.push({ width:0, height:0, viewport:null, edits: { drawStrokes:[], textBoxes:[], images:[] }, edited:false });
         }
-        // render thumbnails (small)
+        // render thumbnails (lightweight)
         thumbs.innerHTML = '';
         for (let i=0;i<pdfDoc.numPages;i++){
-          const page = await pdfDoc.getPage(i+1);
-          const viewport = page.getViewport({ scale: 0.25 });
-          const canvas = document.createElement('canvas');
-          canvas.width = Math.floor(viewport.width);
-          canvas.height = Math.floor(viewport.height);
-          const ctx = canvas.getContext('2d');
-          await page.render({ canvasContext: ctx, viewport }).promise;
-          const thumb = document.createElement('div'); thumb.className='thumb'; thumb.dataset.index = i;
-          const img = document.createElement('img'); img.src = canvas.toDataURL('image/png'); img.style.width='60px'; img.style.height='80px'; img.style.objectFit='cover'; img.style.borderRadius='6px';
-          const meta = document.createElement('div'); meta.style.flex='1';
-          const title = document.createElement('div'); title.textContent = `Page ${i+1}`;
-          const tmeta = document.createElement('div'); tmeta.className='tmeta'; tmeta.textContent = `${Math.round(viewport.width)} x ${Math.round(viewport.height)}`;
-          meta.appendChild(title); meta.appendChild(tmeta);
-          thumb.appendChild(img); thumb.appendChild(meta);
-          thumb.addEventListener('click', () => { switchToPage(i); });
-          thumbs.appendChild(thumb);
-          page.cleanup?.();
+          try {
+            const page = await pdfDoc.getPage(i+1);
+            const viewport = page.getViewport({ scale: 0.22 });
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.floor(viewport.width);
+            canvas.height = Math.floor(viewport.height);
+            const ctx = canvas.getContext('2d');
+            await page.render({ canvasContext: ctx, viewport }).promise;
+            const thumb = document.createElement('div'); thumb.className='thumb'; thumb.dataset.index = i;
+            const img = document.createElement('img'); img.src = canvas.toDataURL('image/png'); img.style.width='60px'; img.style.height='80px'; img.style.objectFit='cover'; img.style.borderRadius='6px';
+            const meta = document.createElement('div'); meta.style.flex='1';
+            const title = document.createElement('div'); title.textContent = `Page ${i+1}`;
+            const tmeta = document.createElement('div'); tmeta.className='tmeta'; tmeta.textContent = `${Math.round(viewport.width)} x ${Math.round(viewport.height)}`;
+            meta.appendChild(title); meta.appendChild(tmeta);
+            thumb.appendChild(img); thumb.appendChild(meta);
+            thumb.addEventListener('click', () => { switchToPage(i); });
+            thumbs.appendChild(thumb);
+            page.cleanup?.();
+          } catch (perr) {
+            console.warn('Thumb render failed for page', i+1, perr);
+          }
         }
         currentPageIndex = 0;
         await switchToPage(0);
@@ -383,83 +408,71 @@
         downloadCurrentPage.disabled = false;
       } catch (err) {
         console.error('Failed to load PDF', err);
-        setStatus('Failed to load PDF.');
+        setStatus('Failed to load PDF: ' + (err && err.message ? err.message : 'unknown error'));
       }
     }
 
-    // switch to page index (0-based)
+    // Switch that page index and render base + overlay
     async function switchToPage(index) {
       if (!pdfDoc) return;
       currentPageIndex = index;
-      // mark active thumb
       Array.from(thumbs.children).forEach(ch => ch.classList.toggle('active', Number(ch.dataset.index) === index));
-      // render page with scale
       pageWrap.style.display = 'block';
-      // remove existing base/overlay canvases and text boxes
       pageWrap.innerHTML = '';
-      // render base canvas
-      const page = await pdfDoc.getPage(index+1);
-      const viewport = page.getViewport({ scale });
-      pagesMeta[index].width = viewport.width;
-      pagesMeta[index].height = viewport.height;
-      pagesMeta[index].viewport = viewport;
+      try {
+        const page = await pdfDoc.getPage(index+1);
+        const viewport = page.getViewport({ scale });
+        pagesMeta[index].width = viewport.width;
+        pagesMeta[index].height = viewport.height;
+        pagesMeta[index].viewport = viewport;
 
-      baseCanvas = document.createElement('canvas');
-      baseCanvas.className = 'baseCanvas';
-      baseCanvas.width = Math.floor(viewport.width);
-      baseCanvas.height = Math.floor(viewport.height);
-      // style to be responsive within page-wrap
-      baseCanvas.style.maxWidth = '100%';
-      baseCanvas.style.height = 'auto';
+        baseCanvas = document.createElement('canvas');
+        baseCanvas.className = 'baseCanvas';
+        baseCanvas.width = Math.floor(viewport.width);
+        baseCanvas.height = Math.floor(viewport.height);
+        baseCanvas.style.maxWidth = '100%';
+        baseCanvas.style.height = 'auto';
+        const baseCtx = baseCanvas.getContext('2d');
+        await page.render({ canvasContext: baseCtx, viewport }).promise;
 
-      const baseCtx = baseCanvas.getContext('2d');
-      await page.render({ canvasContext: baseCtx, viewport }).promise;
+        overlayCanvas = document.createElement('canvas');
+        overlayCanvas.className = 'overlayCanvas';
+        overlayCanvas.width = baseCanvas.width;
+        overlayCanvas.height = baseCanvas.height;
+        overlayCanvas.style.left = baseCanvas.offsetLeft + 'px';
+        overlayCanvas.style.top = baseCanvas.offsetTop + 'px';
+        overlayCanvas.style.width = baseCanvas.style.width;
+        overlayCanvas.style.height = baseCanvas.style.height;
+        overlayCanvas.style.pointerEvents = 'auto';
+        overlayCtx = overlayCanvas.getContext('2d');
+        overlayCtx.clearRect(0,0,overlayCanvas.width, overlayCanvas.height);
 
-      // overlay for drawing & controls (positioned absolute relative to pageWrap)
-      overlayCanvas = document.createElement('canvas');
-      overlayCanvas.className = 'overlayCanvas';
-      overlayCanvas.width = baseCanvas.width;
-      overlayCanvas.height = baseCanvas.height;
-      overlayCanvas.style.left = baseCanvas.offsetLeft + 'px';
-      overlayCanvas.style.top = baseCanvas.offsetTop + 'px';
-      overlayCanvas.style.width = baseCanvas.style.width;
-      overlayCanvas.style.maxWidth = baseCanvas.style.maxWidth;
-      overlayCanvas.style.height = baseCanvas.style.height;
-      overlayCanvas.style.pointerEvents = 'auto';
-      overlayCanvas.style.touchAction = 'none';
+        pageWrap.appendChild(baseCanvas);
+        pageWrap.appendChild(overlayCanvas);
 
-      overlayCtx = overlayCanvas.getContext('2d');
-      overlayCtx.clearRect(0,0,overlayCanvas.width, overlayCanvas.height);
+        // render saved edits if present
+        renderEditsForPage(index);
 
-      // scale overlay to fit rendered size (canvas pixel size)
-      pageWrap.appendChild(baseCanvas);
-      pageWrap.appendChild(overlayCanvas);
-
-      // render existing edits for this page if any (draw strokes, text boxes, images)
-      renderEditsForPage(index);
-
-      // attach event handlers for drawing & text
-      attachOverlayEvents();
-
-      pageCountLabel.textContent = `Page ${currentPageIndex+1} / ${pdfDoc.numPages}`;
-      updateItemsList();
+        attachOverlayEvents();
+        pageCountLabel.textContent = `Page ${currentPageIndex+1} / ${pdfDoc.numPages}`;
+        updateItemsList();
+      } catch (err) {
+        console.error('render page failed', err);
+        setStatus('Failed to render page: ' + (err && err.message ? err.message : 'unknown'));
+      }
     }
 
     function attachOverlayEvents() {
-      // clear prior listeners by cloning overlayCanvas
+      // replace existing to avoid duplicate listeners
       const newOverlay = overlayCanvas.cloneNode(true);
       overlayCanvas.parentNode.replaceChild(newOverlay, overlayCanvas);
       overlayCanvas = newOverlay;
       overlayCtx = overlayCanvas.getContext('2d');
-
-      // drawing handlers
       overlayCanvas.addEventListener('pointerdown', startPointer);
       overlayCanvas.addEventListener('pointermove', movePointer);
       overlayCanvas.addEventListener('pointerup', endPointer);
       overlayCanvas.addEventListener('pointercancel', endPointer);
       overlayCanvas.addEventListener('pointerleave', endPointer);
-
-      // text double click to add a new text box where clicked when text tool active
       overlayCanvas.addEventListener('dblclick', (e) => {
         if (activeTool !== 'text') return;
         const rect = overlayCanvas.getBoundingClientRect();
@@ -475,11 +488,8 @@
         currentStroke = { color: toolColor.value, size: Number(toolSize.value), path: [] };
         const pt = toLocalPoint(e);
         currentStroke.path.push(pt);
-        drawStrokeOnCanvas(currentStroke); // initial dot
-      } else if (activeTool === 'select') {
-        // selection/dragging of text/image handled separately via elements (not canvas)
+        drawStrokeOnCanvas(currentStroke);
       } else if (activeTool === 'image') {
-        // place image if stampImageBlob present
         if (!stampImageBlob) { setStatus('Upload stamp image first from right panel'); return; }
         (async () => {
           const dataUrl = await fileToDataUrl(stampImageBlob);
@@ -500,7 +510,6 @@
 
     function endPointer(e) {
       if (drawing && currentStroke) {
-        // commit stroke to page meta
         pagesMeta[currentPageIndex].edits.drawStrokes.push(currentStroke);
         pagesMeta[currentPageIndex].edited = true;
         currentStroke = null;
@@ -517,7 +526,6 @@
     }
 
     function drawStrokeOnCanvas(stroke) {
-      // draw the whole stroke for simplicity
       overlayCtx.lineJoin = 'round';
       overlayCtx.lineCap = 'round';
       overlayCtx.strokeStyle = stroke.color;
@@ -532,10 +540,8 @@
       overlayCtx.stroke();
     }
 
-    // Render all saved edits for a page onto the overlay (without modifying base canvas)
     function renderEditsForPage(pageIndex) {
       overlayCtx.clearRect(0,0,overlayCanvas.width, overlayCanvas.height);
-      // draw strokes
       const meta = pagesMeta[pageIndex];
       if (!meta) return;
       (meta.edits.drawStrokes || []).forEach(stroke => {
@@ -550,29 +556,15 @@
         for (let i=1;i<pts.length;i++) overlayCtx.lineTo(pts[i].x, pts[i].y);
         overlayCtx.stroke();
       });
-
-      // text boxes and images are DOM elements on top of pageWrap — render those by recreating them
-      // first remove existing text/image elements inside pageWrap
+      // Remove any existing DOM text/image nodes
       Array.from(pageWrap.querySelectorAll('.text-box, .placed-image')).forEach(n => n.remove());
-      // add text boxes
-      (meta.edits.textBoxes || []).forEach(tb => {
-        createTextBoxFromMeta(tb);
-      });
-      // add images
-      (meta.edits.images || []).forEach(imgMeta => {
-        createImageElementFromMeta(imgMeta);
-      });
+      (meta.edits.textBoxes || []).forEach(tb => createTextBoxFromMeta(tb));
+      (meta.edits.images || []).forEach(im => createImageElementFromMeta(im));
     }
 
-    // Text boxes creation
+    // Text boxes
     function createTextBoxAt(x, y) {
-      const tb = {
-        html: 'Text',
-        x, y,
-        w: 160, h: 40,
-        fontSize: 16,
-        color: '#00131f'
-      };
+      const tb = { html: 'Text', x, y, w: 160, h: 40, fontSize: 16, color: '#00131f' };
       pagesMeta[currentPageIndex].edits.textBoxes.push(tb);
       pagesMeta[currentPageIndex].edited = true;
       createTextBoxFromMeta(tb, true);
@@ -584,72 +576,59 @@
       el.className = 'text-box';
       el.contentEditable = 'true';
       el.innerText = tb.html;
-      el.style.left = (10 + (tb.x * (pageWrap.clientWidth - 20) / overlayCanvas.width)) + 'px';
-      el.style.top = (10 + (tb.y * (pageWrap.clientHeight - 20) / overlayCanvas.height)) + 'px';
-      el.style.width = (tb.w * (pageWrap.clientWidth - 20) / overlayCanvas.width) + 'px';
-      el.style.height = (tb.h * (pageWrap.clientHeight - 20) / overlayCanvas.height) + 'px';
-      el.style.fontSize = (tb.fontSize * (pageWrap.clientWidth - 20) / overlayCanvas.width) + 'px';
+      // position relative to pageWrap size
+      const parentW = overlayCanvas.width, parentH = overlayCanvas.height;
+      const wrapRect = pageWrap.getBoundingClientRect();
+      el.style.left = (10 + (tb.x * (wrapRect.width - 20) / parentW)) + 'px';
+      el.style.top = (10 + (tb.y * (wrapRect.height - 20) / parentH)) + 'px';
+      el.style.width = (tb.w * (wrapRect.width - 20) / parentW) + 'px';
+      el.style.height = (tb.h * (wrapRect.height - 20) / parentH) + 'px';
+      el.style.fontSize = (tb.fontSize * (wrapRect.width - 20) / parentW) + 'px';
       el.style.color = tb.color;
       el.style.zIndex = 20;
-      el.setAttribute('data-meta-index', pagesMeta[currentPageIndex].edits.textBoxes.indexOf(tb));
-      // dragging
       makeDraggable(el, (left, top, width, height) => {
-        // update tb position in absolute overlay coords
-        const relX = Math.round(((left - 10) * overlayCanvas.width) / (pageWrap.clientWidth - 20));
-        const relY = Math.round(((top - 10) * overlayCanvas.height) / (pageWrap.clientHeight - 20));
-        const relW = Math.round((width * overlayCanvas.width) / (pageWrap.clientWidth - 20));
-        const relH = Math.round((height * overlayCanvas.height) / (pageWrap.clientHeight - 20));
+        const relX = Math.round(((left - 10) * overlayCanvas.width) / (wrapRect.width - 20));
+        const relY = Math.round(((top - 10) * overlayCanvas.height) / (wrapRect.height - 20));
+        const relW = Math.round((width * overlayCanvas.width) / (wrapRect.width - 20));
+        const relH = Math.round((height * overlayCanvas.height) / (wrapRect.height - 20));
         tb.x = relX; tb.y = relY; tb.w = relW; tb.h = relH; pagesMeta[currentPageIndex].edited = true; updateItemsList();
       });
-      // commit edits on blur
-      el.addEventListener('blur', () => {
-        tb.html = el.innerText;
-      });
+      el.addEventListener('blur', () => { tb.html = el.innerText; });
       pageWrap.appendChild(el);
       if (focus) {
         el.focus();
-        // position caret at end
         document.execCommand('selectAll', false, null);
         document.getSelection().collapseToEnd();
       }
     }
 
-    // make element draggable & resizable within pageWrap (simple implementation)
+    // Make draggable (simple)
     function makeDraggable(el, onUpdate) {
-      let dragging = false;
-      let startX=0, startY=0, origLeft=0, origTop=0;
+      let dragging = false, startX=0, startY=0, origLeft=0, origTop=0;
       el.addEventListener('pointerdown', (e) => {
-        if (e.target === el) {
-          dragging = true;
-          startX = e.clientX; startY = e.clientY;
-          const rect = el.getBoundingClientRect();
-          const parentRect = pageWrap.getBoundingClientRect();
-          origLeft = rect.left - parentRect.left;
-          origTop = rect.top - parentRect.top;
-          el.setPointerCapture(e.pointerId);
-        }
+        dragging = true; startX = e.clientX; startY = e.clientY;
+        const rect = el.getBoundingClientRect(); const parentRect = pageWrap.getBoundingClientRect();
+        origLeft = rect.left - parentRect.left; origTop = rect.top - parentRect.top;
+        el.setPointerCapture(e.pointerId);
       });
       window.addEventListener('pointermove', (e) => {
         if (!dragging) return;
         const dx = e.clientX - startX; const dy = e.clientY - startY;
         const newLeft = Math.max(0, origLeft + dx); const newTop = Math.max(0, origTop + dy);
-        el.style.left = (10 + newLeft) + 'px';
-        el.style.top = (10 + newTop) + 'px';
+        el.style.left = (10 + newLeft) + 'px'; el.style.top = (10 + newTop) + 'px';
       });
       window.addEventListener('pointerup', (e) => {
         if (dragging) {
           dragging = false;
-          // compute final dims
           const rect = el.getBoundingClientRect(); const parentRect = pageWrap.getBoundingClientRect();
           const left = rect.left - parentRect.left; const top = rect.top - parentRect.top;
           const width = rect.width; const height = rect.height;
           onUpdate(left, top, width, height);
         }
       });
-      // simple resizer via CSS resize is allowed because element has resize:both (in style) — after resize, on pointerup above will compute update
     }
 
-    // images insertion functions
+    // Images
     function createImageOnPage(dataUrl, x, y) {
       const imgMeta = { dataUrl, x, y, w: 160, h: 120 };
       pagesMeta[currentPageIndex].edits.images.push(imgMeta);
@@ -663,50 +642,29 @@
       el.className = 'placed-image';
       el.src = imgMeta.dataUrl;
       el.style.position = 'absolute';
-      el.style.left = (10 + (imgMeta.x * (pageWrap.clientWidth - 20) / overlayCanvas.width)) + 'px';
-      el.style.top = (10 + (imgMeta.y * (pageWrap.clientHeight - 20) / overlayCanvas.height)) + 'px';
-      el.style.width = (imgMeta.w * (pageWrap.clientWidth - 20) / overlayCanvas.width) + 'px';
-      el.style.height = (imgMeta.h * (pageWrap.clientHeight - 20) / overlayCanvas.height) + 'px';
+      const wrapRect = pageWrap.getBoundingClientRect();
+      el.style.left = (10 + (imgMeta.x * (wrapRect.width - 20) / overlayCanvas.width)) + 'px';
+      el.style.top = (10 + (imgMeta.y * (wrapRect.height - 20) / overlayCanvas.height)) + 'px';
+      el.style.width = (imgMeta.w * (wrapRect.width - 20) / overlayCanvas.width) + 'px';
+      el.style.height = (imgMeta.h * (wrapRect.height - 20) / overlayCanvas.height) + 'px';
       el.style.zIndex = 30;
-      // draggable/resizable
       makeDraggable(el, (left, top, width, height) => {
-        imgMeta.x = Math.round(((left - 10) * overlayCanvas.width) / (pageWrap.clientWidth - 20));
-        imgMeta.y = Math.round(((top - 10) * overlayCanvas.height) / (pageWrap.clientHeight - 20));
-        imgMeta.w = Math.round((width * overlayCanvas.width) / (pageWrap.clientWidth - 20));
-        imgMeta.h = Math.round((height * overlayCanvas.height) / (pageWrap.clientHeight - 20));
+        imgMeta.x = Math.round(((left - 10) * overlayCanvas.width) / (wrapRect.width - 20));
+        imgMeta.y = Math.round(((top - 10) * overlayCanvas.height) / (wrapRect.height - 20));
+        imgMeta.w = Math.round((width * overlayCanvas.width) / (wrapRect.width - 20));
+        imgMeta.h = Math.round((height * overlayCanvas.height) / (wrapRect.height - 20));
         pagesMeta[currentPageIndex].edited = true;
         updateItemsList();
       });
       pageWrap.appendChild(el);
     }
 
-    // Undo last stroke
     function undoLast() {
       const meta = pagesMeta[currentPageIndex];
       if (!meta) return;
-      if ((meta.edits.drawStrokes || []).length) {
-        meta.edits.drawStrokes.pop();
-        pagesMeta[currentPageIndex].edited = true;
-        renderEditsForPage(currentPageIndex);
-        updateItemsList();
-        return;
-      }
-      // else remove last image if any
-      if ((meta.edits.images || []).length) {
-        meta.edits.images.pop();
-        pagesMeta[currentPageIndex].edited = true;
-        renderEditsForPage(currentPageIndex);
-        updateItemsList();
-        return;
-      }
-      // else remove last text box
-      if ((meta.edits.textBoxes || []).length) {
-        meta.edits.textBoxes.pop();
-        pagesMeta[currentPageIndex].edited = true;
-        renderEditsForPage(currentPageIndex);
-        updateItemsList();
-        return;
-      }
+      if ((meta.edits.drawStrokes || []).length) { meta.edits.drawStrokes.pop(); meta.edited = true; renderEditsForPage(currentPageIndex); updateItemsList(); return; }
+      if ((meta.edits.images || []).length) { meta.edits.images.pop(); meta.edited = true; renderEditsForPage(currentPageIndex); updateItemsList(); return; }
+      if ((meta.edits.textBoxes || []).length) { meta.edits.textBoxes.pop(); meta.edited = true; renderEditsForPage(currentPageIndex); updateItemsList(); return; }
       setStatus('Nothing to undo on this page');
     }
 
@@ -719,101 +677,62 @@
       updateItemsList();
     }
 
-    // Save current page edits: flatten overlays onto an image and cache (so later building PDF uses the flattened image)
     async function saveCurrentPageEdits() {
       setStatus('Flattening page edits — please wait...');
       try {
-        // combine base canvas and overlays + DOM text/images into a single canvas
-        // create a temp canvas with baseCanvas pixel dimensions
         const tmp = document.createElement('canvas');
-        tmp.width = baseCanvas.width;
-        tmp.height = baseCanvas.height;
+        tmp.width = baseCanvas.width; tmp.height = baseCanvas.height;
         const ctx = tmp.getContext('2d');
-
-        // draw base
         ctx.drawImage(baseCanvas, 0, 0, tmp.width, tmp.height);
-
-        // draw strokes (already in overlayCtx but positions are matching pixels)
-        // draw strokes from meta to avoid depending on overlayCanvas CSS transforms
         const meta = pagesMeta[currentPageIndex];
-        // draw strokes
         (meta.edits.drawStrokes || []).forEach(stroke => {
-          ctx.lineJoin = 'round';
-          ctx.lineCap = 'round';
-          ctx.strokeStyle = stroke.color;
-          ctx.lineWidth = stroke.size;
-          ctx.beginPath();
-          if (!stroke.path || !stroke.path.length) return;
-          ctx.moveTo(stroke.path[0].x, stroke.path[0].y);
-          for (let i=1;i<stroke.path.length;i++) ctx.lineTo(stroke.path[i].x, stroke.path[i].y);
+          ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = stroke.color; ctx.lineWidth = stroke.size; ctx.beginPath();
+          const pts = stroke.path; if (!pts || !pts.length) return;
+          ctx.moveTo(pts[0].x, pts[0].y);
+          for (let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x, pts[i].y);
           ctx.stroke();
         });
-        // draw images (meta coordinates are in canvas pixel space)
         for (const im of (meta.edits.images || [])) {
           const img = await loadImage(im.dataUrl);
           ctx.drawImage(img, im.x, im.y, im.w, im.h);
         }
-        // draw text boxes
-        ctx.fillStyle = '#ffffff'; // background for text boxes? we will draw text opaque
+        ctx.fillStyle = '#ffffff';
         ctx.textBaseline = 'top';
         for (const tb of (meta.edits.textBoxes || [])) {
-          // background: optional white rectangle
           ctx.fillStyle = 'rgba(255,255,255,0.95)';
           ctx.fillRect(tb.x, tb.y, tb.w, tb.h);
-          // draw text
           ctx.fillStyle = tb.color || '#00131f';
-          const fontSize = tb.fontSize || 16;
-          ctx.font = `${fontSize}px sans-serif`;
-          // basic wrap: split lines by \n
-          const lines = (tb.html || '').split('\n');
-          let y = tb.y + 4;
-          for (const line of lines) {
-            ctx.fillText(line, tb.x + 6, y);
-            y += fontSize + 2;
-          }
+          const fontSize = tb.fontSize || 16; ctx.font = `${fontSize}px sans-serif`;
+          const lines = (tb.html || '').split('\n'); let y = tb.y + 4;
+          for (const line of lines) { ctx.fillText(line, tb.x + 6, y); y += fontSize + 2; }
         }
-
-        // store flattened image in cache for page
         const dataUrl = tmp.toDataURL('image/png');
         pageImagesCache[currentPageIndex] = dataUrl;
         pagesMeta[currentPageIndex].edited = true;
         setStatus('Page flattened and cached.');
-      } catch (err) {
-        console.error('Failed to flatten', err);
-        setStatus('Flatten failed for page.');
-      }
+      } catch (err) { console.error('flatten failed', err); setStatus('Flatten failed for page'); }
     }
 
     function loadImage(src) {
-      return new Promise((resolve, reject) => {
-        const i = new Image();
-        i.onload = () => resolve(i);
-        i.onerror = reject;
-        i.src = src;
-      });
+      return new Promise((resolve, reject) => { const i = new Image(); i.onload = () => resolve(i); i.onerror = reject; i.src = src; });
     }
 
-    // Export a single page as PDF blob (either original page if unedited or flattened image embedded into PDF page)
     async function exportSinglePageBlob(pageIndex) {
       if (!pdfDoc) throw new Error('No PDF loaded');
       try {
-        const { PDFDocument, StandardFonts } = PDFLib;
-        const srcBytes = pdfArrayBuffer;
-        const srcPdf = await PDFDocument.load(srcBytes, { ignoreEncryption: true });
+        const { PDFDocument } = PDFLib;
+        const srcPdf = await PDFDocument.load(pdfArrayBuffer, { ignoreEncryption: true });
         if (!pagesMeta[pageIndex].edited || !pageImagesCache[pageIndex]) {
-          // simply extract single page from original PDF
           const newPdf = await PDFDocument.create();
           const [copied] = await newPdf.copyPages(srcPdf, [pageIndex]);
           newPdf.addPage(copied);
           const bytes = await newPdf.save();
           return new Blob([bytes], { type: 'application/pdf' });
         } else {
-          // replaced page: load flattened image and create a single-page PDF with the image sized to original page dimensions
           const imgDataUrl = pageImagesCache[pageIndex];
           const imgBytes = dataURLToUint8Array(imgDataUrl);
           const newPdf = await PDFDocument.create();
           const img = await newPdf.embedPng(imgBytes);
-          // use original page size from pagesMeta
           const width = pagesMeta[pageIndex].width;
           const height = pagesMeta[pageIndex].height;
           const page = newPdf.addPage([width, height]);
@@ -821,49 +740,29 @@
           const bytes = await newPdf.save();
           return new Blob([bytes], { type: 'application/pdf' });
         }
-      } catch (err) {
-        console.error('exportSinglePageBlob failed', err);
-        throw err;
-      }
+      } catch (err) { console.error('exportSinglePageBlob failed', err); throw err; }
     }
 
-    // Build edited PDF: for pages that are unedited, copy original pages; for edited pages, insert image pages created from flattened cached images (or flatten on-the-fly)
     async function buildEditedPdf() {
       const { PDFDocument } = PDFLib;
-      const srcBytes = pdfArrayBuffer;
-      const srcPdf = await PDFDocument.load(srcBytes, { ignoreEncryption: true });
+      const srcPdf = await PDFDocument.load(pdfArrayBuffer, { ignoreEncryption: true });
       const mergedPdf = await PDFDocument.create();
-
       for (let i=0;i<srcPdf.getPageCount();i++){
         if (pagesMeta[i] && pagesMeta[i].edited && pageImagesCache[i]) {
-          // embed image page
           const imgBytes = dataURLToUint8Array(pageImagesCache[i]);
           const imgEmbed = await mergedPdf.embedPng(imgBytes);
-          const width = pagesMeta[i].width;
-          const height = pagesMeta[i].height;
+          const width = pagesMeta[i].width; const height = pagesMeta[i].height;
           const page = mergedPdf.addPage([width, height]);
           page.drawImage(imgEmbed, { x: 0, y: 0, width, height });
         } else {
-          // copy original page(s)
           const [copied] = await mergedPdf.copyPages(srcPdf, [i]);
           mergedPdf.addPage(copied);
         }
       }
-
       const bytes = await mergedPdf.save();
       return new Blob([bytes], { type: 'application/pdf' });
     }
 
-    function dataURLToUint8Array(dataURL) {
-      const arr = dataURL.split(',');
-      const bstr = atob(arr[1]);
-      let n = bstr.length;
-      const u8 = new Uint8Array(n);
-      while (n--) u8[n] = bstr.charCodeAt(n);
-      return u8;
-    }
-
-    // Items list update (shows counts of strokes/text/images)
     function updateItemsList() {
       itemsList.innerHTML = '';
       const meta = pagesMeta[currentPageIndex];
@@ -884,23 +783,23 @@
       itemsList.appendChild(makeRow('Edited?', edited));
     }
 
-    // create image blob from dataURL and put in cache
-    function downloadDataURLAsBlob(dataUrl) {
-      const u8 = dataURLToUint8Array(dataUrl);
-      return new Blob([u8], { type: 'image/png' });
+    function fileToDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = e => resolve(e.target.result);
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      });
     }
 
-    // Convert Float32Array etc not needed; helper done above
+    // initial
+    setStatus('Ready');
+    setActiveTool('select');
 
-    // create text/image DOM from saved meta when switching pages
-    // already done in renderEditsForPage()
+    // Expose debug state
+    window._editor_state = () => ({ pagesMeta, pageImagesCache, currentPageIndex, pdfLoaded: !!pdfDoc });
 
-    // sanitize filename
-    function sanitizeFilenameBase(name) {
-      return name.replace(/[\\\/:*?"<>|]/g,'-').slice(0,80);
-    }
-
-    // tools switching
+    // helper: setActiveTool defined here to avoid hoisting issues
     function setActiveTool(tool) {
       activeTool = tool;
       [selectTool, drawTool, textTool, imageTool].forEach(btn => btn.classList.remove('btn-primary'));
@@ -910,21 +809,6 @@
       if (tool === 'image') imageTool.classList.add('btn-primary');
       setStatus(`Tool: ${tool}`);
     }
-    setActiveTool('select');
-
-    // create an image element and let user place it
-    // already handled via stampInput and image tool (click on canvas to place)
-
-    // small helper: push saved edits to pagesMeta when user manipulates DOM text boxes (on blur we already saved)
-    // but when switching pages we should capture current DOM text boxes positions => we'll approximate by keeping meta updated via makeDraggable callbacks
-
-    // initial state
-    setStatus('Ready');
-    setActiveTool('select');
-
-    // Expose debug
-    window._editor_state = () => ({ pagesMeta, pageImagesCache, currentPageIndex });
-
   </script>
 </body>
 </html>
