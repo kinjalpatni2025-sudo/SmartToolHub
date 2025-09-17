@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Compress PDF - Smarttool Hub</title>
+  <title>Compress PDF - Smarttool Hub (Fixed Download)</title>
   <meta name="description" content="Compress PDF files in the browser by rasterizing pages and re-encoding as JPG at chosen quality/scale." />
   <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
@@ -40,7 +40,7 @@
     .file-meta { flex:1 }
     .file-meta h5{margin:0 0 6px 0;font-size:0.95rem;color:var(--text)}
     .file-meta p{margin:0;color:var(--muted);font-size:0.88rem}
-    .file-actions { display:flex;flex-direction:column;gap:8px;min-width:120px; }
+    .file-actions { display:flex;flex-direction:column;gap:8px;min-width:140px; }
     .small-btn { padding:8px 10px;border-radius:8px;border:none;cursor:pointer;font-weight:600 }
     .small-btn.primary { background:var(--primary);color:#00131f }
     .small-btn.secondary { background:var(--card);border:1px solid var(--border);color:var(--text) }
@@ -221,7 +221,6 @@
           const pdfDoc = await PDFLib.PDFDocument.load(ab, { ignoreEncryption: true });
           entry.pageCount = pdfDoc.getPageCount();
         } catch (err) {
-          // fallback unknown
           entry.pageCount = null;
         }
       } catch (err) {
@@ -286,7 +285,8 @@
 
   function updateControls(){
     compressAllBtn.disabled = filesState.length === 0;
-    downloadAllZipBtn.disabled = filesState.every(f => !f.compressedBlob);
+    const anyCompressed = filesState.some(f => f.compressedBlob instanceof Blob);
+    downloadAllZipBtn.disabled = !anyCompressed;
   }
 
   // compression logic for a single file
@@ -314,20 +314,14 @@
         const page = await pdfDoc.getPage(p);
         // scale factor from slider (percentage)
         const scalePercent = Number(scaleSlider.value) / 100;
-        // viewport default at scale 1 -> get width/height in CSS px
-        const viewport = page.getViewport({ scale: 1 });
-        const targetScale = scalePercent; // scale applied to page.render
-        const renderViewport = page.getViewport({ scale: targetScale });
+        const renderViewport = page.getViewport({ scale: scalePercent });
 
         // create canvas to render
         const canvas = document.createElement('canvas');
-        // For better results on HiDPI screens, use devicePixelRatio but ensure final scale is controlled by targetScale.
         const outputWidth = Math.round(renderViewport.width);
         const outputHeight = Math.round(renderViewport.height);
         canvas.width = outputWidth;
         canvas.height = outputHeight;
-        canvas.style.width = outputWidth + 'px';
-        canvas.style.height = outputHeight + 'px';
         const ctx = canvas.getContext('2d');
 
         // render page
@@ -348,12 +342,9 @@
         const heightPts = outputHeight * 72 / 96;
 
         const newPage = outPdf.addPage([widthPts, heightPts]);
-
-        // preserve orientation if chosen (swap if necessary)
-        // (we used same dims so orientation preserved)
         newPage.drawImage(jpgImage, { x: 0, y: 0, width: widthPts, height: heightPts });
 
-        // free canvas
+        // free canvas memory
         canvas.width = 0; canvas.height = 0;
       }
 
@@ -364,11 +355,13 @@
       entry.compressedSize = blob.size;
       entry.processing = false;
       renderFileCards();
+      // IMPORTANT: ensure download button is enabled right away
       updateControls();
       showStatus(`Compressed ${entry.file.name} (${formatFileSize(entry.compressedSize)})`, 'success');
     } catch (err) {
       console.error('compressSingle failed', err);
       entry.processing = false;
+      entry.compressedBlob = null;
       renderFileCards();
       updateControls();
       showStatus('Compression failed: ' + (err && err.message ? err.message : ''), 'error');
@@ -391,22 +384,29 @@
     if (!filesState.length) return;
     compressAllBtn.disabled = true;
     showStatus('Compressing all files...', 'success', false);
-    for (const entry of filesState) {
-      if (!entry.compressedBlob && !entry.processing) {
-        // await individual compression
-        // eslint-disable-next-line no-await-in-loop
-        await compressSingle(entry.id);
+    try {
+      for (const entry of filesState) {
+        if (!entry.compressedBlob && !entry.processing) {
+          // eslint-disable-next-line no-await-in-loop
+          await compressSingle(entry.id);
+        }
       }
+      showStatus('All files compressed', 'success');
+    } catch (e) {
+      console.error('Error compressing all', e);
+      showStatus('Error compressing some files', 'error');
+    } finally {
+      compressAllBtn.disabled = false;
+      // ensure download button is enabled if any compressedBlob exists
+      updateControls();
     }
-    compressAllBtn.disabled = false;
-    showStatus('All compressions finished', 'success');
   });
 
-  // download all compressed as ZIP
+  // download all compressed as ZIP with fallback to individual downloads
   downloadAllZipBtn.addEventListener('click', async () => {
-    const compressedEntries = filesState.filter(e => e.compressedBlob);
+    const compressedEntries = filesState.filter(e => e.compressedBlob instanceof Blob);
     if (!compressedEntries.length) { showStatus('No compressed files to download', 'error'); return; }
-    if (typeof JSZip === 'undefined') { showStatus('JSZip not loaded', 'error'); return; }
+    if (typeof JSZip === 'undefined') { showStatus('JSZip not loaded, downloading individually', 'error'); downloadIndividually(compressedEntries); return; }
 
     showStatus('Preparing ZIP...', 'success', false);
     try {
@@ -415,7 +415,13 @@
         const name = e.file.name.replace(/\.pdf$/i,'') + '_compressed.pdf';
         zip.file(name, e.compressedBlob);
       });
-      const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+      const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } }, (meta) => {
+        // optional progress: meta.percent
+      });
+
+      // ensure result is valid Blob and non-empty
+      if (!(blob instanceof Blob) || blob.size === 0) throw new Error('ZIP generation produced empty blob');
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url;
       const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
@@ -425,9 +431,28 @@
       showStatus('ZIP prepared and download triggered', 'success');
     } catch (err) {
       console.error('ZIP creation failed', err);
-      showStatus('Failed creating ZIP', 'error');
+      showStatus('Failed creating ZIP — attempting to download files individually', 'error');
+      downloadIndividually(compressedEntries);
     }
   });
+
+  // fallback: download compressed entries one-by-one
+  function downloadIndividually(entries) {
+    try {
+      entries.forEach((e, idx) => {
+        const url = URL.createObjectURL(e.compressedBlob);
+        const a = document.createElement('a'); a.href = url;
+        a.download = e.file.name.replace(/\.pdf$/i,'') + '_compressed.pdf';
+        document.body.appendChild(a);
+        // stagger clicks a bit to avoid browser blocking
+        setTimeout(()=> { a.click(); setTimeout(()=> { URL.revokeObjectURL(url); try{document.body.removeChild(a);}catch(e){} }, 400); }, idx * 300);
+      });
+      showStatus('Individual downloads started', 'success');
+    } catch (err) {
+      console.error('Individual download fallback failed', err);
+      showStatus('Download failed', 'error');
+    }
+  }
 
   // Reset
   resetBtn.addEventListener('click', () => {
