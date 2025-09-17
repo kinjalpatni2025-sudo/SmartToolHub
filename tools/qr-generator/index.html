@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>QR Code Generator - Smarttool Hub</title>
+  <meta name="description" content="Generate QR codes in the browser. Customize size, colors, margin, error-correction and download as PNG or SVG." />
+  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+  <style>
+    /* Exact same design language used across your uploaded tools */
+    :root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8;--radius:12px}
+    body.light{--bg:#f6f8fb;--text:#0b1220;--card:#ffffff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;transition:background .25s,color .25s}
+    .container{max-width:1200px;margin:0 auto;padding:20px;width:100%}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand img{width:46px;height:46px;border-radius:10px}
+    .brand .title{font-size:1.25rem;font-weight:700;color:var(--primary);margin:0}
+    .brand .tag{font-size:.9rem;color:var(--muted)}
+    .header-actions{display:flex;gap:10px;align-items:center}
+    .btn-header{border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;font-weight:600}
+    .btn-header:hover{border-color:var(--primary);color:var(--primary)}
+
+    .tool-content { background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:25px;margin-top:20px; }
+    .tool-title { font-size:1.8rem;margin-bottom:5px;color:var(--primary); }
+    .tool-description { color:var(--muted);margin-bottom:18px; }
+
+    .grid {
+      display:grid;
+      grid-template-columns: 1fr 380px;
+      gap:18px;
+      align-items:start;
+    }
+    @media (max-width:980px){ .grid { grid-template-columns: 1fr; } }
+
+    .controls {
+      background:var(--bg);border:1px solid var(--border);padding:14px;border-radius:10px;
+      display:flex;flex-direction:column;gap:12px;
+    }
+    .form-row { display:flex;gap:10px;align-items:center;flex-wrap:wrap; }
+    .form-row label{font-weight:700;color:var(--text);min-width:110px}
+    .input, .select, .btn, .color-input { background:var(--card);border:1px solid var(--border);padding:8px 10px;border-radius:8px;color:var(--text);outline:none }
+    .textarea { background:var(--card);border:1px solid var(--border);padding:10px;border-radius:8px;color:var(--text);min-height:84px;resize:vertical }
+    .small { font-size:0.9rem;color:var(--muted) }
+
+    .preview {
+      background:var(--bg);border:1px solid var(--border);padding:18px;border-radius:10px;text-align:center;
+      display:flex;flex-direction:column;gap:12px;align-items:center;
+    }
+    .qr-canvas { width:320px;height:320px;border-radius:8px;background:white;display:flex;align-items:center;justify-content:center; }
+    .qr-img { max-width:100%; height:auto; display:block; }
+
+    .options { display:flex;gap:10px;flex-wrap:wrap;align-items:center }
+    .btn { padding:10px 14px;border-radius:10px;border:none;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px; }
+    .btn-primary { background:var(--primary);color:#00131f; }
+    .btn-secondary { background:var(--card);border:1px solid var(--border);color:var(--text); }
+    .btn:disabled { opacity:0.6;cursor:not-allowed; }
+
+    .footer-actions { display:flex;gap:10px;align-items:center;flex-wrap:wrap; }
+
+    .status { color:var(--muted);font-size:0.9rem;margin-top:8px; }
+
+    footer{margin-top:auto;padding:18px 0;background:var(--card);border-top:1px solid var(--border)}
+    .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap}
+    .footer-links a{color:var(--primary);text-decoration:none;font-weight:600}
+  </style>
+</head>
+<body>
+  <header class="container">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+        <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub Logo">
+        <div>
+          <div class="title">Smarttool Hub</div>
+          <div class="tag">Fast • Private • 100% Client-side</div>
+        </div>
+      </a>
+    </div>
+    <div class="header-actions">
+      <a href="index.html" class="btn-header"><i class="fa-solid fa-house"></i> Home</a>
+      <button class="btn-header" id="themeToggle" title="Toggle dark/light mode"><i class="fa-solid fa-moon"></i></button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="tool-content">
+      <h1 class="tool-title">QR Code Generator</h1>
+      <p class="tool-description">Create QR codes from text, URLs or small data. Customize size, margin, error-correction and colors. Download as PNG or SVG — everything runs in your browser.</p>
+
+      <div class="grid">
+        <!-- Left: Controls -->
+        <div class="controls" id="controlsPanel">
+          <div class="form-row">
+            <label for="textInput">Text / URL</label>
+            <textarea id="textInput" class="textarea" placeholder="Enter URL or text to encode...">https://example.com</textarea>
+          </div>
+
+          <div class="form-row">
+            <label>Size</label>
+            <input id="sizeInput" class="input" type="number" min="64" max="2000" value="320" style="width:110px"/>
+            <div class="small">px</div>
+            <label style="margin-left:10px">Margin</label>
+            <input id="marginInput" class="input" type="number" min="0" max="50" value="4" style="width:80px"/>
+          </div>
+
+          <div class="form-row">
+            <label>Error correction</label>
+            <select id="ecLevel" class="select">
+              <option value="L">L — Low (7%)</option>
+              <option value="M" selected>M — Medium (15%)</option>
+              <option value="Q">Q — Quartile (25%)</option>
+              <option value="H">H — High (30%)</option>
+            </select>
+            <label style="margin-left:12px">Format</label>
+            <select id="outFormat" class="select">
+              <option value="png" selected>PNG</option>
+              <option value="svg">SVG</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label>Colors</label>
+            <div class="options">
+              <div style="display:flex;flex-direction:column;align-items:center">
+                <div class="small">Foreground</div>
+                <input id="fgColor" type="color" class="color-input" value="#00131f" />
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center">
+                <div class="small">Background</div>
+                <input id="bgColor" type="color" class="color-input" value="#ffffff" />
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;align-items:center;margin-top:6px;">
+            <button id="generateBtn" class="btn btn-primary"><i class="fa-solid fa-qrcode"></i> Generate</button>
+            <button id="previewBtn" class="btn btn-secondary"><i class="fa-solid fa-eye"></i> Live Preview</button>
+            <button id="clearBtn" class="btn btn-secondary"><i class="fa-solid fa-trash"></i> Clear</button>
+            <div style="margin-left:auto;color:var(--muted);font-weight:700" id="summaryText">Ready</div>
+          </div>
+
+          <div class="status" id="status">Tip: you can paste text or a URL, choose size/colors, then generate and download.</div>
+        </div>
+
+        <!-- Right: Preview & Download -->
+        <div class="preview" id="previewPanel">
+          <div style="display:flex;gap:12px;align-items:center;width:100%;justify-content:center;">
+            <div style="font-weight:700;color:var(--primary)">Preview</div>
+            <div id="qrMeta" style="color:var(--muted);font-size:0.9rem"></div>
+          </div>
+
+          <div class="qr-canvas" id="qrCanvasWrap" role="img" aria-label="QR code preview">
+            <!-- QR will be injected here (img or svg) -->
+          </div>
+
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button id="downloadPngBtn" class="btn btn-primary" disabled><i class="fa-solid fa-download"></i> Download PNG</button>
+            <button id="downloadSvgBtn" class="btn btn-secondary" disabled><i class="fa-solid fa-file-code"></i> Download SVG</button>
+            <button id="copyBtn" class="btn btn-secondary" disabled><i class="fa-regular fa-copy"></i> Copy</button>
+          </div>
+
+          <div style="margin-top:8px;width:100%;display:flex;gap:8px;align-items:center;justify-content:center;">
+            <label class="small">Label (optional): </label>
+            <input id="labelInput" class="input" type="text" placeholder="Caption under the QR (not embedded in QR)" style="flex:1" />
+          </div>
+
+          <div id="downloadHint" class="small" style="color:var(--muted)">Generate first to enable downloads.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="container">
+    <div class="footer-inner">
+      <div>© <span id="year"></span> Smarttool Hub</div>
+      <div class="footer-links">
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- qrcode library (qrcodejs / node-qrcode UMD build) -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+
+  <script>
+    // UI init
+    document.getElementById('year').textContent = new Date().getFullYear();
+    const themeToggle = document.getElementById('themeToggle');
+    if (localStorage.getItem('sth_theme') === 'light') { document.body.classList.add('light'); themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; }
+    themeToggle.onclick = () => {
+      document.body.classList.toggle('light');
+      if (document.body.classList.contains('light')) { themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; localStorage.setItem('sth_theme','light'); }
+      else { themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); }
+    };
+
+    // Elements
+    const textInput = document.getElementById('textInput');
+    const sizeInput = document.getElementById('sizeInput');
+    const marginInput = document.getElementById('marginInput');
+    const ecLevel = document.getElementById('ecLevel');
+    const outFormat = document.getElementById('outFormat');
+    const fgColor = document.getElementById('fgColor');
+    const bgColor = document.getElementById('bgColor');
+    const generateBtn = document.getElementById('generateBtn');
+    const previewBtn = document.getElementById('previewBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const qrCanvasWrap = document.getElementById('qrCanvasWrap');
+    const downloadPngBtn = document.getElementById('downloadPngBtn');
+    const downloadSvgBtn = document.getElementById('downloadSvgBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const labelInput = document.getElementById('labelInput');
+    const qrMeta = document.getElementById('qrMeta');
+    const summaryText = document.getElementById('summaryText');
+    const status = document.getElementById('status');
+    const downloadHint = document.getElementById('downloadHint');
+
+    let lastDataUrl = null;   // PNG data URL
+    let lastSvgText = null;   // SVG text
+    let lastConfig = null;
+
+    function sanitizeText(t) {
+      return (t || '').toString();
+    }
+
+    function updateMeta() {
+      qrMeta.textContent = `${sizeInput.value}px • margin ${marginInput.value} • EC: ${ecLevel.value}`;
+    }
+
+    // Generate function (creates PNG and SVG representations)
+    async function generateQR({ autoPreview=false } = {}) {
+      const text = sanitizeText(textInput.value).trim();
+      if (!text) { status.textContent = 'Please enter text or URL to encode.'; return; }
+      const size = Math.max(64, Math.min(2000, Number(sizeInput.value) || 320));
+      const margin = Math.max(0, Math.min(100, Number(marginInput.value) || 4));
+      const ec = ecLevel.value || 'M';
+      const fg = fgColor.value || '#00131f';
+      const bg = bgColor.value || '#ffffff';
+      const label = (labelInput.value || '').trim();
+
+      updateMeta();
+      summaryText.textContent = 'Generating...';
+      status.textContent = 'Generating QR...';
+      downloadHint.textContent = 'Preparing preview...';
+
+      // config for qrcode.toDataURL and toString
+      const config = {
+        errorCorrectionLevel: ec,
+        margin,
+        width: size,
+        color: { dark: fg, light: bg }
+      };
+
+      lastConfig = { text, size, margin, ec, fg, bg, label };
+
+      try {
+        // PNG / Data URL
+        lastDataUrl = await QRCode.toDataURL(text, config);
+
+        // SVG (string)
+        // qrcode.toString supports type 'svg'
+        lastSvgText = await new Promise((resolve, reject) => {
+          QRCode.toString(text, { ...config, type: 'svg' }, (err, svg) => {
+            if (err) return reject(err);
+            resolve(svg);
+          });
+        });
+
+        // render preview according to selected format preference (show image always)
+        renderPreview(lastDataUrl, lastSvgText, label);
+
+        // enable downloads
+        downloadPngBtn.disabled = false;
+        downloadSvgBtn.disabled = false;
+        copyBtn.disabled = false;
+
+        summaryText.textContent = 'Generated';
+        status.textContent = 'QR code generated successfully.';
+        downloadHint.textContent = 'Use the buttons to download or copy the QR code.';
+
+        if (autoPreview) {
+          // nothing extra
+        }
+      } catch (err) {
+        console.error('QR generation failed', err);
+        status.textContent = 'Failed to generate QR: ' + (err && err.message ? err.message : err);
+        summaryText.textContent = 'Error';
+        downloadHint.textContent = 'Fix inputs and try again.';
+        downloadPngBtn.disabled = true;
+        downloadSvgBtn.disabled = true;
+        copyBtn.disabled = true;
+      }
+    }
+
+    // Render preview: show SVG if SVG selected, otherwise PNG; but always inject both options for download
+    function renderPreview(pngDataUrl, svgText, label) {
+      qrCanvasWrap.innerHTML = '';
+      const chosenFormat = outFormat.value;
+
+      if (chosenFormat === 'svg') {
+        // show inline SVG
+        try {
+          const wrapper = document.createElement('div');
+          wrapper.style.width = '100%';
+          wrapper.style.display = 'flex';
+          wrapper.style.flexDirection = 'column';
+          wrapper.style.alignItems = 'center';
+          // sanitize and insert svg
+          const svgNode = (new DOMParser()).parseFromString(svgText, 'image/svg+xml').documentElement;
+          svgNode.style.maxWidth = '100%';
+          svgNode.style.height = 'auto';
+          wrapper.appendChild(svgNode);
+          if (label) {
+            const lbl = document.createElement('div'); lbl.textContent = label; lbl.style.marginTop = '8px'; lbl.style.color = 'var(--muted)';
+            wrapper.appendChild(lbl);
+          }
+          qrCanvasWrap.appendChild(wrapper);
+        } catch (e) {
+          // fallback to png
+          const img = document.createElement('img');
+          img.className = 'qr-img';
+          img.src = pngDataUrl;
+          qrCanvasWrap.appendChild(img);
+        }
+      } else {
+        const img = document.createElement('img');
+        img.className = 'qr-img';
+        img.src = pngDataUrl;
+        qrCanvasWrap.appendChild(img);
+        if (label) {
+          const lbl = document.createElement('div'); lbl.textContent = label; lbl.style.marginTop = '8px'; lbl.style.color = 'var(--muted)';
+          qrCanvasWrap.appendChild(lbl);
+        }
+      }
+    }
+
+    // Download helpers
+    function downloadDataUrl(dataUrl, filename) {
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(()=>{ try{ document.body.removeChild(a); }catch(e){} }, 200);
+    }
+
+    function downloadSvgText(svgText, filename) {
+      const blob = new Blob([svgText], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(()=> { URL.revokeObjectURL(url); try{ document.body.removeChild(a);}catch(e){} }, 300);
+    }
+
+    // PNG download triggers downloadDataUrl with dataURL
+    downloadPngBtn.addEventListener('click', () => {
+      if (!lastDataUrl) return;
+      const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+      downloadDataUrl(lastDataUrl, `qrcode_${ts}.png`);
+    });
+
+    downloadSvgBtn.addEventListener('click', () => {
+      if (!lastSvgText) return;
+      const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+      downloadSvgText(lastSvgText, `qrcode_${ts}.svg`);
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      // copy PNG data URL or SVG text depending on format
+      try {
+        if (outFormat.value === 'svg' && lastSvgText) {
+          await navigator.clipboard.writeText(lastSvgText);
+          status.textContent = 'SVG copied to clipboard.';
+        } else if (lastDataUrl) {
+          await navigator.clipboard.writeText(lastDataUrl);
+          status.textContent = 'PNG data URL copied to clipboard.';
+        } else {
+          status.textContent = 'Nothing to copy.';
+        }
+      } catch (err) {
+        console.error('copy failed', err);
+        status.textContent = 'Clipboard copy failed (browser may block it).';
+      }
+    });
+
+    // Live preview option — toggles auto-generation on input changes
+    let livePreview = false;
+    let liveTimer = null;
+    previewBtn.addEventListener('click', () => {
+      livePreview = !livePreview;
+      previewBtn.classList.toggle('btn-primary', livePreview);
+      previewBtn.classList.toggle('btn-secondary', !livePreview);
+      previewBtn.innerHTML = livePreview ? '<i class="fa-solid fa-eye"></i> Live ON' : '<i class="fa-solid fa-eye"></i> Live Preview';
+      if (livePreview) {
+        // generate immediately and then attach listeners
+        generateQR({ autoPreview: true });
+        attachLiveListeners();
+      } else {
+        detachLiveListeners();
+      }
+    });
+
+    function attachLiveListeners() {
+      detachLiveListeners(); // ensure idempotent
+      // debounce handler
+      liveTimer = (function() {
+        let id = null;
+        return function() {
+          if (id) clearTimeout(id);
+          id = setTimeout(()=> { generateQR({ autoPreview:true }); id = null; }, 600);
+        };
+      })();
+      textInput.addEventListener('input', liveTimer);
+      sizeInput.addEventListener('input', liveTimer);
+      marginInput.addEventListener('input', liveTimer);
+      ecLevel.addEventListener('change', liveTimer);
+      fgColor.addEventListener('input', liveTimer);
+      bgColor.addEventListener('input', liveTimer);
+      outFormat.addEventListener('change', liveTimer);
+      labelInput.addEventListener('input', liveTimer);
+    }
+
+    function detachLiveListeners() {
+      // remove generic handlers by cloning nodes (simple approach)
+      const newText = textInput.cloneNode(true);
+      textInput.parentNode.replaceChild(newText, textInput);
+      // reassign references and re-bind essential ones that were added earlier
+      // (we only changed the element reference - now re-get elements)
+      refreshElementRefs();
+      liveTimer = null;
+    }
+
+    function refreshElementRefs(){
+      // re-acquire elements that may have been replaced
+      window.textInput = document.getElementById('textInput');
+      window.sizeInput = document.getElementById('sizeInput');
+      window.marginInput = document.getElementById('marginInput');
+      window.ecLevel = document.getElementById('ecLevel');
+      window.outFormat = document.getElementById('outFormat');
+      window.fgColor = document.getElementById('fgColor');
+      window.bgColor = document.getElementById('bgColor');
+      window.labelInput = document.getElementById('labelInput');
+      // re-hook basic event listeners that don't depend on livePreview
+      // (we don't re-bind generate/clear/download since they remain)
+    }
+
+    // Generate on button click
+    generateBtn.addEventListener('click', () => generateQR());
+
+    // Clear
+    clearBtn.addEventListener('click', () => {
+      textInput.value = '';
+      labelInput.value = '';
+      qrCanvasWrap.innerHTML = '';
+      lastDataUrl = null;
+      lastSvgText = null;
+      downloadPngBtn.disabled = true;
+      downloadSvgBtn.disabled = true;
+      copyBtn.disabled = true;
+      summaryText.textContent = 'Cleared';
+      status.textContent = 'Inputs cleared.';
+      downloadHint.textContent = 'Generate first to enable downloads.';
+    });
+
+    // Handle format select change to re-render preview accordingly if already generated
+    outFormat.addEventListener('change', () => {
+      if (lastDataUrl || lastSvgText) {
+        renderPreview(lastDataUrl, lastSvgText, labelInput.value.trim());
+      }
+    });
+
+    // keyboard: Ctrl+Enter to generate
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { generateQR(); }
+    });
+
+    // Initial UI state
+    downloadPngBtn.disabled = true;
+    downloadSvgBtn.disabled = true;
+    copyBtn.disabled = true;
+    updateMeta();
+
+    // Expose quick API on window for debugging
+    window._qr_generator_state = () => ({ lastConfig, lastDataUrlExists: !!lastDataUrl, lastSvgExists: !!lastSvgText });
+
+  </script>
+</body>
+</html>
