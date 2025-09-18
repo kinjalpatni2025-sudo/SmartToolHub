@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>HTML → PDF Converter - Smarttool Hub (Fixed)</title>
-  <meta name="description" content="Convert HTML to PDF in-browser. Improved generation to avoid blank PDFs." />
+  <title>HTML → PDF Converter - Reliable (html2canvas + jsPDF)</title>
+  <meta name="description" content="Convert HTML to PDF in the browser using html2canvas + jsPDF. Improved to avoid blank PDFs." />
   <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
   <style>
@@ -78,8 +78,8 @@
 
   <main class="container">
     <div class="tool-content">
-      <h1 class="tool-title">HTML → PDF Converter</h1>
-      <p class="tool-description">Paste HTML or upload an .html file, preview it, then convert the rendered output to PDF entirely in your browser.</p>
+      <h1 class="tool-title">HTML → PDF Converter (Reliable)</h1>
+      <p class="tool-description">Paste HTML or upload an .html file, preview it, then convert the rendered output to PDF using html2canvas + jsPDF. This approach reduces blank PDF issues.</p>
 
       <div class="grid">
         <!-- LEFT: HTML editor & controls -->
@@ -87,7 +87,7 @@
           <div class="card">
             <div style="display:flex;gap:8px;align-items:center;">
               <strong>Input HTML</strong>
-              <div class="small" style="margin-left:auto">You can paste HTML or upload a .html file</div>
+              <div class="small" style="margin-left:auto">Paste HTML or upload a .html file</div>
             </div>
 
             <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
@@ -99,7 +99,7 @@
 
             <div style="margin-top:12px;">
               <textarea id="htmlInput" class="textarea" placeholder="Paste HTML here...">&lt;!doctype html&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta charset="utf-8"&gt;&lt;title&gt;Example&lt;/title&gt;&lt;style&gt;body{font-family:system-ui,Arial;color:#111;padding:20px;}h1{color:#0b74ff}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;h1&gt;Hello from Smarttool Hub&lt;/h1&gt;&lt;p&gt;This HTML will be rendered and converted to PDF.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</textarea>
+&lt;html&gt;&lt;head&gt;&lt;meta charset="utf-8"&gt;&lt;title&gt;Example&lt;/title&gt;&lt;style&gt;body{font-family:system-ui,Arial;color:#111;padding:20px;}h1{color:#0b74ff}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;h1&gt;Hello — test PDF&lt;/h1&gt;&lt;p&gt;If this shows in preview, it should appear in PDF.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</textarea>
             </div>
 
             <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
@@ -126,8 +126,8 @@
               </div>
 
               <div class="options">
-                <label class="small">Scale (html2canvas)</label>
-                <input id="scale" class="input" type="number" min="1" max="3" step="0.1" value="1.5" style="width:80px">
+                <label class="small">Scale (canvas)</label>
+                <input id="scale" class="input" type="number" min="1" max="3" step="0.1" value="2" style="width:80px">
               </div>
             </div>
 
@@ -138,16 +138,15 @@
               <div style="margin-left:auto;color:var(--muted);font-weight:700" id="summaryText">Ready</div>
             </div>
 
-            <div class="status" id="statusText">Tip: External images/CSS may be blocked by CORS; inline CSS works best.</div>
+            <div class="status" id="statusText">Tip: Inline CSS and images with CORS enabled work best. If preview looks right but PDF is blank, check console for errors.</div>
           </div>
 
-          <!-- small tips card -->
           <div class="card small">
-            <strong>Notes & tips</strong>
+            <strong>Notes & debugging</strong>
             <ul style="margin-top:8px;line-height:1.5;color:var(--muted)">
-              <li>Everything is client-side; no server upload.</li>
-              <li>External images/CSS require accessible URLs (CORS may block some resources).</li>
-              <li>If the PDF is blank, ensure preview displays correctly before generating.</li>
+              <li>Make sure the preview shows the content (Load Preview).</li>
+              <li>External images require CORS (Access-Control-Allow-Origin) to be rendered by html2canvas.</li>
+              <li>Open DevTools → Console to see errors if PDF is blank.</li>
             </ul>
           </div>
         </div>
@@ -157,9 +156,8 @@
           <div class="card preview-wrap">
             <div style="display:flex;justify-content:space-between;align-items:center">
               <strong>Preview</strong>
-              <div class="small">Rendered HTML — what will be printed</div>
+              <div class="small">Rendered HTML — what will be captured</div>
             </div>
-            <!-- sandbox allows same-origin when using srcdoc; keep allow-same-origin+allow-scripts for inline scripts -->
             <iframe id="previewFrame" class="preview-frame" sandbox="allow-same-origin allow-scripts"></iframe>
             <div style="display:flex;gap:8px;align-items:center">
               <button id="refreshPreviewBtn" class="btn btn-secondary"><i class="fa-solid fa-arrows-rotate"></i> Refresh Preview</button>
@@ -192,8 +190,9 @@
     </div>
   </footer>
 
-  <!-- html2pdf (bundle includes html2canvas + jsPDF) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+  <!-- libs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
   <script>
     // UI & theme
@@ -206,7 +205,7 @@
       else { themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); }
     };
 
-    // Elements
+    // elements
     const htmlInput = document.getElementById('htmlInput');
     const htmlFile = document.getElementById('htmlFile');
     const loadToPreview = document.getElementById('loadToPreview');
@@ -233,17 +232,14 @@
     let lastPdfBlob = null;
     let lastPdfUrl = null;
 
-    // Helpers
+    // helpers
     function showStatus(msg, timeout=4000) {
       statusText.textContent = msg;
-      if (timeout) {
-        setTimeout(()=> {
-          statusText.textContent = 'Tip: External images/CSS may be blocked by CORS; inline CSS works best.';
-        }, timeout);
-      }
+      if (timeout) setTimeout(()=> { statusText.textContent = 'Tip: Inline CSS and images with CORS enabled work best.'; }, timeout);
     }
+    function formatFileSize(bytes){ return bytes ? Math.round(bytes/1024) + ' KB' : '0 KB'; }
 
-    // Read HTML file upload
+    // file upload
     htmlFile.addEventListener('change', async (e) => {
       const f = e.target.files && e.target.files[0];
       if (!f) return;
@@ -259,49 +255,42 @@
       }
     });
 
-    // Load HTML into preview iframe via srcdoc
+    // preview load
     async function loadPreview() {
       const html = htmlInput.value || '<p style="padding:20px">No HTML provided</p>';
-      // Assign srcdoc; previewFrame must have sandbox allow-same-origin to access contentDocument
+      // Use srcdoc -> same-origin so html2canvas can access DOM
       previewFrame.srcdoc = html;
-      // wait until iframe content is ready
       await waitForIframeLoad(previewFrame, 1500);
-      showStatus('Preview loaded. If external resources are not visible, CORS may be blocking them.');
+      showStatus('Preview loaded. If images are missing, CORS may block them.');
     }
     loadToPreview.addEventListener('click', loadPreview);
 
     refreshPreviewBtn.addEventListener('click', async () => {
       const doc = previewFrame.srcdoc;
       previewFrame.srcdoc = '';
-      setTimeout(()=> { previewFrame.srcdoc = doc; }, 50);
+      setTimeout(()=> { previewFrame.srcdoc = doc; }, 40);
       await waitForIframeLoad(previewFrame, 1500);
       showStatus('Preview refreshed');
     });
 
-    // Print preview iframe
     printPreviewBtn.addEventListener('click', () => {
       try {
         previewFrame.contentWindow.focus();
         previewFrame.contentWindow.print();
       } catch (err) {
-        // fallback: open in new tab and print
         const w = window.open();
         w.document.open();
         w.document.write(htmlInput.value || '<p>No preview</p>');
         w.document.close();
         w.focus();
-        setTimeout(()=> w.print(), 600);
+        setTimeout(()=> w.print(), 500);
       }
     });
 
-    // Download the HTML content as a .html file
     downloadHtmlBtn.addEventListener('click', () => {
       const blob = new Blob([htmlInput.value || ''], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `exported_html_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.html`;
-      document.body.appendChild(a); a.click();
+      const a = document.createElement('a'); a.href = url; a.download = `exported_html_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.html`; document.body.appendChild(a); a.click();
       setTimeout(()=> { URL.revokeObjectURL(url); try{document.body.removeChild(a);}catch(e){} }, 400);
     });
 
@@ -311,161 +300,189 @@
       showStatus('Editor cleared');
     });
 
-    // Wait helper for iframe loaded state
+    // wait for iframe load
     function waitForIframeLoad(iframe, timeout=2000) {
       return new Promise((resolve) => {
-        let cleared = false;
-        function done() { if (!cleared) { cleared = true; resolve(); } }
+        let done = false;
+        function finish(){ if(!done){ done=true; resolve(); } }
         try {
-          // If same-origin and readyState available
           const doc = iframe.contentDocument;
-          if (doc && (doc.readyState === 'complete' || doc.readyState === 'interactive')) return done();
-        } catch (e) { /* cross-origin or not ready; continue to onload */ }
-        const timer = setTimeout(() => { iframe.removeEventListener('load', onload); done(); }, timeout);
-        function onload() { clearTimeout(timer); iframe.removeEventListener('load', onload); done(); }
+          if (doc && (doc.readyState === 'complete' || doc.readyState === 'interactive')) return finish();
+        } catch(e){}
+        const t = setTimeout(()=> { iframe.removeEventListener('load', onload); finish(); }, timeout);
+        function onload(){ clearTimeout(t); iframe.removeEventListener('load', onload); finish(); }
         iframe.addEventListener('load', onload);
       });
     }
 
-    // Core: generate PDF and capture Blob reliably
+    // Core: capture preview iframe body with html2canvas then create PDF with jsPDF
     generatePdfBtn.addEventListener('click', async () => {
-      // ensure preview is loaded; load if not
+      // ensure preview loaded
       if (!previewFrame.srcdoc || previewFrame.srcdoc.trim() === '') {
         await loadPreview();
       } else {
-        await waitForIframeLoad(previewFrame, 1500);
+        await waitForIframeLoad(previewFrame, 1200);
       }
 
-      // Build offscreen container and clone the iframe's documentElement to preserve head styles
-      let offscreen = document.getElementById('html2pdf_offscreen_container');
-      if (offscreen) offscreen.remove();
-      offscreen = document.createElement('div');
-      offscreen.id = 'html2pdf_offscreen_container';
-      // position offscreen but visible to layout engine
-      offscreen.style.position = 'fixed';
-      offscreen.style.left = '-9999px';
-      offscreen.style.top = '-9999px';
-      offscreen.style.width = '1000px';
-      offscreen.style.height = '1000px';
-      offscreen.style.overflow = 'visible';
-      offscreen.style.background = '#ffffff';
-      document.body.appendChild(offscreen);
-
-      // Try to clone the preview iframe's document for best fidelity
+      // get iframe document body
+      let targetBody;
       try {
-        const srcDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
-        // Clone the entire documentElement (head+body). Using outerHTML preserves <style> and inline scripts (scripts won't run in offscreen).
-        const cloneHtml = srcDoc.documentElement.cloneNode(true);
-        // Force base tag for relative URLs to work (point to current origin)
-        const base = srcDoc.querySelector('base') || null;
-        if (!base) {
-          const baseEl = srcDoc.createElement('base');
-          baseEl.href = window.location.href;
-          // inject into clone's head
-          const cloneHead = cloneHtml.querySelector('head');
-          if (cloneHead) cloneHead.insertBefore(baseEl, cloneHead.firstChild);
-        }
-        // Insert cloned HTML into offscreen wrapper
-        // Use outerHTML to get full doc; then set innerHTML of wrapper
-        offscreen.innerHTML = cloneHtml.outerHTML;
+        targetBody = previewFrame.contentDocument.body;
+        if (!targetBody) throw new Error('iframe body not accessible');
       } catch (err) {
-        // fallback: use raw HTML input
-        console.warn('Clone failed, falling back to raw HTML', err);
-        const wrapper = document.createElement('div');
-        wrapper.innerHTML = htmlInput.value || '<div style="padding:20px">No content</div>';
-        offscreen.appendChild(wrapper);
+        console.error('Cannot access iframe body (same-origin issue?)', err);
+        showStatus('Cannot access preview DOM. Ensure preview was loaded via "Load Preview" and not blocked by cross-origin restrictions.', 8000);
+        return;
       }
 
-      // html2pdf options
-      const format = pageSize.value || 'a4';
-      const orient = orientation.value || 'portrait';
-      const margin = parseFloat(marginMM.value) || 10;
-      const scaleVal = Math.max(1, Math.min(3, Number(scale.value) || 1.5));
+      // build an offscreen clone container to give html2canvas consistent measurement (and white background)
+      const clone = targetBody.cloneNode(true);
+      const off = document.createElement('div');
+      off.style.position = 'fixed';
+      off.style.left = '-9999px';
+      off.style.top = '-9999px';
+      off.style.width = (previewFrame.clientWidth || 900) + 'px';
+      off.style.background = '#ffffff';
+      off.style.padding = '0';
+      off.appendChild(clone);
+      document.body.appendChild(off);
 
-      const opt = {
-        margin,
-        filename: `html_export_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: scaleVal, useCORS: true, logging: false },
-        jsPDF: { unit: 'mm', format, orientation: orient }
-      };
+      // optionally inject base tag to help relative urls (use current location)
+      try {
+        const base = document.createElement('base');
+        base.href = window.location.href;
+        const head = clone.ownerDocument && clone.ownerDocument.querySelector ? clone.ownerDocument.querySelector('head') : null;
+        // if clone contains head, insert base; otherwise set no-op (not critical)
+        // (we can't reliably access clone's head when cloning body-only; so we skip if not present)
+        // NOTE: relative resources may still fail due to CORS or origin mismatch
+      } catch (e){ /* ignore */ }
 
-      // UI state
+      // capture with html2canvas
+      const scaleVal = Math.max(1, Math.min(3, Number(scale.value) || 2));
+      showStatus('Capturing preview to image — please wait...', 10000);
       generatePdfBtn.disabled = true;
-      summaryText.textContent = 'Rendering PDF...';
-      showStatus('Rendering to PDF — this may take a few seconds depending on content', 10000);
-
+      summaryText.textContent = 'Capturing...';
+      let canvas;
       try {
-        // Use html2pdf to get a blob directly
-        // html2pdf().set(opt).from(offscreen).save() triggers download; we prefer to capture blob so we can offer open/download separately.
-        // html2pdf has outputPdf('blob') via its internal pipeline; use outputPdf('blob') and await result.
-        const api = html2pdf().set(opt).from(offscreen);
-        // First try to get blob through outputPdf
-        let pdfBlob = null;
-        try {
-          pdfBlob = await api.outputPdf('blob');
-        } catch (err) {
-          console.warn('outputPdf failed, trying fallback save+capture', err);
-        }
-
-        // If pdfBlob is missing, call save() (this triggers a download) and attempt to reconstruct via getPdf() pipeline
-        if (!pdfBlob) {
-          // As a fallback: call save() which triggers native download (old behavior)
-          await api.save(); // user will get downloaded file
-          // try output again to capture blob (some browsers may still allow)
-          try { pdfBlob = await api.outputPdf('blob'); } catch (e) { pdfBlob = null; }
-        }
-
-        if (pdfBlob) {
-          // store blob and enable controls
-          if (lastPdfUrl) { URL.revokeObjectURL(lastPdfUrl); lastPdfUrl = null; }
-          lastPdfBlob = pdfBlob;
-          lastPdfUrl = URL.createObjectURL(pdfBlob);
-          downloadPdfBtn.disabled = false;
-          openNewTabBtn.disabled = false;
-          clearOutputBtn.disabled = false;
-          lastOutputInfo.textContent = `Last PDF ready — ${Math.round(pdfBlob.size/1024)} KB`;
-          summaryText.textContent = 'PDF generated';
-          showStatus('PDF generated (download available).', 4000);
-        } else {
-          // inform user: save already triggered a download but we couldn't capture blob
-          lastOutputInfo.textContent = 'PDF was downloaded (could not capture blob).';
-          downloadPdfBtn.disabled = true;
-          openNewTabBtn.disabled = true;
-          clearOutputBtn.disabled = false;
-          summaryText.textContent = 'PDF generated (downloaded)';
-          showStatus('PDF downloaded. If it was blank, check preview and CORS for external resources.', 6000);
-        }
+        canvas = await html2canvas(clone, {
+          scale: scaleVal,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+          windowWidth: previewFrame.clientWidth || 1000,
+        });
       } catch (err) {
-        console.error('PDF generation failed', err);
-        showStatus('Failed to generate PDF. See console for details.', 8000);
-        summaryText.textContent = 'Error';
+        console.error('html2canvas failed', err);
+        showStatus('Rendering failed (see console). Try simpler HTML or inline images.', 8000);
+        generatePdfBtn.disabled = false;
+        off.remove();
+        return;
+      }
+
+      // convert canvas -> image data
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+      // create jsPDF document and split into pages if needed
+      try {
+        const { jsPDF } = window.jspdf;
+        const format = pageSize.value || 'a4';
+        const orient = orientation.value || 'portrait';
+        const margin = Number(marginMM.value) || 10; // mm
+        // page dimensions in mm (approx)
+        const pageDims = (formatName, orientationVal) => {
+          // mm sizes for common formats (portrait)
+          const sizes = { a4: {w:210,h:297}, letter: {w:216,h:279}, a3: {w:297,h:420} };
+          let s = sizes[formatName] || sizes.a4;
+          if (orientationVal === 'landscape') return { w: s.h, h: s.w };
+          return s;
+        };
+        const dims = pageDims(format, orient);
+        // convert mm to px at 96dpi: px = mm * 96 / 25.4
+        const mmToPx = mm => mm * 96 / 25.4;
+        const pageWpx = mmToPx(dims.w - margin*2);
+        const pageHpx = mmToPx(dims.h - margin*2);
+
+        // But our canvas is in px (scaled). We'll slice canvas vertically into page-sized pieces based on pageHpx.
+        const canvasW = canvas.width;
+        const canvasH = canvas.height;
+        // scale factor between canvas px and pdf mm units
+        // when adding image to jsPDF, we give width/height in mm. We'll compute image width in mm for the page content area:
+        const contentWidthMM = dims.w - margin*2;
+        const contentHeightMM = dims.h - margin*2;
+
+        // compute corresponding image width in px for content width
+        const imgWidthPxForContent = (canvasW / canvasW) * canvasW; // simply canvasW
+        // We'll scale each slice proportionally: image slice height in px corresponding to pageHeightMM:
+        const ratio = canvasW / contentWidthMM; // px per mm (approx)
+        // sliceHeight in px = contentHeightMM * ratio
+        const sliceHeightPx = Math.round(contentHeightMM * ratio);
+
+        // create jsPDF
+        const doc = new jsPDF({ unit: 'mm', format: [dims.w, dims.h], orientation: orient });
+
+        let yPosPx = 0;
+        let pageIndex = 0;
+        while (yPosPx < canvasH) {
+          pageIndex++;
+          // create slice canvas
+          const sliceCanvas = document.createElement('canvas');
+          sliceCanvas.width = canvasW;
+          sliceCanvas.height = Math.min(sliceHeightPx, canvasH - yPosPx);
+          const sctx = sliceCanvas.getContext('2d');
+          sctx.fillStyle = '#fff';
+          sctx.fillRect(0,0,sliceCanvas.width,sliceCanvas.height);
+          sctx.drawImage(canvas, 0, yPosPx, canvasW, sliceCanvas.height, 0, 0, canvasW, sliceCanvas.height);
+
+          const sliceData = sliceCanvas.toDataURL('image/jpeg', 0.95);
+          // compute image height in mm for jsPDF: heightMM = (sliceCanvas.height / canvasW) * contentWidthMM
+          const heightMM = (sliceCanvas.height * contentWidthMM) / canvasW;
+
+          const xMM = margin;
+          const yMM = margin;
+
+          if (pageIndex > 1) doc.addPage();
+          doc.addImage(sliceData, 'JPEG', xMM, yMM, contentWidthMM, heightMM);
+
+          yPosPx += sliceCanvas.height;
+        }
+
+        // output as blob
+        const arrayBuf = doc.output('arraybuffer');
+        const pdfBlob = new Blob([arrayBuf], { type: 'application/pdf' });
+        if (lastPdfUrl) { URL.revokeObjectURL(lastPdfUrl); lastPdfUrl = null; }
+        lastPdfBlob = pdfBlob;
+        lastPdfUrl = URL.createObjectURL(pdfBlob);
+        downloadPdfBtn.disabled = false;
+        openNewTabBtn.disabled = false;
+        clearOutputBtn.disabled = false;
+        lastOutputInfo.textContent = `Last PDF ready — ${formatFileSize(pdfBlob.size)}`;
+        summaryText.textContent = 'PDF ready';
+        showStatus('PDF generated successfully.');
+      } catch (err) {
+        console.error('jsPDF processing failed', err);
+        showStatus('Failed to assemble PDF (see console).', 8000);
       } finally {
         generatePdfBtn.disabled = false;
-        // clean up offscreen after short delay to let html2pdf finish any async tasks
-        setTimeout(()=> { try { offscreen.remove(); } catch(e){} }, 900);
+        try { off.remove(); } catch(e){}
       }
     });
 
-    // Download last captured blob
+    // download / open handlers
     downloadPdfBtn.addEventListener('click', () => {
-      if (!lastPdfBlob) { showStatus('No PDF available to download', 3000); return; }
+      if (!lastPdfBlob) { showStatus('No PDF available to download'); return; }
       const url = lastPdfUrl || URL.createObjectURL(lastPdfBlob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `html_export_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(()=> { try{ document.body.removeChild(a); } catch(e){} }, 300);
+      document.body.appendChild(a); a.click();
+      setTimeout(()=> { try{ document.body.removeChild(a); }catch(e){} }, 300);
     });
 
-    // Open last blob in new tab
     openNewTabBtn.addEventListener('click', () => {
-      if (!lastPdfUrl) { showStatus('No PDF blob available to open', 3000); return; }
+      if (!lastPdfUrl) { showStatus('No PDF to open'); return; }
       window.open(lastPdfUrl, '_blank');
     });
 
-    // Clear last output
     clearOutputBtn.addEventListener('click', () => {
       if (lastPdfUrl) { URL.revokeObjectURL(lastPdfUrl); lastPdfUrl = null; }
       lastPdfBlob = null;
@@ -473,13 +490,11 @@
       downloadPdfBtn.disabled = true;
       openNewTabBtn.disabled = true;
       clearOutputBtn.disabled = true;
-      showStatus('Last output cleared', 2500);
+      showStatus('Last output cleared');
     });
 
-    // Initialize preview on load so user sees sample
-    (function initPreview() {
-      loadPreview().then(()=>{ summaryText.textContent = 'Ready'; }).catch(()=>{ summaryText.textContent = 'Ready'; });
-    })();
+    // init: load preview sample
+    (function init(){ loadPreview().catch(()=>{}); })();
   </script>
 </body>
 </html>
