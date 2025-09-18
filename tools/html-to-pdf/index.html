@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HTML → PDF Converter - Smarttool Hub</title>
+  <meta name="description" content="Convert an HTML snippet or file to PDF in the browser. Keep exact design like other tools." />
+  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+  <style>
+    /* Design matching your uploaded tools */
+    :root{--bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;--primary:#22d3ee;--muted:#9fb3c8;--radius:12px}
+    body.light{--bg:#f6f8fb;--text:#0b1220;--card:#ffffff;--border:#e6eefc;--primary:#0b74ff;--muted:#556677}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;transition:background .25s,color .25s}
+    .container{max-width:1200px;margin:0 auto;padding:20px;width:100%}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand img{width:46px;height:46px;border-radius:10px}
+    .brand .title{font-size:1.25rem;font-weight:700;color:var(--primary);margin:0}
+    .brand .tag{font-size:.9rem;color:var(--muted)}
+    .header-actions{display:flex;gap:10px;align-items:center}
+    .btn-header{border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;font-weight:600}
+    .btn-header:hover{border-color:var(--primary);color:var(--primary)}
+
+    .tool-content { background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:22px;margin-top:20px; }
+    .tool-title { font-size:1.6rem;margin-bottom:6px;color:var(--primary); }
+    .tool-description { color:var(--muted);margin-bottom:16px; }
+
+    .grid { display:grid; grid-template-columns: 1fr 420px; gap:16px; align-items:start; }
+    @media (max-width:980px){ .grid { grid-template-columns: 1fr; } }
+
+    .left-panel { display:flex;flex-direction:column;gap:12px; }
+    .right-panel { display:flex;flex-direction:column;gap:12px; }
+
+    .card { background:var(--bg); border:1px solid var(--border); padding:12px; border-radius:10px; }
+
+    .controls-row { display:flex;gap:8px;align-items:center;flex-wrap:wrap; }
+    .input, .select, .textarea, .file-input { background:var(--card); border:1px solid var(--border); padding:8px 10px; border-radius:8px; color:var(--text); outline:none; width:100% }
+    .textarea { min-height:260px; resize:vertical; font-family:monospace; font-size:0.95rem; }
+    .file-input { display:none; }
+    .small { color:var(--muted); font-size:0.9rem; }
+
+    .preview-frame { width:100%; height:640px; border-radius:8px; border:1px solid var(--border); background:#fff; overflow:auto; }
+    .preview-wrap { min-height:320px; display:flex;flex-direction:column;gap:8px; align-items:stretch; }
+
+    .btn { padding:10px 14px; border-radius:10px; border:none; font-weight:700; cursor:pointer; display:inline-flex; gap:8px; align-items:center; }
+    .btn-primary { background:var(--primary); color:#00131f; }
+    .btn-secondary { background:var(--card); border:1px solid var(--border); color:var(--text); }
+    .btn:disabled { opacity:0.6; cursor:not-allowed; }
+
+    .options { display:flex;gap:10px;align-items:center;flex-wrap:wrap; }
+
+    .status { margin-top:8px; color:var(--muted); font-size:0.9rem; }
+
+    footer{margin-top:auto;padding:16px 0;background:var(--card);border-top:1px solid var(--border)}
+    .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap}
+    .footer-links a{color:var(--primary);text-decoration:none;font-weight:600}
+  </style>
+</head>
+<body>
+  <header class="container">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+        <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub Logo">
+        <div>
+          <div class="title">Smarttool Hub</div>
+          <div class="tag">Fast • Private • 100% Client-side</div>
+        </div>
+      </a>
+    </div>
+    <div class="header-actions">
+      <a href="index.html" class="btn-header"><i class="fa-solid fa-house"></i> Home</a>
+      <button class="btn-header" id="themeToggle" title="Toggle dark/light mode"><i class="fa-solid fa-moon"></i></button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="tool-content">
+      <h1 class="tool-title">HTML → PDF Converter</h1>
+      <p class="tool-description">Paste HTML or upload an .html file, preview it, then convert the rendered output to PDF entirely in your browser (uses html2pdf / html2canvas + jsPDF).</p>
+
+      <div class="grid">
+        <!-- LEFT: HTML editor & controls -->
+        <div class="left-panel">
+          <div class="card">
+            <div style="display:flex;gap:8px;align-items:center;">
+              <strong>Input HTML</strong>
+              <div class="small" style="margin-left:auto">You can paste HTML or upload a .html file</div>
+            </div>
+
+            <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
+              <label for="htmlFile" class="btn btn-secondary" style="cursor:pointer"><i class="fa-solid fa-upload"></i> Upload HTML</label>
+              <input id="htmlFile" class="file-input" type="file" accept=".html,.htm,text/html">
+              <button id="loadToPreview" class="btn btn-secondary"><i class="fa-solid fa-eye"></i> Load Preview</button>
+              <button id="clearHtml" class="btn btn-secondary"><i class="fa-solid fa-trash"></i> Clear</button>
+            </div>
+
+            <div style="margin-top:12px;">
+              <textarea id="htmlInput" class="textarea" placeholder="Paste HTML here...">&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta charset="utf-8"&gt;&lt;title&gt;Example&lt;/title&gt;&lt;/head&gt;&lt;body style="font-family:system-ui, Arial; padding:20px;"&gt;&lt;h1&gt;Hello from Smarttool Hub&lt;/h1&gt;&lt;p&gt;This HTML will be rendered and converted to PDF.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</textarea>
+            </div>
+
+            <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <div class="options" style="align-items:center;">
+                <label class="small">Page size</label>
+                <select id="pageSize" class="select" style="width:110px">
+                  <option value="a4" selected>A4</option>
+                  <option value="letter">Letter</option>
+                  <option value="a3">A3</option>
+                </select>
+              </div>
+
+              <div class="options">
+                <label class="small">Orientation</label>
+                <select id="orientation" class="select" style="width:110px">
+                  <option value="portrait" selected>Portrait</option>
+                  <option value="landscape">Landscape</option>
+                </select>
+              </div>
+
+              <div class="options">
+                <label class="small">Margin (mm)</label>
+                <input id="marginMM" class="input" type="number" min="0" max="40" value="10" style="width:80px">
+              </div>
+
+              <div class="options">
+                <label class="small">Scale / quality</label>
+                <input id="scale" class="input" type="number" min="1" max="3" step="0.1" value="1.5" style="width:80px">
+              </div>
+            </div>
+
+            <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+              <button id="generatePdfBtn" class="btn btn-primary"><i class="fa-solid fa-file-pdf"></i> Generate PDF</button>
+              <button id="downloadPdfBtn" class="btn btn-secondary" disabled><i class="fa-solid fa-download"></i> Download Last PDF</button>
+              <button id="openNewTabBtn" class="btn btn-secondary" disabled><i class="fa-solid fa-up-right-from-square"></i> Open PDF</button>
+              <div style="margin-left:auto;color:var(--muted);font-weight:700" id="summaryText">Ready</div>
+            </div>
+
+            <div class="status" id="statusText">Tip: CSS and external resources must be reachable from the browser to render. Inline styles work best.</div>
+          </div>
+
+          <!-- small tips card -->
+          <div class="card small">
+            <strong>Notes & tips</strong>
+            <ul style="margin-top:8px;line-height:1.5;color:var(--muted)">
+              <li>Everything is client-side; no server upload.</li>
+              <li>External images/CSS require accessible URLs (CORS may block some resources).</li>
+              <li>For best results, test rendering in the preview before generating PDF.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- RIGHT: Preview + output -->
+        <div class="right-panel">
+          <div class="card preview-wrap">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <strong>Preview</strong>
+              <div class="small">Rendered HTML — what will be printed</div>
+            </div>
+            <iframe id="previewFrame" class="preview-frame" sandbox="allow-same-origin allow-scripts"></iframe>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button id="refreshPreviewBtn" class="btn btn-secondary"><i class="fa-solid fa-arrows-rotate"></i> Refresh Preview</button>
+              <button id="printPreviewBtn" class="btn btn-secondary"><i class="fa-solid fa-print"></i> Print Preview</button>
+              <button id="downloadHtmlBtn" class="btn btn-secondary"><i class="fa-solid fa-file-code"></i> Download HTML</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <strong>Last Output</strong>
+            <div id="lastOutputInfo" style="margin-top:8px;color:var(--muted)">No PDF generated yet.</div>
+            <div style="margin-top:10px;display:flex;gap:8px">
+              <button id="clearOutputBtn" class="btn btn-secondary" disabled><i class="fa-solid fa-trash"></i> Clear Output</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="container">
+    <div class="footer-inner">
+      <div>© <span id="year"></span> Smarttool Hub</div>
+      <div class="footer-links">
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- html2pdf (bundle includes html2canvas + jsPDF) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+
+  <script>
+    // Basic UI & theme
+    document.getElementById('year').textContent = new Date().getFullYear();
+    const themeToggle = document.getElementById('themeToggle');
+    if (localStorage.getItem('sth_theme') === 'light') { document.body.classList.add('light'); themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; }
+    themeToggle.onclick = () => {
+      document.body.classList.toggle('light');
+      if (document.body.classList.contains('light')) { themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; localStorage.setItem('sth_theme','light'); }
+      else { themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); }
+    };
+
+    // Elements
+    const htmlInput = document.getElementById('htmlInput');
+    const htmlFile = document.getElementById('htmlFile');
+    const loadToPreview = document.getElementById('loadToPreview');
+    const previewFrame = document.getElementById('previewFrame');
+    const refreshPreviewBtn = document.getElementById('refreshPreviewBtn');
+    const printPreviewBtn = document.getElementById('printPreviewBtn');
+    const downloadHtmlBtn = document.getElementById('downloadHtmlBtn');
+
+    const pageSize = document.getElementById('pageSize');
+    const orientation = document.getElementById('orientation');
+    const marginMM = document.getElementById('marginMM');
+    const scale = document.getElementById('scale');
+
+    const generatePdfBtn = document.getElementById('generatePdfBtn');
+    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+    const openNewTabBtn = document.getElementById('openNewTabBtn');
+    const clearHtml = document.getElementById('clearHtml');
+    const clearOutputBtn = document.getElementById('clearOutputBtn');
+
+    const statusText = document.getElementById('statusText');
+    const lastOutputInfo = document.getElementById('lastOutputInfo');
+    const summaryText = document.getElementById('summaryText');
+
+    let lastPdfBlob = null;
+    let lastPdfUrl = null;
+
+    // Helpers
+    function showStatus(msg, timeout=3500) {
+      statusText.textContent = msg;
+      if (timeout) { setTimeout(()=> { statusText.textContent = 'Tip: CSS and external resources must be reachable from the browser to render. Inline styles work best.'; }, timeout); }
+    }
+
+    // Read HTML file upload
+    htmlFile.addEventListener('change', async (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      try {
+        const text = await f.text();
+        htmlInput.value = text;
+        showStatus('HTML file loaded into editor');
+      } catch (err) {
+        console.error('Failed to read file', err);
+        showStatus('Failed to read HTML file', 4000);
+      } finally {
+        htmlFile.value = '';
+      }
+    });
+
+    // Load HTML into preview iframe (using srcdoc)
+    function loadPreview() {
+      const html = htmlInput.value || '<p style="padding:20px">No HTML provided</p>';
+      // Use srcdoc to create an isolated document. Some browsers may ignore external resource CORS when using sandbox.
+      previewFrame.srcdoc = html;
+      showStatus('Preview loaded (use Refresh if external resources changed).');
+    }
+    loadToPreview.addEventListener('click', loadPreview);
+    refreshPreviewBtn.addEventListener('click', () => {
+      // reload current srcdoc content
+      // trick: reassign to force reload
+      const doc = previewFrame.srcdoc;
+      previewFrame.srcdoc = '';
+      setTimeout(()=> previewFrame.srcdoc = doc, 50);
+      showStatus('Preview refreshed');
+    });
+
+    // Print preview iframe
+    printPreviewBtn.addEventListener('click', () => {
+      try {
+        previewFrame.contentWindow.focus();
+        previewFrame.contentWindow.print();
+      } catch (err) {
+        // fallback: open in new tab and print
+        const w = window.open();
+        w.document.open();
+        w.document.write(htmlInput.value || '<p>No preview</p>');
+        w.document.close();
+        w.focus();
+        setTimeout(()=> w.print(), 600);
+      }
+    });
+
+    // Download the HTML content as a .html file
+    downloadHtmlBtn.addEventListener('click', () => {
+      const blob = new Blob([htmlInput.value || ''], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `exported_html_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.html`;
+      document.body.appendChild(a); a.click();
+      setTimeout(()=> { URL.revokeObjectURL(url); try{document.body.removeChild(a);}catch(e){} }, 400);
+    });
+
+    clearHtml.addEventListener('click', () => {
+      htmlInput.value = '';
+      previewFrame.srcdoc = '';
+      showStatus('Editor cleared');
+    });
+
+    // Generate PDF from the preview DOM (or raw HTML)
+    generatePdfBtn.addEventListener('click', async () => {
+      // take the preview frame content if present; fallback to building a fragment
+      let renderElement = null;
+
+      // create a container element in document (hidden) to render; using previewFrame's document provides exact rendering including external CSS,
+      // but html2pdf reads current document fragment; easiest robust approach: clone preview iframe's document body into a detached element in main page.
+      try {
+        // ensure preview loaded
+        if (previewFrame.srcdoc && previewFrame.contentDocument) {
+          // clone the body to maintain computed styles -> however computed styles cannot be transferred; but html2canvas will render inline styles and images.
+          const cloned = previewFrame.contentDocument.documentElement.cloneNode(true);
+          // create wrapper and append cloned html
+          const wrapper = document.createElement('div');
+          wrapper.style.background = '#ffffff';
+          wrapper.style.padding = '0';
+          wrapper.style.boxSizing = 'border-box';
+          // Use outerHTML of cloned documentElement (html tag) to preserve head (styles)
+          wrapper.innerHTML = cloned.outerHTML;
+          renderElement = wrapper;
+        } else {
+          // fallback: convert raw HTML into element
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = htmlInput.value || '<div style="padding:20px">No content</div>';
+          renderElement = wrapper;
+        }
+      } catch (err) {
+        console.warn('Preview clone failed, using raw HTML fallback', err);
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = htmlInput.value || '<div style="padding:20px">No content</div>';
+        renderElement = wrapper;
+      }
+
+      // Configure options for html2pdf
+      const format = pageSize.value || 'a4';
+      const orient = orientation.value || 'portrait';
+      const margin = Number(marginMM.value) || 10;
+      const scaleVal = Math.max(1, Math.min(3, Number(scale.value) || 1.5));
+
+      // Prepare filename
+      const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+      const filename = `html_export_${ts}.pdf`;
+
+      // Use html2pdf: it expects an element appended to DOM to measure and render accurately.
+      const offscreenContainerId = 'html2pdf_offscreen_container';
+      let offscreen = document.getElementById(offscreenContainerId);
+      if (offscreen) offscreen.remove();
+      offscreen = document.createElement('div');
+      offscreen.id = offscreenContainerId;
+      // keep it visually hidden but allow rendering
+      offscreen.style.position = 'fixed';
+      offscreen.style.left = '-9999px';
+      offscreen.style.top = '-9999px';
+      offscreen.style.width = (orientation.value === 'landscape' ? '297mm' : '210mm');
+      offscreen.style.height = (orientation.value === 'landscape' ? '210mm' : '297mm');
+      offscreen.style.overflow = 'visible';
+      document.body.appendChild(offscreen);
+      offscreen.appendChild(renderElement);
+
+      // html2pdf options (html2canvas + jsPDF)
+      const opt = {
+        margin: parseFloat(margin),
+        filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: scaleVal, useCORS: true, logging: false, windowWidth: previewFrame.clientWidth || 1200 },
+        jsPDF: { unit: 'mm', format, orientation: orient }
+      };
+
+      // disable buttons while generating
+      generatePdfBtn.disabled = true;
+      summaryText.textContent = 'Generating PDF...';
+      showStatus('Rendering to PDF — this may take a few seconds depending on content', 8000);
+
+      try {
+        // html2pdf returns a Promise
+        await html2pdf().set(opt).from(offscreen).save();
+
+        // html2pdf triggers a download automatically. We also capture the generated blob by using html2pdf().outputPdf('blob') is not supported directly.
+        // Workaround: generate blob ourselves using html2canvas + jsPDF. For simplicity, we will generate blob with html2pdf (via promise chain).
+        // Better approach: use html2pdf().from(offscreen).outputPdf('blob') — html2pdf exposes outputPdf via internal jsPDF wrapper.
+        // We'll attempt to get blob using the following sequence:
+        const pdfBlob = await html2pdf().set(opt).from(offscreen).outputPdf('blob').catch(()=>null);
+
+        // update UI with last output if available
+        if (pdfBlob) {
+          if (lastPdfUrl) { URL.revokeObjectURL(lastPdfUrl); lastPdfUrl = null; }
+          lastPdfBlob = pdfBlob;
+          lastPdfUrl = URL.createObjectURL(pdfBlob);
+          downloadPdfBtn.disabled = false;
+          openNewTabBtn.disabled = false;
+          clearOutputBtn.disabled = false;
+          lastOutputInfo.textContent = `Last PDF ready — ${Math.round(pdfBlob.size/1024)} KB`;
+          summaryText.textContent = 'PDF generated';
+          showStatus('PDF generated (download started).', 4000);
+        } else {
+          // If we couldn't get blob, still allow user to download (html2pdf already triggered a download)
+          summaryText.textContent = 'PDF generated (downloaded).';
+          lastOutputInfo.textContent = 'PDF downloaded (blob not captured).';
+          downloadPdfBtn.disabled = true;
+          openNewTabBtn.disabled = true;
+          clearOutputBtn.disabled = false;
+        }
+      } catch (err) {
+        console.error('PDF generation failed', err);
+        showStatus('Failed to generate PDF. Check console for details.', 6000);
+        summaryText.textContent = 'Error';
+      } finally {
+        generatePdfBtn.disabled = false;
+        // cleanup offscreen after a short delay to avoid interrupting potential downloads
+        setTimeout(()=> { try { offscreen.remove(); } catch(e){} }, 800);
+      }
+    });
+
+    // Attempt to open last generated PDF in new tab
+    openNewTabBtn.addEventListener('click', () => {
+      if (!lastPdfUrl) { showStatus('No PDF blob available to open', 3000); return; }
+      window.open(lastPdfUrl, '_blank');
+    });
+
+    // Download last blob if captured
+    downloadPdfBtn.addEventListener('click', () => {
+      if (!lastPdfBlob) { showStatus('No PDF available to download', 3000); return; }
+      const url = lastPdfUrl || URL.createObjectURL(lastPdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `html_export_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.pdf`;
+      document.body.appendChild(a); a.click();
+      setTimeout(()=> { try{ document.body.removeChild(a); } catch(e){} }, 300);
+    });
+
+    // Clear last output
+    clearOutputBtn.addEventListener('click', () => {
+      if (lastPdfUrl) { URL.revokeObjectURL(lastPdfUrl); lastPdfUrl = null; }
+      lastPdfBlob = null;
+      lastOutputInfo.textContent = 'No PDF generated yet.';
+      downloadPdfBtn.disabled = true;
+      openNewTabBtn.disabled = true;
+      clearOutputBtn.disabled = true;
+      showStatus('Last output cleared');
+    });
+
+    // Initialize preview on load (load default sample)
+    (function initPreview() {
+      loadPreview();
+      summaryText.textContent = 'Ready';
+    })();
+  </script>
+</body>
+</html>
