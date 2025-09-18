@@ -1,425 +1,545 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Delete PDF Pages — Smarttool Hub</title>
-  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png"/>
+  <title>Delete PDF Pages (Multi-file) - Smarttool Hub</title>
+  <meta name="description" content="Upload multiple PDFs, mark pages to delete, then download remaining pages per-file or merged. 100% client-side." />
+  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
   <style>
+    /* Keep exact design language used across your uploaded tools */
     :root{
       --bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;
       --primary:#22d3ee;--muted:#9fb3c8;--radius:12px;
     }
-    /* light theme overrides */
     body.light{
       --bg:#f6f8fb;--text:#0b1220;--card:#ffffff;--border:#e6eefc;
       --primary:#0b74ff;--muted:#556677;
     }
-
-    *{box-sizing:border-box}
+    *{box-sizing:border-box;margin:0;padding:0}
     body{
-      margin:0;font-family:Inter,system-ui,Roboto,Arial;background:var(--bg);color:var(--text);
-      min-height:100vh;display:flex;flex-direction:column;transition:background .18s,color .18s;
+      font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      background:var(--bg);color:var(--text);transition:background .25s,color .25s;
+      min-height:100vh;display:flex;flex-direction:column;
     }
     .container{max-width:1200px;margin:0 auto;padding:20px;width:100%}
-    header{display:flex;align-items:center;justify-content:space-between;background:var(--card);border-bottom:1px solid var(--border);padding:12px 20px;border-radius:10px}
-    .brand{display:flex;align-items:center;gap:12px}
+    header{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;
+    }
+    .brand{display:flex;gap:12px;align-items:center}
     .brand img{width:46px;height:46px;border-radius:10px}
-    .brand .title{font-size:1.15rem;font-weight:700;color:var(--primary)}
-    .btn{padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:8px}
-    .btn-primary{background:var(--primary);color:#00131f}
-    .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px}
-    .theme-btn{background:transparent;border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;cursor:pointer}
-    .tool-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:18px}
-    .tool-title{font-size:1.4rem;color:var(--primary);margin:0 0 8px}
-    .muted{color:var(--muted)}
-    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-    input[type=file]{padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text)}
-    .files-section{margin-top:16px;display:flex;flex-direction:column;gap:16px}
-    .file-block{border:1px solid var(--border);padding:12px;border-radius:10px;background:rgba(255,255,255,0.01)}
-    .file-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .pages-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-top:12px}
-    .page-item{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);text-align:center;background:rgba(255,255,255,0.01)}
-    .page-item canvas{max-width:100%;height:auto;border-radius:6px;display:block;margin:0 auto 8px}
-    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-    .preview-block{margin-top:12px;padding:10px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.02)}
-    iframe.preview{width:100%;height:420px;border:none;border-radius:6px}
-    .small{font-size:.9rem}
-    footer{margin-top:20px;padding:12px 0;color:var(--muted)}
+    .brand .title{font-size:1.25rem;font-weight:700;color:var(--primary);margin:0}
+    .brand .tag{font-size:.9rem;color:var(--muted)}
+    .header-actions{display:flex;gap:10px;align-items:center}
+    .btn-header{
+      border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;
+      color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;font-weight:600
+    }
+    .btn-header:hover{border-color:var(--primary);color:var(--primary)}
+
+    .tool-content {
+      background:var(--card);border-radius:var(--radius);border:1px solid var(--border);
+      padding:25px;margin-top:20px;
+    }
+    .tool-title { font-size:1.8rem;margin-bottom:5px;color:var(--primary); }
+    .tool-description { color:var(--muted);margin-bottom:18px; }
+
+    .upload-area {
+      border:2px dashed var(--border);border-radius:var(--radius);padding:30px;
+      text-align:center;margin-bottom:20px;transition:all 0.3s;cursor:pointer;
+      background:var(--bg);
+    }
+    .upload-area:hover, .upload-area.dragover { border-color:var(--primary);background:rgba(34,211,238,0.03); }
+    .upload-icon { font-size:3rem;color:var(--muted);margin-bottom:12px; }
+    .upload-text { color:var(--text);margin-bottom:10px;font-weight:600; }
+    .upload-subtext { color:var(--muted);font-size:0.9rem; }
+    .file-input { display:none; }
+
+    .selected-list {
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-bottom:18px;
+    }
+    .file-card {
+      background:var(--bg);border:1px solid var(--border);padding:12px;border-radius:10px;display:flex;gap:12px;align-items:flex-start;
+    }
+    .pdf-icon { width:86px;height:86px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#0f1720;border:1px solid var(--border);font-size:2rem;color:var(--primary) }
+    .file-meta {flex:1}
+    .file-meta h5{margin:0 0 6px 0;font-size:0.95rem;color:var(--text)}
+    .file-meta p{margin:0;color:var(--muted);font-size:0.88rem}
+    .file-actions {display:flex;flex-direction:column;gap:8px;min-width:160px}
+    .small-btn {padding:8px 10px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
+    .small-btn.primary {background:var(--primary);color:#00131f}
+    .small-btn.secondary {background:var(--card);border:1px solid var(--border);color:var(--text)}
+
+    .page-list { margin-top:10px; display:flex;flex-direction:column; gap:6px; max-height:260px; overflow:auto; padding-right:6px; }
+    .page-item { display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--card);gap:8px }
+    .page-item .left { display:flex;gap:10px;align-items:center; }
+    .page-checkbox { width:18px;height:18px;border-radius:4px;border:1px solid var(--border);background:transparent;cursor:pointer; }
+
+    .action-buttons { display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:center; }
+    .btn { padding:12px 20px;border-radius:var(--radius);border:none;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px; }
+    .btn-primary { background:var(--primary);color:#00131f; }
+    .btn-secondary { background:var(--card);color:var(--text);border:1px solid var(--border); }
+    .btn:disabled { opacity:0.6;cursor:not-allowed; }
+
+    .status-message {
+      margin-top:15px;padding:10px;border-radius:var(--radius);
+      background:var(--bg);border:1px solid var(--border);
+      color:var(--muted);font-size:0.9rem;display:none;
+    }
+    .status-success { border-color:#10b981;color:#10b981; }
+    .status-error { border-color:#ef4444;color:#ef4444; }
+
+    footer{margin-top:auto;padding:18px 0;background:var(--card);border-top:1px solid var(--border)}
+    .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap}
+    .footer-links a{color:var(--primary);text-decoration:none;font-weight:600}
+
     @media (max-width:720px){
-      .pages-grid{grid-template-columns:repeat(2,1fr)}
       header{flex-direction:column;align-items:flex-start;gap:10px}
+      .header-actions{align-self:flex-end}
+      .action-buttons{flex-direction:column}
+      .btn{width:100%;justify-content:center}
     }
   </style>
 </head>
 <body>
-  <header class="container">
-    <div class="brand" style="gap:12px">
-      <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="logo">
+<header class="container">
+  <div class="brand">
+    <a href="index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+      <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Smarttool Hub Logo">
       <div>
         <div class="title">Smarttool Hub</div>
-        <div class="muted small">Delete PDF Pages</div>
+        <div class="tag">Fast • Private • 100% Client-side</div>
       </div>
+    </a>
+  </div>
+  <div class="header-actions">
+    <a href="index.html" class="btn-header"><i class="fa-solid fa-house"></i> Home</a>
+    <button class="btn-header" id="themeToggle" title="Toggle dark/light mode"><i class="fa-solid fa-moon"></i></button>
+  </div>
+</header>
+
+<main class="container">
+  <div class="tool-content">
+    <h1 class="tool-title">Delete PDF Pages (Multi-file)</h1>
+    <p class="tool-description">Upload multiple PDFs, select pages you want to delete, then download the remaining pages per file or merge remaining pages into one PDF. All processing is done locally in your browser.</p>
+
+    <div class="upload-area" id="uploadArea" title="Click or drop PDF files here to add multiple files">
+      <div class="upload-icon"><i class="fas fa-file-pdf"></i></div>
+      <div class="upload-text">Drop PDF files here or click to browse</div>
+      <div class="upload-subtext">Supports multiple PDF files. Select pages to delete per file (checkbox), then use actions below.</div>
+      <input type="file" id="fileInput" class="file-input" accept="application/pdf" multiple>
     </div>
 
-    <div style="display:flex;gap:10px;align-items:center">
-      <a href="../../index.html" class="btn-ghost" title="Home"><i class="fa-solid fa-house"></i></a>
-      <button id="themeToggle" class="theme-btn" title="Toggle dark/light mode"><i id="themeIcon" class="fa-solid fa-moon"></i></button>
+    <div id="selectedList" class="selected-list" aria-live="polite"></div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="applyDeleteBtn" disabled><i class="fa-solid fa-trash"></i> Delete Selected Pages (Per-File)</button>
+      <button class="btn btn-secondary" id="downloadRemainingMergedBtn" disabled><i class="fa-solid fa-download"></i> Download All Remaining (Merged)</button>
+      <button class="btn btn-secondary" id="downloadAllRemainingPerFileBtn" disabled><i class="fa-solid fa-download"></i> Download Remaining (Per-File)</button>
+      <button class="btn btn-secondary" id="downloadDeletedZipBtn" disabled><i class="fa-solid fa-box-archive"></i> Download Deleted Pages (ZIP)</button>
+      <button class="btn btn-secondary" id="resetBtn"><i class="fa-solid fa-redo"></i> Reset</button>
+      <div style="margin-left:auto;color:var(--muted);font-weight:600" id="summaryText">No files selected</div>
     </div>
-  </header>
 
-  <main class="container">
-    <div class="tool-card">
-      <h2 class="tool-title">Delete PDF Pages (multi-file)</h2>
-      <p class="muted">Select one or more PDF files. Thumbnails of every page will appear — tick pages you want to remove. Click <strong>Delete Selected Pages</strong> to create edited PDFs for each file. Preview & download each edited file below.</p>
+    <div id="statusMessage" class="status-message"></div>
+  </div>
+</main>
 
-      <div class="row" style="margin-top:8px;">
-        <label style="display:flex;gap:8px;align-items:center;">
-          <input id="fileInput" type="file" accept="application/pdf" multiple />
-        </label>
-        <button id="loadBtn" class="btn btn-primary"><i class="fa-solid fa-file-import"></i> Load Files</button>
-        <button id="clearBtn" class="btn btn-ghost"><i class="fa-solid fa-trash-arrow-up"></i> Clear</button>
-      </div>
-
-      <div class="files-section" id="filesSection"></div>
-
-      <div class="controls">
-        <button id="deleteBtn" class="btn btn-primary" disabled><i class="fa-solid fa-trash"></i> Delete Selected Pages</button>
-        <button id="downloadAllBtn" class="btn btn-ghost" disabled><i class="fa-solid fa-download"></i> Download All Edited</button>
-      </div>
-
-      <div id="globalStatus" class="muted small" style="margin-top:10px"></div>
-
-      <div id="editedPreviews" style="margin-top:16px"></div>
+<footer class="container">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> Smarttool Hub</div>
+    <div class="footer-links">
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="contact.html">Contact</a>
     </div>
-  </main>
+  </div>
+</footer>
 
-  <footer class="container">
-    © <span id="year"></span> Smarttool Hub
-  </footer>
+<!-- pdf-lib + jszip -->
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
-  <!-- Libraries -->
-  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  // Initialization & theme
+  document.getElementById('year').textContent = new Date().getFullYear();
+  const themeToggle = document.getElementById('themeToggle');
+  if (localStorage.getItem('sth_theme') === 'light') { document.body.classList.add('light'); themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; }
+  themeToggle.onclick = () => {
+    document.body.classList.toggle('light');
+    if (document.body.classList.contains('light')) { themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; localStorage.setItem('sth_theme','light'); }
+    else { themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); }
+  };
 
-  <script>
-    // Theme toggle: mirror landing page behaviour using localStorage 'sth_theme'
-    const themeToggle = document.getElementById('themeToggle');
-    const themeIcon = document.getElementById('themeIcon');
+  // Elements
+  const uploadArea = document.getElementById('uploadArea');
+  const fileInput = document.getElementById('fileInput');
+  const selectedList = document.getElementById('selectedList');
+  const applyDeleteBtn = document.getElementById('applyDeleteBtn');
+  const downloadRemainingMergedBtn = document.getElementById('downloadRemainingMergedBtn');
+  const downloadAllRemainingPerFileBtn = document.getElementById('downloadAllRemainingPerFileBtn');
+  const downloadDeletedZipBtn = document.getElementById('downloadDeletedZipBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const summaryText = document.getElementById('summaryText');
+  const statusMessage = document.getElementById('statusMessage');
 
-    // Initialize theme from localStorage
-    if (localStorage.getItem('sth_theme') === 'light') {
-      document.body.classList.add('light');
-      themeIcon.className = 'fa-solid fa-sun';
-      themeToggle.title = 'Switch to dark mode';
-    } else {
-      document.body.classList.remove('light');
-      themeIcon.className = 'fa-solid fa-moon';
-      themeToggle.title = 'Switch to light mode';
+  // State:
+  // filesState: [{ id, file, arrayBuffer, pageCount, toDelete: [bool,...], deletedPages: [{pageNumber, blob, filename}] }]
+  let filesState = [];
+  let anyChange = false;
+
+  // Helpers
+  function uid(){ return 'f_' + Math.random().toString(36).slice(2,9); }
+  function isPdf(f){ return f && (f.type === 'application/pdf' || /\.pdf$/i.test(f.name)); }
+  function showStatus(msg, type='success', autoHide=true){
+    statusMessage.textContent = msg;
+    statusMessage.classList.remove('status-success','status-error');
+    statusMessage.style.display = 'block';
+    if (type === 'success') statusMessage.classList.add('status-success');
+    if (type === 'error') statusMessage.classList.add('status-error');
+    if (autoHide) setTimeout(()=> statusMessage.style.display='none', 4800);
+  }
+  function formatFileSize(bytes){ if (!bytes) return '0 KB'; return (bytes/1024).toFixed(1) + ' KB'; }
+
+  // Upload handlers
+  uploadArea.addEventListener('click', ()=> fileInput.click());
+  uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+  uploadArea.addEventListener('dragleave', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); });
+  uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); handleFilesAdded(Array.from(e.dataTransfer.files || [])); });
+  fileInput.addEventListener('change', e => { handleFilesAdded(Array.from(e.target.files || [])); fileInput.value = ''; });
+
+  async function handleFilesAdded(list) {
+    const incoming = list.filter(isPdf);
+    const rejected = list.filter(f => !isPdf(f));
+    if (rejected.length) showStatus(`${rejected.length} non-PDF file(s) ignored`, 'error');
+    if (!incoming.length) return;
+
+    for (const file of incoming) {
+      const id = uid();
+      const entry = { id, file, arrayBuffer: null, pageCount: null, toDelete: [], deletedPages: [] };
+      filesState.push(entry);
+      try {
+        const ab = await file.arrayBuffer();
+        entry.arrayBuffer = ab;
+        try {
+          const pdfDoc = await PDFLib.PDFDocument.load(ab, { ignoreEncryption: true });
+          entry.pageCount = pdfDoc.getPageCount();
+          entry.toDelete = new Array(entry.pageCount).fill(false);
+        } catch (err) {
+          console.warn('Could not read PDF page count', file.name, err);
+          entry.pageCount = null;
+          entry.toDelete = [];
+        }
+      } catch (err) {
+        console.error('Failed to read file', file.name, err);
+        showStatus(`Failed to read ${file.name}`, 'error');
+      }
     }
 
-    themeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('light');
-      const isLight = document.body.classList.contains('light');
-      if (isLight) {
-        localStorage.setItem('sth_theme', 'light');
-        themeIcon.className = 'fa-solid fa-sun';
-        themeToggle.title = 'Switch to dark mode';
+    renderFileCards();
+    updateControls();
+    showStatus(`${incoming.length} file(s) added`, 'success');
+  }
+
+  // Render UI
+  function renderFileCards() {
+    selectedList.innerHTML = '';
+    filesState.forEach((entry, fileIndex) => {
+      const file = entry.file;
+      const card = document.createElement('div'); card.className = 'file-card'; card.id = 'card-'+entry.id;
+
+      const icon = document.createElement('div'); icon.className = 'pdf-icon'; icon.innerHTML = '<i class="fa-solid fa-file-pdf"></i>';
+      card.appendChild(icon);
+
+      const meta = document.createElement('div'); meta.className = 'file-meta';
+      const h5 = document.createElement('h5'); h5.textContent = file.name; meta.appendChild(h5);
+      const p1 = document.createElement('p'); p1.textContent = `${formatFileSize(file.size)} • ${entry.pageCount ? entry.pageCount + ' page(s)' : 'Unknown pages'}`; meta.appendChild(p1);
+
+      // page list with checkboxes to mark for deletion
+      const pageList = document.createElement('div'); pageList.className = 'page-list';
+      if (entry.pageCount && entry.toDelete.length === entry.pageCount) {
+        for (let p = 0; p < entry.pageCount; p++) {
+          const item = document.createElement('div'); item.className = 'page-item';
+          const left = document.createElement('div'); left.className = 'left';
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.className = 'page-checkbox';
+          checkbox.checked = !!entry.toDelete[p];
+          checkbox.onchange = () => { entry.toDelete[p] = checkbox.checked; anyChange = true; renderFileCards(); updateControls(); };
+          const label = document.createElement('div'); label.textContent = `Page ${p+1}`;
+          left.appendChild(checkbox); left.appendChild(label);
+
+          const right = document.createElement('div'); right.style.display='flex'; right.style.gap='8px';
+          // download single page button
+          const dlBtn = document.createElement('button'); dlBtn.className='small-btn primary'; dlBtn.title = 'Download this single page as PDF'; dlBtn.innerHTML = '<i class="fa-solid fa-download"></i>';
+          dlBtn.onclick = async () => { await downloadSinglePage(entry, p); };
+          right.appendChild(dlBtn);
+
+          item.appendChild(left);
+          item.appendChild(right);
+          pageList.appendChild(item);
+        }
+        // quick actions per file: select all / deselect all / invert
+        const quick = document.createElement('div'); quick.style.display='flex'; quick.style.gap='8px'; quick.style.marginTop='8px';
+        const selectAll = document.createElement('button'); selectAll.className='small-btn secondary'; selectAll.textContent='Select All';
+        selectAll.onclick = () => { entry.toDelete = entry.toDelete.map(_=>true); anyChange = true; renderFileCards(); updateControls(); };
+        const deselectAll = document.createElement('button'); deselectAll.className='small-btn secondary'; deselectAll.textContent='Deselect All';
+        deselectAll.onclick = () => { entry.toDelete = entry.toDelete.map(_=>false); anyChange = true; renderFileCards(); updateControls(); };
+        const invert = document.createElement('button'); invert.className='small-btn secondary'; invert.textContent='Invert Selection';
+        invert.onclick = () => { entry.toDelete = entry.toDelete.map(v=>!v); anyChange = true; renderFileCards(); updateControls(); };
+        quick.appendChild(selectAll); quick.appendChild(deselectAll); quick.appendChild(invert);
+        pageList.appendChild(quick);
       } else {
-        localStorage.removeItem('sth_theme');
-        themeIcon.className = 'fa-solid fa-moon';
-        themeToggle.title = 'Switch to light mode';
+        const msg = document.createElement('div'); msg.style.color='var(--muted)'; msg.textContent = 'Page info not available';
+        pageList.appendChild(msg);
       }
+      meta.appendChild(pageList);
+      card.appendChild(meta);
+
+      const actions = document.createElement('div'); actions.className='file-actions';
+      const applyBtn = document.createElement('button'); applyBtn.className='small-btn primary'; applyBtn.innerHTML = '<i class="fa-solid fa-check"></i> Apply Delete';
+      applyBtn.title = 'Apply deletion for this file only';
+      applyBtn.disabled = !entry.toDelete.some(Boolean);
+      applyBtn.onclick = async () => { await applyDeletionForEntry(entry); };
+
+      const downloadRemainingBtn = document.createElement('button'); downloadRemainingBtn.className='small-btn primary'; downloadRemainingBtn.innerHTML = '<i class="fa-solid fa-download"></i> Download Remaining';
+      downloadRemainingBtn.title = 'Download the remaining pages (after applied deletions)';
+      downloadRemainingBtn.onclick = async () => { await downloadRemainingForEntry(entry); };
+
+      const infoBtn = document.createElement('button'); infoBtn.className='small-btn secondary'; infoBtn.innerHTML = '<i class="fa-solid fa-info"></i>';
+      infoBtn.onclick = () => { alert(`${file.name}\nSize: ${formatFileSize(file.size)}\nPages: ${entry.pageCount || 'Unknown'}`); };
+
+      const removeFileBtn = document.createElement('button'); removeFileBtn.className='small-btn secondary'; removeFileBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+      removeFileBtn.onclick = () => { filesState = filesState.filter(f => f.id !== entry.id); renderFileCards(); updateControls(); showStatus('File removed', 'success'); };
+
+      actions.appendChild(applyBtn);
+      actions.appendChild(downloadRemainingBtn);
+      actions.appendChild(infoBtn);
+      actions.appendChild(removeFileBtn);
+      card.appendChild(actions);
+
+      selectedList.appendChild(card);
     });
 
-    // Basic DOM
-    const fileInput = document.getElementById('fileInput');
-    const loadBtn = document.getElementById('loadBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const filesSection = document.getElementById('filesSection');
-    const deleteBtn = document.getElementById('deleteBtn');
-    const downloadAllBtn = document.getElementById('downloadAllBtn');
-    const globalStatus = document.getElementById('globalStatus');
-    const editedPreviews = document.getElementById('editedPreviews');
-    document.getElementById('year').textContent = new Date().getFullYear();
+    summaryText.textContent = filesState.length ? `${filesState.length} file(s) selected` : 'No files selected';
+  }
 
-    // State: array of objects per file
-    // { file, arrayBuffer, pdfLibDoc, pdfjsDoc, pageCount, deletedPages:Set<number>, editedBlob, editedUrl }
-    let filesState = [];
+  function updateControls() {
+    const anyFiles = filesState.length > 0;
+    const anyMarked = filesState.some(e => e.toDelete && e.toDelete.some(Boolean));
+    const anyAppliedDeletions = filesState.some(e => e.deletedPages && e.deletedPages.length > 0);
+    applyDeleteBtn.disabled = !anyMarked;
+    downloadRemainingMergedBtn.disabled = !(anyFiles && (anyAppliedDeletions || anyMarked));
+    downloadAllRemainingPerFileBtn.disabled = !(anyFiles && (anyAppliedDeletions || anyMarked));
+    downloadDeletedZipBtn.disabled = !filesState.some(e => e.deletedPages && e.deletedPages.length > 0);
+  }
 
-    // Configure pdf.js worker (uses CDN)
-    if (window.pdfjsLib) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  // Download single page as its own PDF (unmodified source)
+  async function downloadSinglePage(entry, pIndex) {
+    if (typeof PDFLib === 'undefined') { showStatus('pdf-lib not loaded', 'error'); return; }
+    try {
+      const srcPdf = await PDFLib.PDFDocument.load(entry.arrayBuffer, { ignoreEncryption: true });
+      const newPdf = await PDFLib.PDFDocument.create();
+      const [copied] = await newPdf.copyPages(srcPdf, [pIndex]);
+      newPdf.addPage(copied);
+      const bytes = await newPdf.save();
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const name = `${entry.file.name.replace(/\.pdf$/i,'')}_page-${pIndex+1}.pdf`;
+      triggerDownload(blob, name);
+      showStatus(`Downloaded page ${pIndex+1}`, 'success');
+    } catch (err) {
+      console.error('downloadSinglePage failed', err);
+      showStatus('Failed to download page', 'error');
     }
+  }
 
-    function setGlobalStatus(msg, isError=false){
-      globalStatus.textContent = msg;
-      globalStatus.style.color = isError ? '#ff8a8a' : '';
-    }
+  // Apply deletions for a specific entry: create blobs for deleted pages to store and create new arrayBuffer for remaining pages
+  async function applyDeletionForEntry(entry) {
+    if (typeof PDFLib === 'undefined') { showStatus('pdf-lib not loaded', 'error'); return; }
+    if (!entry.pageCount) { showStatus('No page info for file', 'error'); return; }
+    const toRemove = entry.toDelete.map((v,i)=> v ? i : null).filter(x=>x!==null);
+    if (!toRemove.length) { showStatus('No pages selected to delete for this file', 'error'); return; }
 
-    clearBtn.onclick = () => {
-      filesState.forEach(f => {
-        if (f.editedUrl) URL.revokeObjectURL(f.editedUrl);
-      });
-      filesState = [];
-      filesSection.innerHTML = '';
-      editedPreviews.innerHTML = '';
-      deleteBtn.disabled = true;
-      downloadAllBtn.disabled = true;
-      setGlobalStatus('');
-      fileInput.value = '';
-    };
+    showStatus('Applying deletions for file — please wait...', 'success', false);
+    try {
+      const srcPdf = await PDFLib.PDFDocument.load(entry.arrayBuffer, { ignoreEncryption: true });
 
-    loadBtn.onclick = async () => {
-      setGlobalStatus('');
-      filesSection.innerHTML = '';
-      editedPreviews.innerHTML = '';
-      filesState.forEach(f => { if (f.editedUrl) URL.revokeObjectURL(f.editedUrl); });
-      filesState = [];
+      // 1) Save deleted pages individually into entry.deletedPages
+      entry.deletedPages = entry.deletedPages || [];
+      for (let pIndex of toRemove) {
+        const newPdf = await PDFLib.PDFDocument.create();
+        const [copied] = await newPdf.copyPages(srcPdf, [pIndex]);
+        newPdf.addPage(copied);
+        const bytes = await newPdf.save();
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const filename = `${entry.file.name.replace(/\.pdf$/i,'')}_deleted_page-${pIndex+1}.pdf`;
+        entry.deletedPages.push({ pageNumber: pIndex+1, blob, filename });
+      }
 
-      const fileList = Array.from(fileInput.files || []);
-      if (fileList.length === 0) { setGlobalStatus('Please select one or more PDF files.'); return; }
+      // 2) Create new PDF consisting of pages not selected for deletion
+      const keepIndices = [];
+      for (let i = 0; i < entry.pageCount; i++) if (!entry.toDelete[i]) keepIndices.push(i);
 
-      setGlobalStatus('Loading files — rendering thumbnails (this may take a while for large PDFs)...');
-      loadBtn.disabled = true;
-      clearBtn.disabled = true;
-
-      for (let i = 0; i < fileList.length; i++) {
-        const file = fileList[i];
-        try {
-          const arrayBuffer = await file.arrayBuffer();
-          // pdf-lib load (for editing)
-          const pdfLibDoc = await PDFLib.PDFDocument.load(new Uint8Array(arrayBuffer));
-          // pdf.js load (for rendering thumbnails)
-          const pdfjsDoc = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
-          const pageCount = pdfjsDoc.numPages;
-
-          const fileState = {
-            file,
-            arrayBuffer,
-            pdfLibDoc,
-            pdfjsDoc,
-            pageCount,
-            deletedPages: new Set(),
-            editedBlob: null,
-            editedUrl: null
-          };
-          filesState.push(fileState);
-
-          // Render UI block for this file
-          const block = document.createElement('div');
-          block.className = 'file-block';
-          block.dataset.fileIndex = i;
-
-          const header = document.createElement('div');
-          header.className = 'file-header';
-          header.innerHTML = `<div><strong>${escapeHtml(file.name)}</strong> — <span class="muted small">${pageCount} pages</span></div>
-                              <div>
-                                <button class="btn btn-ghost btn-select-all small">Select All</button>
-                                <button class="btn btn-ghost btn-deselect-all small">Deselect All</button>
-                              </div>`;
-          block.appendChild(header);
-
-          const pagesGrid = document.createElement('div');
-          pagesGrid.className = 'pages-grid';
-          pagesGrid.setAttribute('aria-label', `Pages for ${file.name}`);
-
-          // Render each page thumbnail
-          for (let p = 1; p <= pageCount; p++) {
-            const page = await pdfjsDoc.getPage(p);
-            const viewport = page.getViewport({ scale: 0.5 });
-            const canvas = document.createElement('canvas');
-            canvas.width = Math.floor(viewport.width);
-            canvas.height = Math.floor(viewport.height);
-            const ctx = canvas.getContext('2d');
-
-            // Render page into canvas
-            await page.render({ canvasContext: ctx, viewport }).promise;
-
-            const pageItem = document.createElement('div');
-            pageItem.className = 'page-item';
-            pageItem.innerHTML = `
-              <div style="min-height:1px"></div>
-              <label style="cursor:pointer;display:block">
-                <div style="display:flex;justify-content:center;margin-bottom:6px"></div>
-                <input type="checkbox" data-file-index="${filesState.length - 1}" data-page-index="${p - 1}"> Page ${p}
-              </label>
-            `;
-            pageItem.querySelector('div').appendChild(canvas);
-
-            // Double-click toggles checkbox
-            pageItem.addEventListener('dblclick', (e) => {
-              const cb = pageItem.querySelector('input[type=checkbox]');
-              cb.checked = !cb.checked;
-              const fi = parseInt(cb.dataset.fileIndex,10);
-              const pi = parseInt(cb.dataset.pageIndex,10);
-              updateDeletedSet(fi, pi, cb.checked);
-            });
-
-            // Checkbox change updates set
-            pageItem.querySelector('input[type=checkbox]').addEventListener('change', (ev) => {
-              const cb = ev.target;
-              const fi = parseInt(cb.dataset.fileIndex,10);
-              const pi = parseInt(cb.dataset.pageIndex,10);
-              updateDeletedSet(fi, pi, cb.checked);
-            });
-
-            pagesGrid.appendChild(pageItem);
-          }
-
-          // Select/Deselect all buttons
-          header.querySelector('.btn-select-all').addEventListener('click', () => {
-            pagesGrid.querySelectorAll('input[type=checkbox]').forEach(cb => {
-              cb.checked = true;
-              const fi = parseInt(cb.dataset.fileIndex,10);
-              const pi = parseInt(cb.dataset.pageIndex,10);
-              updateDeletedSet(fi, pi, true);
-            });
-          });
-          header.querySelector('.btn-deselect-all').addEventListener('click', () => {
-            pagesGrid.querySelectorAll('input[type=checkbox]').forEach(cb => {
-              cb.checked = false;
-              const fi = parseInt(cb.dataset.fileIndex,10);
-              const pi = parseInt(cb.dataset.pageIndex,10);
-              updateDeletedSet(fi, pi, false);
-            });
-          });
-
-          block.appendChild(pagesGrid);
-          filesSection.appendChild(block);
-
-        } catch (err) {
-          console.error('Error loading file', file.name, err);
-          const errBlock = document.createElement('div');
-          errBlock.className = 'file-block';
-          errBlock.innerHTML = `<strong>${escapeHtml(file.name)}</strong> — <span class="muted">Failed to load (possibly encrypted or corrupted)</span>`;
-          filesSection.appendChild(errBlock);
-        }
-      } // end for files
-
-      loadBtn.disabled = false;
-      clearBtn.disabled = false;
-
-      if (filesState.length > 0) {
-        deleteBtn.disabled = true; // require selection to enable
-        setGlobalStatus(`Loaded ${filesState.length} file(s). Select pages to delete, then click "Delete Selected Pages".`);
+      if (keepIndices.length === 0) {
+        // If no pages remain, clear arrayBuffer and set pageCount = 0
+        entry.arrayBuffer = null;
+        entry.pageCount = 0;
+        entry.toDelete = [];
+        showStatus('All pages deleted for file (no remaining pages).', 'success');
       } else {
-        setGlobalStatus('No files loaded.');
-      }
-    };
-
-    function updateDeletedSet(fileIndex, pageIndex, checked) {
-      const state = filesState[fileIndex];
-      if (!state) return;
-      if (checked) state.deletedPages.add(pageIndex);
-      else state.deletedPages.delete(pageIndex);
-
-      // Enable/disable global actions
-      const anyDeletion = filesState.some(f => f.deletedPages.size > 0);
-      deleteBtn.disabled = !anyDeletion;
-    }
-
-    // Delete selected pages (process all files)
-    deleteBtn.onclick = async () => {
-      setGlobalStatus('Creating edited PDFs — please wait...');
-      deleteBtn.disabled = true;
-      loadBtn.disabled = true;
-      clearBtn.disabled = true;
-      downloadAllBtn.disabled = true;
-      editedPreviews.innerHTML = '';
-
-      for (let fi = 0; fi < filesState.length; fi++) {
-        const f = filesState[fi];
-        try {
-          const keepPages = [];
-          for (let p = 0; p < f.pageCount; p++) {
-            if (!f.deletedPages.has(p)) keepPages.push(p);
-          }
-
-          const newPdf = await PDFLib.PDFDocument.create();
-
-          if (keepPages.length > 0) {
-            const copied = await newPdf.copyPages(f.pdfLibDoc, keepPages);
-            copied.forEach(pg => newPdf.addPage(pg));
-          }
-          // else empty pdf
-
-          const newBytes = await newPdf.save();
-          const editedBlob = new Blob([newBytes], { type: 'application/pdf' });
-          if (f.editedUrl) URL.revokeObjectURL(f.editedUrl);
-          f.editedBlob = editedBlob;
-          f.editedUrl = URL.createObjectURL(editedBlob);
-
-          // Show preview block for this file
-          const preview = document.createElement('div');
-          preview.className = 'preview-block';
-          preview.innerHTML = `
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
-              <div><strong>${escapeHtml(f.file.name)}</strong> — <span class="muted small">${keepPages.length} pages kept, ${f.deletedPages.size} removed</span></div>
-              <div style="display:flex;gap:8px">
-                <a class="btn btn-ghost small" href="${f.editedUrl}" download="${safeFileName(f.file.name.replace(/\.pdf$/i,'') + '-edited.pdf')}"><i class="fa-solid fa-download"></i> Download</a>
-                <button class="btn btn-ghost small" data-open-preview>Open Preview</button>
-              </div>
-            </div>
-            <div style="margin-top:10px;display:none" data-preview-container>
-              <iframe class="preview" src="${f.editedUrl}"></iframe>
-            </div>
-          `;
-          preview.querySelector('[data-open-preview]').addEventListener('click', (e) => {
-            const cont = preview.querySelector('[data-preview-container]');
-            cont.style.display = cont.style.display === 'none' ? 'block' : 'none';
-          });
-
-          editedPreviews.appendChild(preview);
-
-        } catch (err) {
-          console.error('Error creating edited PDF for', f.file.name, err);
-          const fail = document.createElement('div');
-          fail.className = 'preview-block';
-          fail.innerHTML = `<strong>${escapeHtml(f.file.name)}</strong> — <span class="muted">Failed to create edited PDF</span>`;
-          editedPreviews.appendChild(fail);
-        }
+        const newPdfAll = await PDFLib.PDFDocument.create();
+        const copiedPages = await newPdfAll.copyPages(srcPdf, keepIndices);
+        copiedPages.forEach(p => newPdfAll.addPage(p));
+        const newBytes = await newPdfAll.save();
+        entry.arrayBuffer = newBytes; // store arraybuffer-like (Uint8Array) acceptable for further processing
+        entry.pageCount = keepIndices.length;
+        entry.toDelete = new Array(entry.pageCount).fill(false);
+        showStatus(`Deleted ${toRemove.length} page(s) — remaining ${entry.pageCount} page(s).`, 'success');
       }
 
-      setGlobalStatus('Edited PDFs created. Use the Download buttons or "Download All Edited" to get files.');
-      downloadAllBtn.disabled = false;
-      loadBtn.disabled = false;
-      clearBtn.disabled = false;
-      deleteBtn.disabled = false;
-    };
-
-    // Download all edited PDFs individually (triggers multiple downloads)
-    downloadAllBtn.onclick = () => {
-      filesState.forEach(f => {
-        if (f.editedBlob) {
-          const a = document.createElement('a');
-          a.href = f.editedUrl;
-          a.download = safeFileName(f.file.name.replace(/\.pdf$/i, '') + '-edited.pdf');
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-        }
-      });
-    };
-
-    // Utility: sanitize filename for download
-    function safeFileName(name) {
-      return name.replace(/[<>:"/\\|?*\x00-\x1F]/g, '_');
+      anyChange = true;
+      renderFileCards();
+      updateControls();
+    } catch (err) {
+      console.error('applyDeletionForEntry failed', err);
+      showStatus('Failed to apply deletions', 'error');
     }
+  }
 
-    // Utility: escape html in strings for insertion into textContent contexts where needed
-    function escapeHtml(s){
-      if (!s) return '';
-      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+  // Download remaining pages for a single entry as PDF (current entry.arrayBuffer)
+  async function downloadRemainingForEntry(entry) {
+    if (!entry.pageCount && entry.pageCount !== 0) { showStatus('No page info', 'error'); return; }
+    if (!entry.arrayBuffer) { showStatus('No remaining pages to download', 'error'); return; }
+
+    try {
+      const blob = new Blob([entry.arrayBuffer], { type: 'application/pdf' });
+      const name = `${entry.file.name.replace(/\.pdf$/i,'')}_remaining.pdf`;
+      triggerDownload(blob, name);
+      showStatus('Downloaded remaining pages for file', 'success');
+    } catch (err) {
+      console.error('downloadRemainingForEntry failed', err);
+      showStatus('Failed to download remaining pages', 'error');
     }
+  }
 
-    // When user navigates away, revoke created object URLs
-    window.addEventListener('beforeunload', () => {
-      filesState.forEach(f => {
-        if (f.editedUrl) URL.revokeObjectURL(f.editedUrl);
+  // Download remaining pages per-file (all files)
+  async function downloadAllRemainingPerFile() {
+    const items = filesState.filter(e => e.pageCount > 0 && e.arrayBuffer);
+    if (!items.length) { showStatus('No remaining pages available for download', 'error'); return; }
+    for (const entry of items) {
+      const blob = new Blob([entry.arrayBuffer], { type: 'application/pdf' });
+      const name = `${entry.file.name.replace(/\.pdf$/i,'')}_remaining.pdf`;
+      triggerDownload(blob, name);
+      // small pause to avoid browser blocking
+      await new Promise(r => setTimeout(r, 200));
+    }
+    showStatus('Downloaded remaining PDFs per file', 'success');
+  }
+
+  // Merge remaining pages from all files into one PDF and download
+  async function downloadAllRemainingMerged() {
+    if (typeof PDFLib === 'undefined') { showStatus('pdf-lib not loaded', 'error'); return; }
+    const items = filesState.filter(e => e.pageCount > 0 && e.arrayBuffer);
+    if (!items.length) { showStatus('No remaining pages available to merge', 'error'); return; }
+
+    showStatus('Merging remaining pages — please wait...', 'success', false);
+    try {
+      const mergedPdf = await PDFLib.PDFDocument.create();
+      for (const entry of items) {
+        const srcPdf = await PDFLib.PDFDocument.load(entry.arrayBuffer, { ignoreEncryption: true });
+        const indices = Array.from({length: entry.pageCount}, (_,i)=>i);
+        const copied = await mergedPdf.copyPages(srcPdf, indices);
+        copied.forEach(p => mergedPdf.addPage(p));
+      }
+      const bytes = await mergedPdf.save();
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+      const name = `merged_remaining_${ts}.pdf`;
+      triggerDownload(blob, name);
+      showStatus('Merged remaining PDF downloaded', 'success');
+    } catch (err) {
+      console.error('downloadAllRemainingMerged failed', err);
+      showStatus('Failed to merge remaining pages', 'error');
+    }
+  }
+
+  // Create ZIP of all deleted pages across files (if any)
+  async function downloadDeletedPagesZip() {
+    if (typeof JSZip === 'undefined') { showStatus('JSZip not loaded', 'error'); return; }
+    const allDeleted = filesState.flatMap(e => e.deletedPages || []);
+    if (!allDeleted.length) { showStatus('No deleted pages available', 'error'); return; }
+
+    showStatus('Preparing ZIP of deleted pages...', 'success', false);
+    try {
+      const zip = new JSZip();
+      allDeleted.forEach(pg => {
+        zip.file(pg.filename, pg.blob);
       });
-    });
-  </script>
+      const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 }});
+      const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+      const name = `deleted_pages_${ts}.zip`;
+      triggerDownload(blob, name);
+      showStatus('Deleted pages ZIP downloaded', 'success');
+    } catch (err) {
+      console.error('downloadDeletedPagesZip failed', err);
+      showStatus('Failed to create ZIP', 'error');
+    }
+  }
+
+  // Utility: trigger download for blob
+  function triggerDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+    setTimeout(()=> { URL.revokeObjectURL(url); try{ document.body.removeChild(a); } catch(e){} }, 500);
+  }
+
+  // Apply Delete (global): apply deletions for all files that have marked pages
+  async function applyDeletionForAllMarked() {
+    const anyMarkedEntries = filesState.filter(e => e.toDelete && e.toDelete.some(Boolean));
+    if (!anyMarkedEntries.length) { showStatus('No pages selected to delete', 'error'); return; }
+
+    applyDeleteBtn.disabled = true;
+    showStatus('Applying deletions to selected files — this may take a moment...', 'success', false);
+    for (const entry of anyMarkedEntries) {
+      await applyDeletionForEntry(entry);
+      // small delay to keep UI responsive
+      await new Promise(r => setTimeout(r, 120));
+    }
+    applyDeleteBtn.disabled = false;
+    showStatus('Applied deletions for selected files', 'success');
+  }
+
+  // Reset tool
+  resetBtn.addEventListener('click', () => {
+    filesState = [];
+    anyChange = false;
+    selectedList.innerHTML = '';
+    applyDeleteBtn.disabled = true;
+    downloadRemainingMergedBtn.disabled = true;
+    downloadAllRemainingPerFileBtn.disabled = true;
+    downloadDeletedZipBtn.disabled = true;
+    showStatus('Reset complete', 'success');
+    summaryText.textContent = 'No files selected';
+  });
+
+  // Wire buttons
+  applyDeleteBtn.addEventListener('click', applyDeletionForAllMarked);
+  downloadRemainingMergedBtn.addEventListener('click', downloadAllRemainingMerged);
+  downloadAllRemainingPerFileBtn.addEventListener('click', downloadAllRemainingPerFile);
+  downloadDeletedZipBtn.addEventListener('click', downloadDeletedPagesZip);
+
+  // initial UI
+  (function init() { summaryText.textContent = 'No files selected'; updateControls(); })();
+
+  // keyboard accessible
+  uploadArea.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
+
+  // helpful console warnings if libs missing
+  if (typeof PDFLib === 'undefined') console.warn('pdf-lib not loaded — PDF operations will fail until loaded.');
+  if (typeof JSZip === 'undefined') console.warn('JSZip not loaded — ZIP downloads will fail until loaded.');
+</script>
 </body>
 </html>
