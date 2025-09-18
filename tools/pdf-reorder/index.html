@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reorder PDF Pages - Smarttool Hub</title>
+  <meta name="description" content="Reorder pages of PDFs in the browser. Drag pages to reorder, then download per-file or merged PDF." />
+  <link rel="icon" href="https://img.icons8.com/fluency/48/toolbox.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+  <style>
+    /* Design identical to your uploaded tools */
+    :root{
+      --bg:#0b1220;--text:#eaf2ff;--card:#182335;--border:#2a3b55;
+      --primary:#22d3ee;--muted:#9fb3c8;--radius:12px;
+    }
+    body.light{
+      --bg:#f6f8fb;--text:#0b1220;--card:#ffffff;--border:#e6eefc;
+      --primary:#0b74ff;--muted:#556677;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      background:var(--bg);color:var(--text);transition:background .25s,color .25s;
+      min-height:100vh;display:flex;flex-direction:column;
+    }
+    .container{max-width:1200px;margin:0 auto;padding:20px;width:100%}
+    header{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;
+    }
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand img{width:46px;height:46px;border-radius:10px}
+    .brand .title{font-size:1.25rem;font-weight:700;color:var(--primary);margin:0}
+    .brand .tag{font-size:.9rem;color:var(--muted)}
+    .header-actions{display:flex;gap:10px;align-items:center}
+    .btn-header{
+      border:1px solid var(--border);background:transparent;padding:8px 12px;border-radius:8px;
+      color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;font-weight:600
+    }
+    .btn-header:hover{border-color:var(--primary);color:var(--primary)}
+
+    .tool-content {
+      background:var(--card);border-radius:var(--radius);border:1px solid var(--border);
+      padding:25px;margin-top:20px;
+    }
+    .tool-title { font-size:1.8rem;margin-bottom:5px;color:var(--primary); }
+    .tool-description { color:var(--muted);margin-bottom:18px; }
+
+    .upload-area {
+      border:2px dashed var(--border);border-radius:var(--radius);padding:24px;
+      text-align:center;margin-bottom:18px;transition:all 0.3s;cursor:pointer;background:var(--bg);
+    }
+    .upload-area.dragover { border-color:var(--primary);background:rgba(34,211,238,0.03); }
+    .upload-icon { font-size:2.6rem;color:var(--muted);margin-bottom:10px; }
+    .upload-text { color:var(--text);margin-bottom:6px;font-weight:700; }
+    .upload-subtext { color:var(--muted);font-size:0.9rem; }
+
+    .files-grid { display:grid; grid-template-columns: 1fr; gap:12px; }
+    @media(min-width:900px){ .files-grid { grid-template-columns: 1fr 1fr; } }
+
+    .file-card {
+      background:var(--bg);border:1px solid var(--border);padding:12px;border-radius:10px;display:flex;gap:12px;align-items:flex-start;
+    }
+    .pdf-icon { width:80px;height:80px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#0f1720;border:1px solid var(--border);font-size:1.6rem;color:var(--primary) }
+    .file-meta { flex:1; display:flex;flex-direction:column;gap:8px; }
+    .file-meta h5{margin:0;font-size:1rem;color:var(--text);word-break:break-all}
+    .file-meta p{margin:0;color:var(--muted);font-size:0.9rem}
+
+    .page-list { display:flex;flex-direction:column;gap:8px;max-height:300px;overflow:auto;padding-top:6px; }
+    .page-item {
+      display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;border-radius:8px;
+      background:var(--card);border:1px solid var(--border);cursor:grab;
+    }
+    .page-item.dragging { opacity:0.5; transform:scale(0.99); }
+    .drag-handle { display:inline-flex;align-items:center;gap:8px;color:var(--muted);cursor:grab }
+    .page-number { font-weight:700;color:var(--text);min-width:70px }
+
+    .file-actions { display:flex;flex-direction:column;gap:8px;min-width:160px; }
+    .small-btn { padding:10px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:700 }
+    .small-btn.primary { background:var(--primary);color:#00131f }
+    .small-btn.secondary { background:var(--card);border:1px solid var(--border);color:var(--text) }
+
+    .action-row { display:flex;gap:12px;align-items:center;margin-top:12px;flex-wrap:wrap; }
+    .btn { padding:12px 18px;border-radius:12px;border:none;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px; }
+    .btn-primary { background:var(--primary);color:#00131f; }
+    .btn-secondary { background:var(--card);color:var(--text);border:1px solid var(--border); }
+    .btn:disabled { opacity:0.6;cursor:not-allowed; }
+
+    .status { margin-top:10px;color:var(--muted);font-size:0.9rem }
+
+    footer{margin-top:auto;padding:18px 0;background:var(--card);border-top:1px solid var(--border)}
+    .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap}
+    .footer-links a{color:var(--primary);text-decoration:none;font-weight:600}
+  </style>
+</head>
+<body>
+  <header class="container">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+        <img src="https://img.icons8.com/fluency/48/toolbox.png" alt="Logo">
+        <div>
+          <div class="title">Smarttool Hub</div>
+          <div class="tag">Fast • Private • Client-side</div>
+        </div>
+      </a>
+    </div>
+    <div class="header-actions">
+      <a href="index.html" class="btn-header"><i class="fa-solid fa-house"></i> Home</a>
+      <button class="btn-header" id="themeToggle" title="Toggle theme"><i class="fa-solid fa-moon"></i></button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="tool-content">
+      <h1 class="tool-title">Reorder PDF Pages</h1>
+      <p class="tool-description">Upload PDF(s), drag pages to reorder them, then download the reordered PDF per-file or merge all reordered files into one PDF. All in your browser.</p>
+
+      <div class="upload-area" id="uploadArea" title="Click or drop PDF files here">
+        <div class="upload-icon"><i class="fas fa-file-pdf"></i></div>
+        <div class="upload-text">Drop PDF files here or click to browse</div>
+        <div class="upload-subtext">Supports multiple PDFs. Order of pages can be changed per file via drag-and-drop.</div>
+        <input type="file" id="fileInput" accept="application/pdf" multiple style="display:none">
+      </div>
+
+      <div class="action-row" style="justify-content:flex-end;">
+        <button id="downloadAllMergedBtn" class="btn btn-primary" disabled><i class="fa-solid fa-download"></i> Download All Reordered (Merged PDF)</button>
+        <button id="resetBtn" class="btn btn-secondary"><i class="fa-solid fa-undo"></i> Reset</button>
+        <div style="margin-left:12px;color:var(--muted);font-weight:700" id="summaryText">No files selected</div>
+      </div>
+
+      <div id="filesContainer" style="margin-top:14px;">
+        <div class="files-grid" id="filesGrid">
+          <!-- file cards injected here -->
+        </div>
+      </div>
+
+      <div class="status" id="status">Tip: drag a page item and drop it where you want to reorder. Use "Download Reordered" per file to export.</div>
+    </div>
+  </main>
+
+  <footer class="container">
+    <div class="footer-inner">
+      <div>© <span id="year"></span> Smarttool Hub</div>
+      <div class="footer-links">
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- pdf-lib -->
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+
+  <script>
+    // Basic UI init & theme
+    document.getElementById('year').textContent = new Date().getFullYear();
+    const themeToggle = document.getElementById('themeToggle');
+    if (localStorage.getItem('sth_theme') === 'light') { document.body.classList.add('light'); themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; }
+    themeToggle.onclick = () => {
+      document.body.classList.toggle('light');
+      if (document.body.classList.contains('light')) { themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>'; localStorage.setItem('sth_theme','light'); }
+      else { themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>'; localStorage.removeItem('sth_theme'); }
+    };
+
+    // Elements
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const filesGrid = document.getElementById('filesGrid');
+    const downloadAllMergedBtn = document.getElementById('downloadAllMergedBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const summaryText = document.getElementById('summaryText');
+    const statusEl = document.getElementById('status');
+
+    // State: filesState: [{ id, file, arrayBuffer, pageCount, pageOrder: [0,1,2...] }]
+    let filesState = [];
+
+    // Utilities
+    function uid(){ return 'f_' + Math.random().toString(36).slice(2,9); }
+    function isPdf(f){ return f && (f.type === 'application/pdf' || /\.pdf$/i.test(f.name)); }
+    function showStatus(msg, ms = 3000){ statusEl.textContent = msg; if (ms) setTimeout(()=> { statusEl.textContent = 'Tip: drag a page item and drop it where you want to reorder.' }, ms); }
+    function formatSize(bytes){ if (!bytes) return '0 KB'; return (bytes/1024).toFixed(1)+' KB'; }
+
+    // File handling
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+    uploadArea.addEventListener('dragleave', (e) => { e.preventDefault(); uploadArea.classList.remove('dragover'); });
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault(); uploadArea.classList.remove('dragover');
+      handleFilesAdded(Array.from(e.dataTransfer.files || []));
+    });
+    fileInput.addEventListener('change', (e) => { handleFilesAdded(Array.from(e.target.files || [])); fileInput.value = ''; });
+
+    async function handleFilesAdded(list) {
+      const incoming = list.filter(isPdf);
+      const rejected = list.filter(f => !isPdf(f));
+      if (rejected.length) showStatus(`${rejected.length} non-PDF file(s) ignored`, 4000);
+      if (!incoming.length) return;
+
+      for (const file of incoming) {
+        const id = uid();
+        const entry = { id, file, arrayBuffer: null, pageCount: null, pageOrder: [] };
+        filesState.push(entry);
+        try {
+          const ab = await file.arrayBuffer();
+          entry.arrayBuffer = ab;
+          try {
+            const pdfDoc = await PDFLib.PDFDocument.load(ab, { ignoreEncryption: true });
+            entry.pageCount = pdfDoc.getPageCount();
+            entry.pageOrder = Array.from({length: entry.pageCount}, (_,i)=>i);
+          } catch (err) {
+            console.warn('Failed to read PDF pages', file.name, err);
+            entry.pageCount = null;
+            entry.pageOrder = [];
+          }
+        } catch (err) {
+          console.error('File read failed', file.name, err);
+          entry.arrayBuffer = null;
+        }
+      }
+
+      renderAllFiles();
+      updateSummary();
+      showStatus(`${incoming.length} file(s) added`, 2500);
+    }
+
+    // Render functions
+    function renderAllFiles() {
+      filesGrid.innerHTML = '';
+      filesState.forEach((entry, idx) => {
+        const card = document.createElement('div'); card.className = 'file-card'; card.dataset.fileId = entry.id;
+
+        const icon = document.createElement('div'); icon.className = 'pdf-icon'; icon.innerHTML = '<i class="fa-solid fa-file-pdf"></i>';
+        card.appendChild(icon);
+
+        const meta = document.createElement('div'); meta.className = 'file-meta';
+        const title = document.createElement('h5'); title.textContent = entry.file.name; meta.appendChild(title);
+        const info = document.createElement('p'); info.textContent = `${formatSize(entry.file.size)} • ${entry.pageCount ? entry.pageCount+' page(s)' : 'Unknown pages'}`; meta.appendChild(info);
+
+        // page list
+        const pageList = document.createElement('div'); pageList.className = 'page-list';
+        pageList.dataset.fileId = entry.id;
+
+        if (entry.pageCount && entry.pageOrder.length === entry.pageCount) {
+          entry.pageOrder.forEach((pageIndex, displayIndex) => {
+            const item = document.createElement('div');
+            item.className = 'page-item';
+            item.draggable = true;
+            item.dataset.fileId = entry.id;
+            item.dataset.pageIndex = pageIndex; // original index
+            item.dataset.displayIndex = displayIndex; // current position
+
+            const left = document.createElement('div'); left.style.display='flex'; left.style.alignItems='center'; left.style.gap='10px';
+            const handle = document.createElement('div'); handle.className = 'drag-handle'; handle.innerHTML = '<i class="fa-solid fa-grip-lines"></i>';
+            const number = document.createElement('div'); number.className = 'page-number'; number.textContent = `Page ${pageIndex+1}`;
+            left.appendChild(handle); left.appendChild(number);
+
+            const right = document.createElement('div');
+            const dlBtn = document.createElement('button'); dlBtn.className = 'small-btn primary'; dlBtn.title = 'Download this single page'; dlBtn.innerHTML = '<i class="fa-solid fa-download"></i>';
+            dlBtn.onclick = () => downloadSinglePage(entry, pageIndex);
+            right.appendChild(dlBtn);
+
+            item.appendChild(left);
+            item.appendChild(right);
+
+            // drag events
+            item.addEventListener('dragstart', (ev) => {
+              item.classList.add('dragging');
+              ev.dataTransfer.setData('text/plain', JSON.stringify({ fileId: entry.id, pageIndex: pageIndex }));
+              ev.dataTransfer.effectAllowed = 'move';
+            });
+            item.addEventListener('dragend', () => {
+              item.classList.remove('dragging');
+            });
+
+            pageList.appendChild(item);
+          });
+        } else {
+          const msg = document.createElement('div'); msg.style.color='var(--muted)'; msg.textContent = 'Page info not available';
+          pageList.appendChild(msg);
+        }
+
+        // allow drop into list
+        pageList.addEventListener('dragover', (ev) => {
+          ev.preventDefault();
+          const afterElement = getDragAfterElement(pageList, ev.clientY);
+          const dragging = document.querySelector('.page-item.dragging');
+          if (!dragging) return;
+          if (afterElement == null) pageList.appendChild(dragging);
+          else pageList.insertBefore(dragging, afterElement);
+        });
+
+        pageList.addEventListener('drop', (ev) => {
+          ev.preventDefault();
+          const dataText = ev.dataTransfer.getData('text/plain');
+          if (!dataText) return;
+          let payload;
+          try { payload = JSON.parse(dataText); } catch(e){ return; }
+          const srcFileId = payload.fileId;
+          const srcPageIndex = payload.pageIndex;
+
+          // If dropped into same file: reorder pageOrder based on DOM order
+          const fileId = pageList.dataset.fileId;
+          if (fileId !== srcFileId) {
+            // If user drags between files, we ignore cross-file moves for simplicity
+            showStatus('Cross-file drag not supported — reorder within the same file.', 2500);
+            renderAllFiles();
+            return;
+          }
+
+          // Build new pageOrder from DOM
+          const newOrder = Array.from(pageList.querySelectorAll('.page-item')).map(el => Number(el.dataset.pageIndex));
+          const entryToUpdate = filesState.find(f => f.id === fileId);
+          if (entryToUpdate) {
+            entryToUpdate.pageOrder = newOrder;
+            renderAllFiles(); // re-render to update indices
+            updateSummary();
+          }
+        });
+
+        meta.appendChild(pageList);
+        card.appendChild(meta);
+
+        // actions
+        const actions = document.createElement('div'); actions.className='file-actions';
+        const downloadBtn = document.createElement('button'); downloadBtn.className='small-btn primary'; downloadBtn.innerHTML = '<i class="fa-solid fa-download"></i> Download Reordered';
+        downloadBtn.onclick = () => downloadReorderedForEntry(entry);
+        const infoBtn = document.createElement('button'); infoBtn.className='small-btn secondary'; infoBtn.innerHTML = '<i class="fa-solid fa-info"></i>';
+        infoBtn.onclick = () => alert(`${entry.file.name}\nSize: ${formatSize(entry.file.size)}\nPages: ${entry.pageCount || 'Unknown'}`);
+        const removeBtn = document.createElement('button'); removeBtn.className='small-btn secondary'; removeBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+        removeBtn.onclick = () => {
+          filesState = filesState.filter(f => f.id !== entry.id);
+          renderAllFiles(); updateSummary(); showStatus('File removed', 1500);
+        };
+
+        actions.appendChild(downloadBtn); actions.appendChild(infoBtn); actions.appendChild(removeBtn);
+        card.appendChild(actions);
+
+        filesGrid.appendChild(card);
+      });
+    }
+
+    // helper to get element after the drag position
+    function getDragAfterElement(container, y) {
+      const draggableElements = [...container.querySelectorAll('.page-item:not(.dragging)')];
+      return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    function updateSummary() {
+      summaryText.textContent = filesState.length ? `${filesState.length} file(s) selected` : 'No files selected';
+      // enable merged download if at least one file has pages
+      const any = filesState.some(f => f.pageOrder && f.pageOrder.length);
+      downloadAllMergedBtn.disabled = !any;
+    }
+
+    // Download helpers
+    async function downloadSinglePage(entry, pageIndex) {
+      if (typeof PDFLib === 'undefined') { showStatus('pdf-lib not loaded', 3000); return; }
+      try {
+        const src = await PDFLib.PDFDocument.load(entry.arrayBuffer, { ignoreEncryption: true });
+        const out = await PDFLib.PDFDocument.create();
+        const [copied] = await out.copyPages(src, [pageIndex]);
+        out.addPage(copied);
+        const bytes = await out.save();
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const name = `${entry.file.name.replace(/\.pdf$/i,'')}_page-${pageIndex+1}.pdf`;
+        triggerDownload(blob, name);
+        showStatus(`Downloaded page ${pageIndex+1}`, 2500);
+      } catch (err) {
+        console.error(err);
+        showStatus('Failed to extract single page', 3000);
+      }
+    }
+
+    async function downloadReorderedForEntry(entry) {
+      if (!entry.pageOrder || !entry.pageOrder.length) { showStatus('No pages to export', 2500); return; }
+      if (typeof PDFLib === 'undefined') { showStatus('pdf-lib not loaded', 3000); return; }
+      try {
+        showStatus('Preparing PDF...', 30000);
+        const src = await PDFLib.PDFDocument.load(entry.arrayBuffer, { ignoreEncryption: true });
+        const out = await PDFLib.PDFDocument.create();
+        const pagesToCopy = entry.pageOrder.slice(); // indices in desired order
+        const copiedPages = await out.copyPages(src, pagesToCopy);
+        copiedPages.forEach(p => out.addPage(p));
+        const bytes = await out.save();
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const name = `${entry.file.name.replace(/\.pdf$/i,'')}_reordered.pdf`;
+        triggerDownload(blob, name);
+        showStatus('Reordered PDF ready', 2500);
+      } catch (err) {
+        console.error(err);
+        showStatus('Failed to create reordered PDF', 3000);
+      }
+    }
+
+    // Merge all reordered pages across files (in the order of filesState array)
+    async function downloadAllReorderedMerged() {
+      if (typeof PDFLib === 'undefined') { showStatus('pdf-lib not loaded', 3000); return; }
+      const anyPages = filesState.some(f => f.pageOrder && f.pageOrder.length > 0);
+      if (!anyPages) { showStatus('No pages available to merge', 2500); return; }
+
+      try {
+        showStatus('Merging PDFs — this may take a moment...', 30000);
+        const merged = await PDFLib.PDFDocument.create();
+        for (let i = 0; i < filesState.length; i++) {
+          const entry = filesState[i];
+          if (!entry.pageOrder || entry.pageOrder.length === 0) continue;
+          const src = await PDFLib.PDFDocument.load(entry.arrayBuffer, { ignoreEncryption: true });
+          const copyIdx = entry.pageOrder.slice();
+          const copied = await merged.copyPages(src, copyIdx);
+          copied.forEach(p => merged.addPage(p));
+        }
+        const bytes = await merged.save();
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+        const name = `merged_reordered_${ts}.pdf`;
+        triggerDownload(blob, name);
+        showStatus('Merged PDF downloaded', 2500);
+      } catch (err) {
+        console.error(err);
+        showStatus('Failed to merge PDFs', 3000);
+      }
+    }
+
+    function triggerDownload(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { URL.revokeObjectURL(url); try{ document.body.removeChild(a); } catch(e){} }, 400);
+    }
+
+    // Reset
+    resetBtn.addEventListener('click', () => {
+      filesState = [];
+      filesGrid.innerHTML = '';
+      updateSummary();
+      showStatus('Reset complete', 1500);
+    });
+
+    downloadAllMergedBtn.addEventListener('click', downloadAllReorderedMerged);
+
+    // keyboard support for upload area
+    uploadArea.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
+
+    // initial
+    updateSummary();
+
+    // Expose state for debugging
+    window._reorderPDF_state = () => filesState.map(f => ({ name: f.file.name, pages: f.pageOrder }));
+
+  </script>
+</body>
+</html>
