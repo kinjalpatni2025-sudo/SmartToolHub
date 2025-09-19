@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Smart Online Tools - Free Web Tools for Everyone</title>
   <meta name="description" content="Discover 50+ free online tools including calculators, converters, PDF utilities, and more. Fast, simple, and mobile-friendly tools for daily use." />
+
+  <!-- ✅ Favicon -->
+  <link rel="icon" type="image/png" href="/favicon.png" />
+
   <style>
     body {
       margin: 0;
@@ -51,8 +55,13 @@
     }
     header h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 22px;
       font-weight: bold;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
     }
     nav a {
       color: white;
@@ -60,9 +69,7 @@
       text-decoration: none;
       font-weight: 600;
     }
-    nav a:hover {
-      text-decoration: underline;
-    }
+    nav a:hover { text-decoration: underline; }
 
     /* Dark Mode Toggle Button */
     .toggle-btn {
@@ -74,18 +81,38 @@
       margin-left: 15px;
     }
 
+    /* Mobile Menu */
+    .menu-toggle {
+      display: none;
+      font-size: 26px;
+      cursor: pointer;
+      margin-left: 20px;
+    }
+    .mobile-menu {
+      display: none;
+      flex-direction: column;
+      background: #4a90e2;
+      padding: 10px 20px;
+    }
+    .mobile-menu a {
+      padding: 10px 0;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .mobile-menu a:hover { text-decoration: underline; }
+
+    @media (max-width: 768px) {
+      nav a { display: none; }
+      .toggle-btn { display: none; }
+      .menu-toggle { display: block; color: white; }
+      .mobile-menu { display: none; }
+      .mobile-menu.active { display: flex; }
+    }
+
     /* Slider */
-    .slider {
-      position: relative;
-      overflow: hidden;
-      width: 100%;
-      height: 320px;
-    }
-    .slides {
-      display: flex;
-      transition: transform 0.5s ease-in-out;
-      height: 100%;
-    }
+    .slider { position: relative; overflow: hidden; width: 100%; height: 320px; }
+    .slides { display: flex; transition: transform 0.5s ease-in-out; height: 100%; }
     .slide {
       min-width: 100%;
       height: 320px;
@@ -102,28 +129,20 @@
     }
     .slide-content {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
       z-index: 2;
     }
-    .slide-content h2 { font-size: 36px; margin: 0 0 10px; }
-    .slide-content p { font-size: 18px; margin: 0; }
+    .slide-content h2 { font-size: 32px; margin: 0 0 10px; }
+    .slide-content p { font-size: 16px; margin: 0; }
 
     /* Slider Controls */
     .prev, .next {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(0,0,0,0.5);
-      color: white;
-      border: none;
-      padding: 12px;
-      cursor: pointer;
-      font-size: 20px;
-      border-radius: 50%;
-      z-index: 3;
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(0,0,0,0.5); color: white;
+      border: none; padding: 12px; cursor: pointer;
+      font-size: 20px; border-radius: 50%; z-index: 3;
     }
     .prev { left: 15px; }
     .next { right: 15px; }
@@ -135,96 +154,59 @@
       z-index: 3;
     }
     .dot {
-      height: 12px;
-      width: 12px;
-      margin: 0 5px;
-      background-color: #bbb;
-      border-radius: 50%;
-      display: inline-block;
-      cursor: pointer;
+      height: 12px; width: 12px; margin: 0 5px;
+      background-color: #bbb; border-radius: 50%;
+      display: inline-block; cursor: pointer;
     }
     .active { background-color: #fff; }
 
     /* Hero */
     .hero {
       text-align: center;
-      padding: 60px 20px;
+      padding: 50px 20px;
       background: linear-gradient(135deg, #63b3ed, #6a5acd);
       color: white;
     }
-    .hero h2 { font-size: 36px; margin-bottom: 15px; }
-    .hero p { font-size: 18px; margin: 0 auto; max-width: 600px; }
-
-    /* Search */
-    .search-bar { text-align: center; margin: 30px auto; }
-    .search-bar input {
-      width: 80%;
-      max-width: 400px;
-      padding: 12px;
-      font-size: 16px;
-      border: 2px solid #ccc;
-      border-radius: 8px;
-    }
+    .hero h2 { font-size: 32px; margin-bottom: 10px; }
+    .hero p { font-size: 16px; margin: 0 auto; max-width: 600px; }
 
     /* Tools Grid */
     .tools-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      padding: 30px;
-      max-width: 1200px;
-      margin: auto;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px; padding: 30px; max-width: 1200px; margin: auto;
     }
     .tool-card {
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
+      background: #fff; padding: 20px; border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      text-align: center;
-      transition: 0.3s;
+      text-align: center; transition: 0.3s;
     }
     .tool-card:hover {
       transform: translateY(-6px);
       box-shadow: 0 6px 16px rgba(0,0,0,0.15);
     }
-    .tool-card h3 { margin: 10px 0; font-size: 20px; color: #4a90e2; }
+    .tool-card h3 { margin: 10px 0; font-size: 18px; color: #4a90e2; }
     .tool-card p { font-size: 14px; color: #666; }
     .tool-card a {
-      display: inline-block;
-      margin-top: 12px;
-      padding: 10px 15px;
+      display: inline-block; margin-top: 12px; padding: 10px 15px;
       background: linear-gradient(90deg, #38a169, #2f855a);
-      color: white;
-      border-radius: 6px;
-      font-size: 14px;
-      text-decoration: none;
+      color: white; border-radius: 6px; font-size: 14px; text-decoration: none;
     }
 
     /* Blog Section */
     .blog-section {
-      background: #ffffff;
-      padding: 40px 20px;
-      max-width: 1200px;
-      margin: auto;
+      background: #ffffff; padding: 40px 20px; max-width: 1200px; margin: auto;
     }
-    body.dark .blog-section { background: #1a202c; }
     .blog-section h2 {
-      text-align: center;
-      margin-bottom: 30px;
-      font-size: 28px;
-      color: #6a5acd;
+      text-align: center; margin-bottom: 30px; font-size: 24px; color: #6a5acd;
     }
     .blog-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 20px;
     }
     .blog-card {
-      background: #fff;
-      border-radius: 12px;
+      background: #fff; border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      overflow: hidden;
-      transition: 0.3s;
+      overflow: hidden; transition: 0.3s;
     }
     .blog-card:hover { transform: translateY(-6px); }
     .blog-card img { width: 100%; height: 200px; object-fit: cover; }
@@ -232,23 +214,15 @@
     .blog-content h3 { margin: 10px 0; font-size: 18px; color: #4a90e2; }
     .blog-content p { font-size: 14px; color: #555; margin-bottom: 12px; }
     .blog-content a {
-      display: inline-block;
-      padding: 8px 14px;
+      display: inline-block; padding: 8px 14px;
       background: linear-gradient(90deg, #38a169, #2f855a);
-      color: white;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 14px;
+      color: white; border-radius: 6px; text-decoration: none; font-size: 14px;
     }
 
     /* Footer */
     footer {
-      text-align: center;
-      background: #2d3748;
-      color: #ccc;
-      padding: 20px;
-      font-size: 14px;
-      margin-top: 40px;
+      text-align: center; background: #2d3748;
+      color: #ccc; padding: 20px; font-size: 14px; margin-top: 40px;
     }
   </style>
 </head>
@@ -262,38 +236,35 @@
       <a href="#">About</a>
       <a href="#">Contact</a>
       <button class="toggle-btn" id="toggleTheme">🌙</button>
+      <span class="menu-toggle" id="menuToggle">☰</span>
     </nav>
   </header>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#">Home</a>
+    <a href="#">Tools</a>
+    <a href="#">Blog</a>
+    <a href="#">About</a>
+    <a href="#">Contact</a>
+  </div>
 
   <!-- Slider -->
   <div class="slider">
     <div class="slides">
       <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1581091215367-59ab6f3e7f8d?auto=format&fit=crop&w=1200&h=320&q=80');">
-        <div class="slide-content">
-          <h2>🔢 Powerful Calculators</h2>
-          <p>Do math, BMI, loan EMI & more instantly</p>
-        </div>
+        <div class="slide-content"><h2>🔢 Powerful Calculators</h2><p>Do math, BMI, loan EMI & more instantly</p></div>
       </div>
       <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1508780709619-79562169bc64?auto=format&fit=crop&w=1200&h=320&q=80');">
-        <div class="slide-content">
-          <h2>📖 Blog & Guides</h2>
-          <p>Learn smart tips & tech tutorials</p>
-        </div>
+        <div class="slide-content"><h2>📖 Blog & Guides</h2><p>Learn smart tips & tech tutorials</p></div>
       </div>
       <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&h=320&q=80');">
-        <div class="slide-content">
-          <h2>🛠️ 50+ Free Tools</h2>
-          <p>Converters, PDF tools, editors & more</p>
-        </div>
+        <div class="slide-content"><h2>🛠️ 50+ Free Tools</h2><p>Converters, PDF tools, editors & more</p></div>
       </div>
     </div>
     <button class="prev">&#10094;</button>
     <button class="next">&#10095;</button>
-    <div class="dots">
-      <span class="dot active"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-    </div>
+    <div class="dots"><span class="dot active"></span><span class="dot"></span><span class="dot"></span></div>
   </div>
 
   <section class="hero">
@@ -301,14 +272,10 @@
     <p>All-in-one platform for calculators, converters, PDF utilities, text tools, and more — fast, reliable, and mobile-friendly.</p>
   </section>
 
-  <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Search tools...">
-  </div>
-
-  <section class="tools-grid" id="toolsGrid">
-    <div class="tool-card"><h3>Calculator</h3><p>Basic math calculator for quick calculations.</p><a href="/tools/calculator/">Open Tool</a></div>
-    <div class="tool-card"><h3>BMI Calculator</h3><p>Check your Body Mass Index easily.</p><a href="/tools/bmi-calculator/">Open Tool</a></div>
-    <div class="tool-card"><h3>Age Calculator</h3><p>Calculate your exact age from date of birth.</p><a href="/tools/age-calculator/">Open Tool</a></div>
+  <section class="tools-grid">
+    <div class="tool-card"><h3>Calculator</h3><p>Basic math calculator for quick calculations.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>BMI Calculator</h3><p>Check your Body Mass Index easily.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Age Calculator</h3><p>Calculate your exact age from date of birth.</p><a href="#">Open Tool</a></div>
   </section>
 
   <section class="blog-section">
@@ -319,7 +286,7 @@
         <div class="blog-content">
           <h3>Top 10 Online Tools You Should Try</h3>
           <p>Discover the most useful online tools that can save you time and improve productivity...</p>
-          <a href="/blog/top-10-online-tools/">Read More</a>
+          <a href="#">Read More</a>
         </div>
       </div>
       <div class="blog-card">
@@ -327,15 +294,7 @@
         <div class="blog-content">
           <h3>How to Use Online PDF Tools Effectively</h3>
           <p>Learn the smart way to merge, split, and compress PDFs with free online utilities...</p>
-          <a href="/blog/online-pdf-tools-guide/">Read More</a>
-        </div>
-      </div>
-      <div class="blog-card">
-        <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=400&h=200&q=80" alt="Blog 3">
-        <div class="blog-content">
-          <h3>Boost Productivity with the Pomodoro Timer</h3>
-          <p>Stay focused and manage your time better using the Pomodoro Technique and timer apps...</p>
-          <a href="/blog/pomodoro-timer-benefits/">Read More</a>
+          <a href="#">Read More</a>
         </div>
       </div>
     </div>
@@ -343,23 +302,21 @@
 
   <footer>
     <p>&copy; 2025 Smart Online Tools. All Rights Reserved.</p>
-    <p>
-      <a href="/privacy-policy/">Privacy Policy</a> | 
-      <a href="/terms/">Terms</a> | 
-      <a href="/contact/">Contact</a>
-    </p>
   </footer>
 
   <script>
-    // Search Filter
-    const searchInput = document.getElementById("searchInput");
-    const toolCards = document.querySelectorAll(".tool-card");
-    searchInput.addEventListener("keyup", function() {
-      let filter = searchInput.value.toLowerCase();
-      toolCards.forEach(card => {
-        let text = card.innerText.toLowerCase();
-        card.style.display = text.includes(filter) ? "" : "none";
-      });
+    // Dark Mode Toggle
+    const toggleBtn = document.getElementById("toggleTheme");
+    toggleBtn.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+      toggleBtn.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+    });
+
+    // Mobile Menu Toggle
+    const menuToggle = document.getElementById("menuToggle");
+    const mobileMenu = document.getElementById("mobileMenu");
+    menuToggle.addEventListener("click", () => {
+      mobileMenu.classList.toggle("active");
     });
 
     // Slider
@@ -369,7 +326,6 @@
     const prev = document.querySelector(".prev");
     const next = document.querySelector(".next");
     const totalSlides = dots.length;
-
     function showSlide(index) {
       if (index >= totalSlides) slideIndex = 0;
       if (index < 0) slideIndex = totalSlides - 1;
@@ -379,19 +335,11 @@
     }
     function autoSlide() { slideIndex++; showSlide(slideIndex); }
     let slideTimer = setInterval(autoSlide, 4000);
-
     next.addEventListener("click", () => { slideIndex++; showSlide(slideIndex); resetTimer(); });
     prev.addEventListener("click", () => { slideIndex--; showSlide(slideIndex); resetTimer(); });
     dots.forEach((dot, i) => { dot.addEventListener("click", () => { slideIndex=i; showSlide(slideIndex); resetTimer(); }); });
     function resetTimer() { clearInterval(slideTimer); slideTimer = setInterval(autoSlide, 4000); }
     showSlide(slideIndex);
-
-    // Dark Mode Toggle
-    const toggleBtn = document.getElementById("toggleTheme");
-    toggleBtn.addEventListener("click", () => {
-      document.body.classList.toggle("dark");
-      toggleBtn.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
-    });
   </script>
 </body>
 </html>
