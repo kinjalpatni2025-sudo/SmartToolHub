@@ -8,28 +8,30 @@
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f0f8ff; /* Light blue */
-      color: #444;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #f9fbff, #eef5ff); /* Soft gradient background */
+      color: #333;
     }
+
+    /* Header */
     header {
-      background: #4a90e2;
+      background: linear-gradient(90deg, #4a90e2, #6a5acd); /* blue → purple */
       color: white;
       padding: 15px 30px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      position: relative;
     }
     header h1 {
       margin: 0;
-      font-size: 22px;
+      font-size: 24px;
+      font-weight: bold;
     }
     nav a {
       color: white;
       margin-left: 20px;
       text-decoration: none;
-      font-weight: bold;
+      font-weight: 600;
     }
     nav a:hover {
       text-decoration: underline;
@@ -40,7 +42,7 @@
       position: relative;
       overflow: hidden;
       width: 100%;
-      height: 300px;
+      height: 320px;
     }
     .slides {
       display: flex;
@@ -49,7 +51,7 @@
     }
     .slide {
       min-width: 100%;
-      height: 300px;
+      height: 320px;
       position: relative;
       background-size: cover;
       background-position: center;
@@ -59,7 +61,7 @@
       content: "";
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5); /* overlay */
+      background: rgba(0,0,0,0.45); /* overlay */
     }
     .slide-content {
       position: absolute;
@@ -70,7 +72,7 @@
       z-index: 2;
     }
     .slide-content h2 {
-      font-size: 32px;
+      font-size: 36px;
       margin: 0 0 10px;
     }
     .slide-content p {
@@ -86,9 +88,9 @@
       background: rgba(0,0,0,0.5);
       color: white;
       border: none;
-      padding: 10px;
+      padding: 12px;
       cursor: pointer;
-      font-size: 18px;
+      font-size: 20px;
       border-radius: 50%;
       z-index: 3;
     }
@@ -114,21 +116,24 @@
       background-color: #fff;
     }
 
+    /* Hero Section */
     .hero {
       text-align: center;
       padding: 60px 20px;
-      background: linear-gradient(135deg, #63b3ed, #4a90e2);
+      background: linear-gradient(135deg, #63b3ed, #6a5acd);
       color: white;
     }
     .hero h2 {
-      font-size: 34px;
+      font-size: 36px;
       margin-bottom: 15px;
     }
     .hero p {
-      font-size: 17px;
+      font-size: 18px;
       margin: 0 auto;
       max-width: 600px;
     }
+
+    /* Search */
     .search-bar {
       text-align: center;
       margin: 30px auto;
@@ -141,6 +146,8 @@
       border: 2px solid #ccc;
       border-radius: 8px;
     }
+
+    /* Tools Grid */
     .tools-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -150,15 +157,16 @@
       margin: auto;
     }
     .tool-card {
-      background: #ffffff;
+      background: #fff;
       padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
       text-align: center;
-      transition: transform 0.2s;
+      transition: all 0.3s ease;
     }
     .tool-card:hover {
-      transform: translateY(-4px);
+      transform: translateY(-6px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
     }
     .tool-card h3 {
       margin: 10px 0;
@@ -167,23 +175,85 @@
     }
     .tool-card p {
       font-size: 14px;
-      color: #555;
+      color: #666;
     }
     .tool-card a {
       display: inline-block;
       margin-top: 12px;
       padding: 10px 15px;
-      background: #38a169;
+      background: linear-gradient(90deg, #38a169, #2f855a);
       color: white;
       border-radius: 6px;
       cursor: pointer;
       font-size: 14px;
       text-decoration: none;
-      transition: background 0.3s;
+      transition: 0.3s;
     }
     .tool-card a:hover {
-      background: #2f855a;
+      background: linear-gradient(90deg, #2f855a, #276749);
     }
+
+    /* Blog Section */
+    .blog-section {
+      background: #ffffff;
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+    .blog-section h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 28px;
+      color: #6a5acd;
+    }
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    .blog-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: 0.3s;
+    }
+    .blog-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+    }
+    .blog-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+    .blog-content {
+      padding: 15px;
+    }
+    .blog-content h3 {
+      margin: 10px 0;
+      font-size: 18px;
+      color: #4a90e2;
+    }
+    .blog-content p {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 12px;
+    }
+    .blog-content a {
+      display: inline-block;
+      padding: 8px 14px;
+      background: linear-gradient(90deg, #38a169, #2f855a);
+      color: white;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .blog-content a:hover {
+      background: linear-gradient(90deg, #2f855a, #276749);
+    }
+
+    /* Footer */
     footer {
       text-align: center;
       background: #2d3748;
@@ -217,19 +287,19 @@
   <!-- Slider with Images -->
   <div class="slider">
     <div class="slides">
-      <div class="slide" style="background-image:url('https://picsum.photos/1200/300?random=1');">
+      <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1581091215367-59ab6f3e7f8d?auto=format&fit=crop&w=1200&h=320&q=80');">
         <div class="slide-content">
           <h2>🔢 Powerful Calculators</h2>
           <p>Do math, BMI, loan EMI & more instantly</p>
         </div>
       </div>
-      <div class="slide" style="background-image:url('https://picsum.photos/1200/300?random=2');">
+      <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1508780709619-79562169bc64?auto=format&fit=crop&w=1200&h=320&q=80');">
         <div class="slide-content">
           <h2>📖 Blog & Guides</h2>
           <p>Learn smart tips & tech tutorials</p>
         </div>
       </div>
-      <div class="slide" style="background-image:url('https://picsum.photos/1200/300?random=3');">
+      <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&h=320&q=80');">
         <div class="slide-content">
           <h2>🛠️ 50+ Free Tools</h2>
           <p>Converters, PDF tools, editors & more</p>
@@ -258,7 +328,38 @@
     <div class="tool-card"><h3>Calculator</h3><p>Basic math calculator for quick calculations.</p><a href="/tools/calculator/">Open Tool</a></div>
     <div class="tool-card"><h3>BMI Calculator</h3><p>Check your Body Mass Index easily.</p><a href="/tools/bmi-calculator/">Open Tool</a></div>
     <div class="tool-card"><h3>Age Calculator</h3><p>Calculate your exact age from date of birth.</p><a href="/tools/age-calculator/">Open Tool</a></div>
-    <!-- Add rest of 50 tools -->
+    <!-- Add more tools here -->
+  </section>
+
+  <!-- Blog Section -->
+  <section class="blog-section">
+    <h2>📖 Latest Blog Posts</h2>
+    <div class="blog-grid">
+      <div class="blog-card">
+        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=400&h=200&q=80" alt="Blog 1">
+        <div class="blog-content">
+          <h3>Top 10 Online Tools You Should Try</h3>
+          <p>Discover the most useful online tools that can save you time and improve productivity...</p>
+          <a href="/blog/top-10-online-tools/">Read More</a>
+        </div>
+      </div>
+      <div class="blog-card">
+        <img src="https://images.unsplash.com/photo-1508780709619-79562169bc64?auto=format&fit=crop&w=400&h=200&q=80" alt="Blog 2">
+        <div class="blog-content">
+          <h3>How to Use Online PDF Tools Effectively</h3>
+          <p>Learn the smart way to merge, split, and compress PDFs with free online utilities...</p>
+          <a href="/blog/online-pdf-tools-guide/">Read More</a>
+        </div>
+      </div>
+      <div class="blog-card">
+        <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=400&h=200&q=80" alt="Blog 3">
+        <div class="blog-content">
+          <h3>Boost Productivity with the Pomodoro Timer</h3>
+          <p>Stay focused and manage your time better using the Pomodoro Technique and timer apps...</p>
+          <a href="/blog/pomodoro-timer-benefits/">Read More</a>
+        </div>
+      </div>
+    </div>
   </section>
 
   <footer>
