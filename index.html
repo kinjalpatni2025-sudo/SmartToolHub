@@ -7,7 +7,7 @@
   <meta name="description" content="Discover 50+ free online tools including calculators, converters, PDF utilities, and more. Fast, simple, and mobile-friendly tools for daily use." />
 
   <!-- ✅ Favicon -->
-  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="icon" type="image/png" href="/wp-content/uploads/2025/09/favicon.png" />
 
   <style>
     body {
@@ -17,329 +17,188 @@
       color: #333;
       transition: background 0.3s, color 0.3s;
     }
+    body.dark { background:#1a202c; color:#e2e8f0; }
+    body.dark header { background:linear-gradient(90deg,#2d3748,#1a202c); }
+    body.dark .hero { background:linear-gradient(135deg,#2d3748,#1a202c); }
+    body.dark .tool-card, body.dark .blog-card { background:#2d3748; color:#e2e8f0; }
+    body.dark footer { background:#111827; }
 
-    /* Dark Mode */
-    body.dark {
-      background: #1a202c;
-      color: #e2e8f0;
-    }
-    body.dark header {
-      background: linear-gradient(90deg, #2d3748, #1a202c);
-      box-shadow: 0 2px 8px rgba(255,255,255,0.1);
-    }
-    body.dark .hero {
-      background: linear-gradient(135deg, #2d3748, #1a202c);
-    }
-    body.dark .tool-card,
-    body.dark .blog-card {
-      background: #2d3748;
-      color: #e2e8f0;
-      box-shadow: 0 4px 12px rgba(255,255,255,0.05);
-    }
-    body.dark footer {
-      background: #111827;
-    }
-
-    /* Sticky Header */
+    /* Header */
     header {
-      background: linear-gradient(90deg, #4a90e2, #6a5acd);
-      color: white;
-      padding: 15px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      background:linear-gradient(90deg,#4a90e2,#6a5acd);
+      color:white; padding:15px 30px;
+      display:flex; justify-content:space-between; align-items:center;
+      position:sticky; top:0; z-index:1000;
     }
-    header h1 {
-      margin: 0;
-      font-size: 22px;
-      font-weight: bold;
-    }
-
-    nav {
-      display: flex;
-      align-items: center;
-    }
-    nav a {
-      color: white;
-      margin-left: 20px;
-      text-decoration: none;
-      font-weight: 600;
-    }
-    nav a:hover { text-decoration: underline; }
-
-    /* Dark Mode Toggle Button */
-    .toggle-btn {
-      background: none;
-      border: none;
-      font-size: 22px;
-      cursor: pointer;
-      color: white;
-      margin-left: 15px;
-    }
-
-    /* Mobile Menu */
-    .menu-toggle {
-      display: none;
-      font-size: 26px;
-      cursor: pointer;
-      margin-left: 20px;
-    }
-    .mobile-menu {
-      display: none;
-      flex-direction: column;
-      background: #4a90e2;
-      padding: 10px 20px;
-    }
-    .mobile-menu a {
-      padding: 10px 0;
-      color: white;
-      text-decoration: none;
-      font-weight: 500;
-    }
-    .mobile-menu a:hover { text-decoration: underline; }
-
-    @media (max-width: 768px) {
-      nav a { display: none; }
-      .toggle-btn { display: none; }
-      .menu-toggle { display: block; color: white; }
-      .mobile-menu { display: none; }
-      .mobile-menu.active { display: flex; }
+    .logo img { height:40px; width:auto; }
+    nav { display:flex; align-items:center; }
+    nav a { color:white; margin-left:20px; text-decoration:none; font-weight:600; }
+    nav a:hover { text-decoration:underline; }
+    .toggle-btn { background:none; border:none; font-size:22px; cursor:pointer; color:white; margin-left:15px; }
+    .menu-toggle { display:none; font-size:26px; cursor:pointer; margin-left:20px; }
+    .mobile-menu { display:none; flex-direction:column; background:#4a90e2; padding:10px 20px; }
+    .mobile-menu a { padding:10px 0; color:white; text-decoration:none; }
+    .mobile-menu.active { display:flex; }
+    @media(max-width:768px) {
+      nav a,.toggle-btn { display:none; }
+      .menu-toggle{ display:block; color:white; }
     }
 
     /* Slider */
-    .slider { position: relative; overflow: hidden; width: 100%; height: 320px; }
-    .slides { display: flex; transition: transform 0.5s ease-in-out; height: 100%; }
-    .slide {
-      min-width: 100%;
-      height: 320px;
-      position: relative;
-      background-size: cover;
-      background-position: center;
-      color: white;
-    }
-    .slide::after {
-      content: "";
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.45);
-    }
-    .slide-content {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      z-index: 2;
-    }
-    .slide-content h2 { font-size: 32px; margin: 0 0 10px; }
-    .slide-content p { font-size: 16px; margin: 0; }
-
-    /* Slider Controls */
-    .prev, .next {
-      position: absolute; top: 50%; transform: translateY(-50%);
-      background: rgba(0,0,0,0.5); color: white;
-      border: none; padding: 12px; cursor: pointer;
-      font-size: 20px; border-radius: 50%; z-index: 3;
-    }
-    .prev { left: 15px; }
-    .next { right: 15px; }
-    .dots {
-      text-align: center;
-      position: absolute;
-      bottom: 15px;
-      width: 100%;
-      z-index: 3;
-    }
-    .dot {
-      height: 12px; width: 12px; margin: 0 5px;
-      background-color: #bbb; border-radius: 50%;
-      display: inline-block; cursor: pointer;
-    }
-    .active { background-color: #fff; }
+    .slider { position:relative; overflow:hidden; width:100%; height:300px; }
+    .slides { display:flex; transition:transform .5s ease-in-out; height:100%; }
+    .slide { min-width:100%; height:300px; background-size:cover; background-position:center; position:relative; color:white; }
+    .slide::after { content:""; position:absolute; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.45); }
+    .slide-content { position:absolute; top:50%;left:50%; transform:translate(-50%,-50%); text-align:center; z-index:2; }
+    .slide-content h2{font-size:28px;margin:0 0 10px;}
+    .slide-content p{font-size:16px;margin:0;}
+    .prev,.next{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;border:none;padding:12px;cursor:pointer;border-radius:50%;z-index:3;}
+    .prev{left:15px;} .next{right:15px;}
+    .dots{position:absolute;bottom:10px;width:100%;text-align:center;z-index:3;}
+    .dot{height:12px;width:12px;margin:0 4px;background:#bbb;border-radius:50%;display:inline-block;cursor:pointer;}
+    .active{background:#fff;}
 
     /* Hero */
-    .hero {
-      text-align: center;
-      padding: 50px 20px;
-      background: linear-gradient(135deg, #63b3ed, #6a5acd);
-      color: white;
-    }
-    .hero h2 { font-size: 32px; margin-bottom: 10px; }
-    .hero p { font-size: 16px; margin: 0 auto; max-width: 600px; }
+    .hero{text-align:center;padding:50px 20px;background:linear-gradient(135deg,#63b3ed,#6a5acd);color:white;}
+    .hero h2{font-size:28px;margin-bottom:10px;}
+
+    /* Search */
+    .search-bar{text-align:center;margin:30px auto;}
+    .search-bar input{width:80%;max-width:400px;padding:12px;font-size:16px;border:2px solid #ccc;border-radius:8px;}
 
     /* Tools Grid */
-    .tools-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px; padding: 30px; max-width: 1200px; margin: auto;
-    }
-    .tool-card {
-      background: #fff; padding: 20px; border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      text-align: center; transition: 0.3s;
-    }
-    .tool-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-    }
-    .tool-card h3 { margin: 10px 0; font-size: 18px; color: #4a90e2; }
-    .tool-card p { font-size: 14px; color: #666; }
-    .tool-card a {
-      display: inline-block; margin-top: 12px; padding: 10px 15px;
-      background: linear-gradient(90deg, #38a169, #2f855a);
-      color: white; border-radius: 6px; font-size: 14px; text-decoration: none;
-    }
+    .tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;padding:30px;max-width:1200px;margin:auto;}
+    .tool-card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.08);text-align:center;transition:.3s;}
+    .tool-card:hover{transform:translateY(-6px);box-shadow:0 6px 16px rgba(0,0,0,0.15);}
+    .tool-card h3{margin:10px 0;font-size:18px;color:#4a90e2;}
+    .tool-card p{font-size:14px;color:#666;}
+    .tool-card a{display:inline-block;margin-top:10px;padding:8px 12px;background:linear-gradient(90deg,#38a169,#2f855a);color:white;border-radius:6px;font-size:14px;text-decoration:none;}
 
-    /* Blog Section */
-    .blog-section {
-      background: #ffffff; padding: 40px 20px; max-width: 1200px; margin: auto;
-    }
-    .blog-section h2 {
-      text-align: center; margin-bottom: 30px; font-size: 24px; color: #6a5acd;
-    }
-    .blog-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 20px;
-    }
-    .blog-card {
-      background: #fff; border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      overflow: hidden; transition: 0.3s;
-    }
-    .blog-card:hover { transform: translateY(-6px); }
-    .blog-card img { width: 100%; height: 200px; object-fit: cover; }
-    .blog-content { padding: 15px; }
-    .blog-content h3 { margin: 10px 0; font-size: 18px; color: #4a90e2; }
-    .blog-content p { font-size: 14px; color: #555; margin-bottom: 12px; }
-    .blog-content a {
-      display: inline-block; padding: 8px 14px;
-      background: linear-gradient(90deg, #38a169, #2f855a);
-      color: white; border-radius: 6px; text-decoration: none; font-size: 14px;
-    }
+    /* Blog */
+    .blog-section{background:#fff;padding:40px 20px;max-width:1200px;margin:auto;}
+    .blog-section h2{text-align:center;margin-bottom:30px;font-size:24px;color:#6a5acd;}
+    .blog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;}
+    .blog-card{background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);overflow:hidden;transition:.3s;}
+    .blog-card:hover{transform:translateY(-6px);}
+    .blog-card img{width:100%;height:200px;object-fit:cover;}
+    .blog-content{padding:15px;}
+    .blog-content h3{font-size:18px;color:#4a90e2;margin:10px 0;}
+    .blog-content p{font-size:14px;color:#555;}
+    .blog-content a{display:inline-block;padding:8px 14px;background:linear-gradient(90deg,#38a169,#2f855a);color:white;border-radius:6px;text-decoration:none;font-size:14px;}
 
-    /* Footer */
-    footer {
-      text-align: center; background: #2d3748;
-      color: #ccc; padding: 20px; font-size: 14px; margin-top: 40px;
-    }
+    footer{text-align:center;background:#2d3748;color:#ccc;padding:20px;font-size:14px;margin-top:40px;}
   </style>
 </head>
 <body>
   <header>
-    <h1>Smart Online Tools</h1>
+    <div class="logo">
+      <img src="/wp-content/uploads/2025/09/logo.png" alt="Smart Online Tools Logo" />
+    </div>
     <nav>
-      <a href="#">Home</a>
-      <a href="#">Tools</a>
-      <a href="#">Blog</a>
-      <a href="#">About</a>
-      <a href="#">Contact</a>
+      <a href="#">Home</a><a href="#">Tools</a><a href="#">Blog</a><a href="#">About</a><a href="#">Contact</a>
       <button class="toggle-btn" id="toggleTheme">🌙</button>
       <span class="menu-toggle" id="menuToggle">☰</span>
     </nav>
   </header>
-
-  <!-- Mobile Menu -->
   <div class="mobile-menu" id="mobileMenu">
-    <a href="#">Home</a>
-    <a href="#">Tools</a>
-    <a href="#">Blog</a>
-    <a href="#">About</a>
-    <a href="#">Contact</a>
+    <a href="#">Home</a><a href="#">Tools</a><a href="#">Blog</a><a href="#">About</a><a href="#">Contact</a>
   </div>
 
   <!-- Slider -->
   <div class="slider">
     <div class="slides">
-      <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1581091215367-59ab6f3e7f8d?auto=format&fit=crop&w=1200&h=320&q=80');">
-        <div class="slide-content"><h2>🔢 Powerful Calculators</h2><p>Do math, BMI, loan EMI & more instantly</p></div>
-      </div>
-      <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1508780709619-79562169bc64?auto=format&fit=crop&w=1200&h=320&q=80');">
-        <div class="slide-content"><h2>📖 Blog & Guides</h2><p>Learn smart tips & tech tutorials</p></div>
-      </div>
-      <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&h=320&q=80');">
-        <div class="slide-content"><h2>🛠️ 50+ Free Tools</h2><p>Converters, PDF tools, editors & more</p></div>
-      </div>
+      <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1581091215367-59ab6f3e7f8d?auto=format&fit=crop&w=1200&h=300');"><div class="slide-content"><h2>🔢 Powerful Calculators</h2><p>Do math, BMI, EMI & more instantly</p></div></div>
+      <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1508780709619-79562169bc64?auto=format&fit=crop&w=1200&h=300');"><div class="slide-content"><h2>📖 Blog & Guides</h2><p>Learn smart tips & tutorials</p></div></div>
+      <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&h=300');"><div class="slide-content"><h2>🛠️ 50+ Free Tools</h2><p>Converters, PDF tools & more</p></div></div>
     </div>
-    <button class="prev">&#10094;</button>
-    <button class="next">&#10095;</button>
+    <button class="prev">&#10094;</button><button class="next">&#10095;</button>
     <div class="dots"><span class="dot active"></span><span class="dot"></span><span class="dot"></span></div>
   </div>
 
-  <section class="hero">
-    <h2>50+ Free Online Tools</h2>
-    <p>All-in-one platform for calculators, converters, PDF utilities, text tools, and more — fast, reliable, and mobile-friendly.</p>
+  <section class="hero"><h2>50+ Free Online Tools</h2><p>All-in-one calculators, converters, PDF utilities, text tools, and more.</p></section>
+  <div class="search-bar"><input type="text" id="searchInput" placeholder="Search tools..."></div>
+
+  <!-- ✅ Tools Grid with 50 Tools -->
+  <section class="tools-grid" id="toolsGrid">
+    <div class="tool-card"><h3>Calculator</h3><p>Basic math calculator.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>BMI Calculator</h3><p>Check your Body Mass Index.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Age Calculator</h3><p>Find your exact age.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Loan EMI Calculator</h3><p>Calculate loan EMI.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Text to PDF Converter</h3><p>Convert text into PDF.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Image Compressor</h3><p>Reduce image size.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Online Notepad</h3><p>Write & save notes.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Word Counter</h3><p>Count words easily.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Typing Speed Checker</h3><p>Test typing speed.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Password Generator</h3><p>Create secure passwords.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>QR Code Generator</h3><p>Generate QR codes.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Unit Converter</h3><p>Convert units.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>HTML Encoder/Decoder</h3><p>Encode/decode HTML.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>JSON Formatter</h3><p>Beautify JSON data.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Color Picker</h3><p>Pick color codes.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Gradient Generator</h3><p>Create CSS gradients.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Lorem Ipsum Generator</h3><p>Dummy text tool.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>CSS Minifier</h3><p>Minify CSS code.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>JS Beautifier</h3><p>Format JavaScript.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Meta Tag Generator</h3><p>Create SEO meta tags.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Stopwatch</h3><p>Online stopwatch.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Countdown Timer</h3><p>Set countdown.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Screen Resolution Checker</h3><p>Check screen size.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>IP Finder</h3><p>Find your IP.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Browser Checker</h3><p>Detect browser info.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Text Case Converter</h3><p>Change text case.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Resume Builder</h3><p>Create resumes.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Invoice Generator</h3><p>Generate invoices.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Calendar Tool</h3><p>Online calendar.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>To-Do List</h3><p>Manage tasks.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Pomodoro Timer</h3><p>Focus timer.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Poll Maker</h3><p>Create polls.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Markdown Editor</h3><p>Write in Markdown.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Currency Converter</h3><p>Convert currencies.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Time Zone Converter</h3><p>Change time zones.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>PDF Merger</h3><p>Merge PDF files.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>PDF Splitter</h3><p>Split PDFs.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Signature Maker</h3><p>Make digital signs.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Speed Test</h3><p>Check site speed.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Fake Credit Card Generator</h3><p>Generate test data.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Email Validator</h3><p>Validate emails.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Character Counter</h3><p>Count characters.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Dictionary</h3><p>Find word meanings.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Weather Info</h3><p>Check live weather.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Table Generator</h3><p>Create HTML tables.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Box Shadow Generator</h3><p>Create CSS shadows.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Uptime Checker</h3><p>Check site uptime.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Broken Link Checker</h3><p>Find broken links.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>Drawing Board</h3><p>Draw online.</p><a href="#">Open Tool</a></div>
+    <div class="tool-card"><h3>AI Chatbot</h3><p>Embed chatbot.</p><a href="#">Open Tool</a></div>
   </section>
 
-  <section class="tools-grid">
-    <div class="tool-card"><h3>Calculator</h3><p>Basic math calculator for quick calculations.</p><a href="#">Open Tool</a></div>
-    <div class="tool-card"><h3>BMI Calculator</h3><p>Check your Body Mass Index easily.</p><a href="#">Open Tool</a></div>
-    <div class="tool-card"><h3>Age Calculator</h3><p>Calculate your exact age from date of birth.</p><a href="#">Open Tool</a></div>
-  </section>
-
+  <!-- Blog -->
   <section class="blog-section">
     <h2>📖 Latest Blog Posts</h2>
     <div class="blog-grid">
-      <div class="blog-card">
-        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=400&h=200&q=80" alt="Blog 1">
-        <div class="blog-content">
-          <h3>Top 10 Online Tools You Should Try</h3>
-          <p>Discover the most useful online tools that can save you time and improve productivity...</p>
-          <a href="#">Read More</a>
-        </div>
-      </div>
-      <div class="blog-card">
-        <img src="https://images.unsplash.com/photo-1508780709619-79562169bc64?auto=format&fit=crop&w=400&h=200&q=80" alt="Blog 2">
-        <div class="blog-content">
-          <h3>How to Use Online PDF Tools Effectively</h3>
-          <p>Learn the smart way to merge, split, and compress PDFs with free online utilities...</p>
-          <a href="#">Read More</a>
-        </div>
-      </div>
+      <div class="blog-card"><img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=400&h=200" alt="Blog 1"><div class="blog-content"><h3>Top 10 Online Tools You Should Try</h3><p>Discover useful tools...</p><a href="#">Read More</a></div></div>
+      <div class="blog-card"><img src="https://images.unsplash.com/photo-1508780709619-79562169bc64?auto=format&fit=crop&w=400&h=200" alt="Blog 2"><div class="blog-content"><h3>How to Use Online PDF Tools</h3><p>Learn to merge, split, compress...</p><a href="#">Read More</a></div></div>
     </div>
   </section>
 
-  <footer>
-    <p>&copy; 2025 Smart Online Tools. All Rights Reserved.</p>
-  </footer>
+  <footer><p>&copy; 2025 Smart Online Tools. All Rights Reserved.</p></footer>
 
   <script>
-    // Dark Mode Toggle
-    const toggleBtn = document.getElementById("toggleTheme");
-    toggleBtn.addEventListener("click", () => {
-      document.body.classList.toggle("dark");
-      toggleBtn.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
-    });
-
-    // Mobile Menu Toggle
-    const menuToggle = document.getElementById("menuToggle");
-    const mobileMenu = document.getElementById("mobileMenu");
-    menuToggle.addEventListener("click", () => {
-      mobileMenu.classList.toggle("active");
-    });
-
+    // Dark Mode
+    document.getElementById("toggleTheme").addEventListener("click",()=>{document.body.classList.toggle("dark");event.target.textContent=document.body.classList.contains("dark")?"☀️":"🌙";});
+    // Mobile Menu
+    document.getElementById("menuToggle").addEventListener("click",()=>{document.getElementById("mobileMenu").classList.toggle("active");});
+    // Search
+    const searchInput=document.getElementById("searchInput");const toolCards=document.querySelectorAll(".tool-card");
+    searchInput.addEventListener("keyup",()=>{let f=searchInput.value.toLowerCase();toolCards.forEach(c=>{c.style.display=c.innerText.toLowerCase().includes(f)?"":"none";});});
     // Slider
-    let slideIndex = 0;
-    const slides = document.querySelector(".slides");
-    const dots = document.querySelectorAll(".dot");
-    const prev = document.querySelector(".prev");
-    const next = document.querySelector(".next");
-    const totalSlides = dots.length;
-    function showSlide(index) {
-      if (index >= totalSlides) slideIndex = 0;
-      if (index < 0) slideIndex = totalSlides - 1;
-      slides.style.transform = `translateX(-${slideIndex * 100}%)`;
-      dots.forEach(dot => dot.classList.remove("active"));
-      dots[slideIndex].classList.add("active");
-    }
-    function autoSlide() { slideIndex++; showSlide(slideIndex); }
-    let slideTimer = setInterval(autoSlide, 4000);
-    next.addEventListener("click", () => { slideIndex++; showSlide(slideIndex); resetTimer(); });
-    prev.addEventListener("click", () => { slideIndex--; showSlide(slideIndex); resetTimer(); });
-    dots.forEach((dot, i) => { dot.addEventListener("click", () => { slideIndex=i; showSlide(slideIndex); resetTimer(); }); });
-    function resetTimer() { clearInterval(slideTimer); slideTimer = setInterval(autoSlide, 4000); }
-    showSlide(slideIndex);
+    let slideIndex=0;const slides=document.querySelector(".slides");const dots=document.querySelectorAll(".dot");const prev=document.querySelector(".prev");const next=document.querySelector(".next");const totalSlides=dots.length;
+    function showSlide(i){if(i>=totalSlides)slideIndex=0;if(i<0)slideIndex=totalSlides-1;slides.style.transform=`translateX(-${slideIndex*100}%)`;dots.forEach(d=>d.classList.remove("active"));dots[slideIndex].classList.add("active");}
+    function autoSlide(){slideIndex++;showSlide(slideIndex);}let slideTimer=setInterval(autoSlide,4000);
+    next.addEventListener("click",()=>{slideIndex++;showSlide(slideIndex);resetTimer();});
+    prev.addEventListener("click",()=>{slideIndex--;showSlide(slideIndex);resetTimer();});
+    dots.forEach((dot,i)=>{dot.addEventListener("click",()=>{slideIndex=i;showSlide(slideIndex);resetTimer();});});
+    function resetTimer(){clearInterval(slideTimer);slideTimer=setInterval(autoSlide,4000);}showSlide(slideIndex);
   </script>
 </body>
 </html>
