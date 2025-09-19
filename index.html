@@ -9,13 +9,35 @@
     body {
       margin: 0;
       font-family: "Segoe UI", Arial, sans-serif;
-      background: linear-gradient(135deg, #f9fbff, #eef5ff); /* Soft gradient background */
+      background: linear-gradient(135deg, #f9fbff, #eef5ff);
       color: #333;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* Dark Mode */
+    body.dark {
+      background: #1a202c;
+      color: #e2e8f0;
+    }
+    body.dark header {
+      background: linear-gradient(90deg, #2d3748, #1a202c);
+    }
+    body.dark .hero {
+      background: linear-gradient(135deg, #2d3748, #1a202c);
+    }
+    body.dark .tool-card,
+    body.dark .blog-card {
+      background: #2d3748;
+      color: #e2e8f0;
+      box-shadow: 0 4px 12px rgba(255,255,255,0.05);
+    }
+    body.dark footer {
+      background: #111827;
     }
 
     /* Header */
     header {
-      background: linear-gradient(90deg, #4a90e2, #6a5acd); /* blue → purple */
+      background: linear-gradient(90deg, #4a90e2, #6a5acd);
       color: white;
       padding: 15px 30px;
       display: flex;
@@ -35,6 +57,16 @@
     }
     nav a:hover {
       text-decoration: underline;
+    }
+
+    /* Dark Mode Toggle Button */
+    .toggle-btn {
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: white;
+      margin-left: 15px;
     }
 
     /* Slider */
@@ -61,7 +93,7 @@
       content: "";
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.45); /* overlay */
+      background: rgba(0,0,0,0.45);
     }
     .slide-content {
       position: absolute;
@@ -112,26 +144,17 @@
       display: inline-block;
       cursor: pointer;
     }
-    .active {
-      background-color: #fff;
-    }
+    .active { background-color: #fff; }
 
-    /* Hero Section */
+    /* Hero */
     .hero {
       text-align: center;
       padding: 60px 20px;
       background: linear-gradient(135deg, #63b3ed, #6a5acd);
       color: white;
     }
-    .hero h2 {
-      font-size: 36px;
-      margin-bottom: 15px;
-    }
-    .hero p {
-      font-size: 18px;
-      margin: 0 auto;
-      max-width: 600px;
-    }
+    .hero h2 { font-size: 36px; margin-bottom: 15px; }
+    .hero p { font-size: 18px; margin: 0 auto; max-width: 600px; }
 
     /* Search */
     .search-bar {
@@ -147,7 +170,7 @@
       border-radius: 8px;
     }
 
-    /* Tools Grid */
+    /* Tools */
     .tools-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -162,21 +185,14 @@
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
       text-align: center;
-      transition: all 0.3s ease;
+      transition: 0.3s;
     }
     .tool-card:hover {
       transform: translateY(-6px);
       box-shadow: 0 6px 16px rgba(0,0,0,0.15);
     }
-    .tool-card h3 {
-      margin: 10px 0;
-      font-size: 20px;
-      color: #4a90e2;
-    }
-    .tool-card p {
-      font-size: 14px;
-      color: #666;
-    }
+    .tool-card h3 { margin: 10px 0; font-size: 20px; color: #4a90e2; }
+    .tool-card p { font-size: 14px; color: #666; }
     .tool-card a {
       display: inline-block;
       margin-top: 12px;
@@ -184,22 +200,18 @@
       background: linear-gradient(90deg, #38a169, #2f855a);
       color: white;
       border-radius: 6px;
-      cursor: pointer;
       font-size: 14px;
       text-decoration: none;
-      transition: 0.3s;
-    }
-    .tool-card a:hover {
-      background: linear-gradient(90deg, #2f855a, #276749);
     }
 
-    /* Blog Section */
+    /* Blog */
     .blog-section {
       background: #ffffff;
       padding: 40px 20px;
       max-width: 1200px;
       margin: auto;
     }
+    body.dark .blog-section { background: #1a202c; }
     .blog-section h2 {
       text-align: center;
       margin-bottom: 30px;
@@ -218,28 +230,11 @@
       overflow: hidden;
       transition: 0.3s;
     }
-    .blog-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.2);
-    }
-    .blog-card img {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-    }
-    .blog-content {
-      padding: 15px;
-    }
-    .blog-content h3 {
-      margin: 10px 0;
-      font-size: 18px;
-      color: #4a90e2;
-    }
-    .blog-content p {
-      font-size: 14px;
-      color: #555;
-      margin-bottom: 12px;
-    }
+    .blog-card:hover { transform: translateY(-6px); }
+    .blog-card img { width: 100%; height: 200px; object-fit: cover; }
+    .blog-content { padding: 15px; }
+    .blog-content h3 { margin: 10px 0; font-size: 18px; color: #4a90e2; }
+    .blog-content p { font-size: 14px; color: #555; margin-bottom: 12px; }
     .blog-content a {
       display: inline-block;
       padding: 8px 14px;
@@ -248,9 +243,6 @@
       border-radius: 6px;
       text-decoration: none;
       font-size: 14px;
-    }
-    .blog-content a:hover {
-      background: linear-gradient(90deg, #2f855a, #276749);
     }
 
     /* Footer */
@@ -261,14 +253,6 @@
       padding: 20px;
       font-size: 14px;
       margin-top: 40px;
-    }
-    footer a {
-      color: #ccc;
-      margin: 0 10px;
-      text-decoration: none;
-    }
-    footer a:hover {
-      text-decoration: underline;
     }
   </style>
 </head>
@@ -281,10 +265,11 @@
       <a href="#">Blog</a>
       <a href="#">About</a>
       <a href="#">Contact</a>
+      <button class="toggle-btn" id="toggleTheme">🌙</button>
     </nav>
   </header>
 
-  <!-- Slider with Images -->
+  <!-- Slider -->
   <div class="slider">
     <div class="slides">
       <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1581091215367-59ab6f3e7f8d?auto=format&fit=crop&w=1200&h=320&q=80');">
@@ -328,10 +313,8 @@
     <div class="tool-card"><h3>Calculator</h3><p>Basic math calculator for quick calculations.</p><a href="/tools/calculator/">Open Tool</a></div>
     <div class="tool-card"><h3>BMI Calculator</h3><p>Check your Body Mass Index easily.</p><a href="/tools/bmi-calculator/">Open Tool</a></div>
     <div class="tool-card"><h3>Age Calculator</h3><p>Calculate your exact age from date of birth.</p><a href="/tools/age-calculator/">Open Tool</a></div>
-    <!-- Add more tools here -->
   </section>
 
-  <!-- Blog Section -->
   <section class="blog-section">
     <h2>📖 Latest Blog Posts</h2>
     <div class="blog-grid">
@@ -383,7 +366,7 @@
       });
     });
 
-    // Slider Script
+    // Slider
     let slideIndex = 0;
     const slides = document.querySelector(".slides");
     const dots = document.querySelectorAll(".dot");
@@ -403,35 +386,24 @@
       slideIndex++;
       showSlide(slideIndex);
     }
-
     let slideTimer = setInterval(autoSlide, 4000);
 
-    next.addEventListener("click", () => {
-      slideIndex++;
-      showSlide(slideIndex);
-      resetTimer();
-    });
-
-    prev.addEventListener("click", () => {
-      slideIndex--;
-      showSlide(slideIndex);
-      resetTimer();
-    });
-
-    dots.forEach((dot, i) => {
-      dot.addEventListener("click", () => {
-        slideIndex = i;
-        showSlide(slideIndex);
-        resetTimer();
-      });
-    });
+    next.addEventListener("click", () => { slideIndex++; showSlide(slideIndex); resetTimer(); });
+    prev.addEventListener("click", () => { slideIndex--; showSlide(slideIndex); resetTimer(); });
+    dots.forEach((dot, i) => { dot.addEventListener("click", () => { slideIndex=i; showSlide(slideIndex); resetTimer(); }); });
 
     function resetTimer() {
       clearInterval(slideTimer);
       slideTimer = setInterval(autoSlide, 4000);
     }
-
     showSlide(slideIndex);
+
+    // Dark Mode Toggle
+    const toggleBtn = document.getElementById("toggleTheme");
+    toggleBtn.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+      toggleBtn.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+    });
   </script>
 </body>
 </html>
